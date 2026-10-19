@@ -1,0 +1,2101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PT Pupuk Indonesia (Persero) — Power BI Dashboard + Esri Maps</title>
+
+<!-- Leaflet & Esri Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/esri-leaflet@3.0.19/dist/esri-leaflet.js"></script>
+
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    min-height:100vh;background:#0b0f1a;color:#e8eefc;
+    font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ===== Layout ===== */
+  .pbi-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 28px;background:#111827;
+    border-bottom:1px solid #1f2937;
+    position:sticky;top:0;z-index:1000;
+  }
+  .pbi-header-left{display:flex;align-items:center;gap:16px}
+  .pbi-logo{height:36px;width:auto}
+  .pbi-title{font-size:18px;font-weight:600;letter-spacing:-.01em}
+  .pbi-subtitle{font-size:11px;color:#9ca3af;margin-top:2px}
+  .pbi-header-right{font-size:11px;color:#6b7280;display:flex;gap:16px;align-items:center}
+  .pbi-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;margin-right:5px;animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  .pbi-body{display:flex;min-height:calc(100vh - 65px)}
+
+  /* Slicer */
+  .pbi-slicer{
+    width:230px;flex-shrink:0;background:#111827;
+    border-right:1px solid #1f2937;padding:18px 14px;
+    display:flex;flex-direction:column;gap:18px;
+  }
+  .slicer-title{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#6b7280;font-weight:600;margin-bottom:6px}
+  .slicer-item{
+    background:#1f2937;border:1px solid #374151;border-radius:6px;
+    padding:8px 10px;font-size:12px;color:#d1d5db;
+    display:flex;justify-content:space-between;align-items:center;
+    cursor:pointer;transition:background .15s;
+  }
+  .slicer-item:hover{background:#374151}
+  .slicer-item.active{background:#1e3a5f;border-color:#3b82f6;color:#93c5fd}
+  .slicer-item .count{font-size:10px;color:#6b7280;background:#0b0f1a;padding:1px 6px;border-radius:99px}
+  .slicer-divider{height:1px;background:#1f2937;margin:4px 0}
+
+  /* Canvas */
+  .pbi-canvas{flex:1;padding:20px 24px 60px;overflow-x:hidden}
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+  .kpi-card{
+    background:#111827;border:1px solid #1f2937;border-radius:10px;
+    padding:16px 18px;position:relative;overflow:hidden;
+  }
+  .kpi-card::before{
+    content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+    background:linear-gradient(180deg,#3b82f6,#8b5cf6);
+  }
+  .kpi-label{font-size:10.5px;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:6px}
+  .kpi-value{font-size:24px;font-weight:700;letter-spacing:-.02em;color:#f9fafb}
+  .kpi-trend{font-size:11px;margin-top:4px;display:flex;align-items:center;gap:4px}
+  .kpi-trend.up{color:#22c55e}
+  .kpi-trend.down{color:#ef4444}
+
+  .chart-grid{display:grid;gap:16px}
+  .chart-card{
+    background:#111827;border:1px solid #1f2937;border-radius:10px;
+    padding:16px 18px 14px;position:relative;
+    opacity:0;transform:translateY(12px);
+    animation:fadeUp .5s cubic-bezier(.2,.8,.2,1) forwards;
+    animation-delay:calc(.025s * var(--i,0));
+  }
+  @keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+  .card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+  .card-title{font-size:13px;font-weight:600;color:#e5e7eb;margin:0}
+  .card-sub{font-size:10.5px;color:#6b7280;margin:2px 0 0}
+  .badge{
+    font-size:10px;font-weight:600;padding:3px 9px;border-radius:4px;
+    background:#1e3a5f;color:#93c5fd;border:1px solid #3b82f6;
+    white-space:nowrap;
+  }
+  .badge.green{background:#052e16;color:#86efac;border-color:#22c55e}
+  .chart-body{position:relative;width:100%}
+  .chart-desc{
+    margin-top:10px;padding-top:10px;border-top:1px solid #1f2937;
+    font-size:11px;color:#9ca3af;line-height:1.6;
+  }
+  .chart-desc b{color:#d1d5db}
+  .full{grid-column:1 / -1}
+
+  /* Map */
+  .map-container{
+    width:100%;height:100%;border-radius:6px;overflow:hidden;
+    background:#0b0f1a;
+  }
+  .map-legend{
+    background:#111827;padding:8px 12px;border-radius:6px;
+    border:1px solid #1f2937;font-size:10px;color:#d1d5db;line-height:1.6;
+  }
+
+  /* Heatmap */
+  .heatmap{display:grid;grid-template-columns:56px repeat(12,1fr);gap:2px;height:100%}
+  .hmlabel{font-size:9px;text-align:center;color:#6b7280;display:flex;align-items:center;justify-content:center;font-weight:600}
+  .hmrow{font-size:10px;color:#6b7280;display:flex;align-items:center;font-weight:600}
+  .hm{border-radius:2px;background:linear-gradient(135deg,rgba(59,130,246,var(--a)),rgba(37,99,235,var(--a)));transform:scale(0);transition:transform .3s var(--d)}
+
+  footer{
+    margin-top:30px;padding-top:16px;border-top:1px solid #1f2937;
+    font-size:10px;color:#4b5563;text-align:center;
+  }
+
+  @media(max-width:900px){
+    .pbi-body{flex-direction:column}
+    .pbi-slicer{width:100%;flex-direction:row;flex-wrap:wrap;border-right:none;border-bottom:1px solid #1f2937}
+    .kpi-row{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:600px){
+    .kpi-row{grid-template-columns:1fr}
+    .pbi-header{padding:10px 16px}
+    .pbi-canvas{padding:14px}
+  }
+</style>
+</head>
+<body>
+
+<header class="pbi-header">
+  <div class="pbi-header-left">
+    <img class="pbi-logo"
+      src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png"
+      alt="Logo Pupuk Indonesia">
+    <div>
+      <div class="pbi-title">PT Pupuk Indonesia (Persero)</div>
+      <div class="pbi-subtitle">Dashboard Kinerja Perusahaan · 2024–2025</div>
+    </div>
+  </div>
+  <div class="pbi-header-right">
+    <span><span class="pbi-dot"></span>Live Report</span>
+    <span>Esri Basemap · 45 Charts</span>
+  </div>
+</header>
+
+<div class="pbi-body">
+  <aside class="pbi-slicer">
+    <div>
+      <div class="slicer-title">Tahun</div>
+      <div class="slicer-item active">2025 <span class="count">Aktif</span></div>
+      <div class="slicer-item">2024</div>
+    </div>
+    <div class="slicer-divider"></div>
+    <div>
+      <div class="slicer-title">Segmen</div>
+      <div class="slicer-item active">Semua <span class="count">45</span></div>
+      <div class="slicer-item">Subsidi</div>
+      <div class="slicer-item">Non-Subsidi</div>
+      <div class="slicer-item">Ekspor</div>
+    </div>
+    <div class="slicer-divider"></div>
+    <div>
+      <div class="slicer-title">Wilayah</div>
+      <div class="slicer-item active">Nasional</div>
+      <div class="slicer-item">Jawa</div>
+      <div class="slicer-item">Sumatera</div>
+      <div class="slicer-item">Kalimantan</div>
+      <div class="slicer-item">Sulawesi</div>
+    </div>
+    <div style="margin-top:auto;font-size:10px;color:#374151;line-height:1.5">
+      Sumber: pupuk-indonesia.com, laporan tahunan 2024, IDX, Antara, GIZ.
+    </div>
+  </aside>
+
+  <main class="pbi-canvas">
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Pendapatan 2024</div>
+        <div class="kpi-value">Rp81,62 T</div>
+        <div class="kpi-trend up">▲ 3,04% YoY</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Laba Bersih 2024</div>
+        <div class="kpi-value">Rp8,89 T</div>
+        <div class="kpi-trend up">▲ 42,10% YoY</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Aset</div>
+        <div class="kpi-value">Rp139,30 T</div>
+        <div class="kpi-trend down">▼ 2,59%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Target Penjualan 2025</div>
+        <div class="kpi-value">14,45 jt ton</div>
+        <div class="kpi-trend up">▲ 10,34%</div>
+      </div>
+    </div>
+
+    <div class="chart-grid" id="grid"></div>
+    <footer>© 2025 PT Pupuk Indonesia (Persero) · Power BI-style dashboard · Peta: Esri Leaflet (Dark Gray Canvas) · Data estimasi ditandai.</footer>
+  </main>
+</div>
+
+<script>
+/* =========================================================
+   HELPERS
+   ========================================================= */
+const PAL = [
+  ['#3b82f6','#2563eb'], ['#8b5cf6','#7c3aed'], ['#22c55e','#16a34a'],
+  ['#f59e0b','#ea580c'], ['#ec4899','#db2777'], ['#06b6d4','#0891b2'],
+  ['#6366f1','#4f46e5']
+];
+
+const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+function seeded(seed){let s=seed;return()=>{s=(s*9301+49297)%233280;return s/233280;};}
+
+function onVisible(el, cb){
+  const io = new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){io.unobserve(el);cb();}
+  }),{threshold:0.1});
+  io.observe(el);
+}
+
+function canvasChart(container, renderFn, duration=1200){
+  const c=document.createElement('canvas');
+  c.style.cssText='display:block;width:100%;height:100%';
+  container.appendChild(c);
+  const ctx=c.getContext('2d');
+  let W=0,H=0;
+  function setup(){
+    const rect=container.getBoundingClientRect();
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    W=rect.width||300;H=rect.height||200;
+    c.width=W*dpr;c.height=H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function draw(p){ctx.clearRect(0,0,W,H);renderFn(ctx,W,H,p);}
+  requestAnimationFrame(()=>{setup();draw(0);});
+  let started=false;
+  const io=new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting&&!started){
+      started=true;io.unobserve(c);
+      const t0=performance.now();
+      (function frame(now){
+        const t=Math.min(1,(now-t0)/duration);
+        draw(easeOutCubic(t));
+        if(t<1)requestAnimationFrame(frame);
+      })(t0);
+    }
+  }),{threshold:0.1});
+  io.observe(c);
+  let rt;
+  window.addEventListener('resize',()=>{
+    clearTimeout(rt);
+    rt=setTimeout(()=>{setup();draw(started?1:0);},120);
+  });
+}
+
+/* =========================================================
+   DATA
+   ========================================================= */
+const DATA = {
+  months:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+  monthly:[820,880,950,1020,980,1050,1100,1080,1150,1200,1180,1240],
+  monthly2:[380,410,450,480,470,500,520,510,540,560,550,580],
+  factories:[
+    {n:'Kaltim',v:3.435,lat:0.132,lng:117.485},
+    {n:'Gresik',v:1.030,lat:-7.166,lng:112.655},
+    {n:'Palembang',v:2.617,lat:-2.976,lng:104.757},
+    {n:'Kujang',v:1.140,lat:-6.402,lng:107.459},
+    {n:'Iskandar Muda',v:1.140,lat:5.180,lng:97.150},
+  ],
+  products:[
+    {label:'Urea',val:38},{label:'NPK',val:27},{label:'ZA',val:15},
+    {label:'SP-36',val:12},{label:'Organik',val:8}
+  ],
+  regions:[
+    {n:'Jabar',v:2.8},{n:'Jatim',v:2.5},{n:'Sumatera',v:2.2},
+    {n:'Sulawesi',v:1.5},{n:'Kalimantan',v:1.2},{n:'Bali-Nusra',v:0.8}
+  ],
+  radar:[
+    {axis:'Produksi',v:92},{axis:'Penjualan',v:95},{axis:'Ekspor',v:78},
+    {axis:'Inovasi',v:82},{axis:'Kepuasan',v:88},{axis:'SDM',v:80}
+  ],
+  scatter:(()=>{const r=seeded(3);return Array.from({length:22},()=>({x:1600+r()*1200,y:500+r()*800,r:0.5+r()*1.5}));})(),
+  bubbles:[
+    {n:'Jabar',x:85,y:90,r:1.8},{n:'Jatim',x:80,y:85,r:1.6},
+    {n:'Sumut',x:65,y:70,r:1.3},{n:'Sulsel',x:55,y:60,r:1.0},
+    {n:'Kaltim',x:45,y:50,r:0.8},{n:'Bali',x:60,y:45,r:0.6}
+  ],
+  polar:[
+    {n:'India',v:90},{n:'Australia',v:75},{n:'Brazil',v:65},
+    {n:'Filipina',v:50},{n:'Vietnam',v:40},{n:'China',v:35}
+  ]
+};
+
+/* =========================================================
+   CARD BUILDER
+   ========================================================= */
+const grid=document.getElementById('grid');
+let ci=0;
+
+function buildCard(o){
+  const {title,sub,height=280,badge,desc,full,render}=o;
+  const card=document.createElement('div');
+  card.className='chart-card'+(full?' full':'');
+  card.style.setProperty('--i',ci++);
+  card.innerHTML=`
+    <div class="card-head">
+      <div>
+        <h2 class="card-title">${title}</h2>
+        ${sub?`<p class="card-sub">${sub}</p>`:''}
+      </div>
+      ${badge?`<span class="badge">${badge}</span>`:''}
+    </div>
+    <div class="chart-body" style="height:${height}px"></div>
+    <div class="chart-desc">${desc}</div>`;
+  grid.appendChild(card);
+  render(card.querySelector('.chart-body'));
+}
+
+/* =========================================================
+   1. LINE
+   ========================================================= */
+function chartLine(c){
+  canvasChart(c,(ctx,W,H,p)=>{
+    const d=DATA.monthly,pad={t:24,r:16,b:38,l:48},maxV=Math.max(...d)*1.15;
+    const xAt=i=>pad.l+i*(W-pad.l-pad.r)/(d.length-1);
+    const yAt=v=>H-pad.b-(v/maxV)*(H-pad.t-pad.b);
+    ctx.strokeStyle='rgba(255,255,255,.05)';ctx.setLineDash([3,4]);
+    ctx.font='10px Segoe UI';ctx.textAlign='right';ctx.textBaseline='middle';
+    for(let g=0;g<=4;g++){const val=maxV*(4-g)/4,y=yAt(val);
+      ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillText(Math.round(val),pad.l-6,y);}
+    ctx.setLineDash([]);
+    ctx.save();ctx.translate(12,pad.t+(H-pad.t-pad.b)/2);ctx.rotate(-Math.PI/2);
+    ctx.fillStyle='rgba(255,255,255,.45)';ctx.font='10px Segoe UI';ctx.textAlign='center';
+    ctx.fillText('Ribu Ton',0,0);ctx.restore();
+    ctx.fillStyle='rgba(255,255,255,.45)';ctx.font='10px Segoe UI';ctx.textAlign='center';
+    ctx.fillText('Bulan (2024)',W/2,H-4);
+    ctx.save();ctx.beginPath();ctx.rect(0,0,W*p,H);ctx.clip();
+    ctx.beginPath();ctx.moveTo(xAt(0),yAt(d[0]));
+    for(let i=1;i<d.length;i++){const x0=xAt(i-1),y0=yAt(d[i-1]),x1=xAt(i),y1=yAt(d[i]);
+      const cx=(x0+x1)/2;ctx.bezierCurveTo(cx,y0,cx,y1,x1,y1);}
+    ctx.lineTo(xAt(d.length-1),H-pad.b);ctx.lineTo(xAt(0),H-pad.b);ctx.closePath();
+    const ag=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
+    ag.addColorStop(0,'rgba(59,130,246,.35)');ag.addColorStop(1,'rgba(59,130,246,0)');
+    ctx.fillStyle=ag;ctx.fill();
+    ctx.beginPath();ctx.moveTo(xAt(0),yAt(d[0]));
+    for(let i=1;i<d.length;i++){const x0=xAt(i-1),y0=yAt(d[i-1]),x1=xAt(i),y1=yAt(d[i]);
+      const cx=(x0+x1)/2;ctx.bezierCurveTo(cx,y0,cx,y1,x1,y1);}
+    const lg=ctx.createLinearGradient(pad.l,0,W-pad.r,0);
+    lg.addColorStop(0,'#06b6d4');lg.addColorStop(.5,'#3b82f6');lg.addColorStop(1,'#8b5cf6');
+    ctx.strokeStyle=lg;ctx.lineWidth=2.5;ctx.lineCap='round';ctx.stroke();
+    for(let i=0;i<d.length;i++){
+      ctx.beginPath();ctx.arc(xAt(i),yAt(d[i]),3.5,0,Math.PI*2);
+      ctx.fillStyle='#111827';ctx.fill();ctx.strokeStyle='#3b82f6';ctx.lineWidth=1.5;ctx.stroke();
+      ctx.fillStyle='#d1d5db';ctx.font='bold 8px Segoe UI';ctx.textAlign='center';ctx.textBaseline='bottom';
+      ctx.fillText(d[i],xAt(i),yAt(d[i])-7);
+    }
+    ctx.restore();
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.font='10px Segoe UI';
+    ctx.textAlign='center';ctx.textBaseline='top';
+    DATA.months.forEach((m,i)=>ctx.fillText(m,xAt(i),H-pad.b+8));
+  });
+}
+
+/* =========================================================
+   2. AREA
+   ========================================================= */
+function chartArea(c){
+  canvasChart(c,(ctx,W,H,p)=>{
+    const s1=DATA.monthly2,s2=DATA.monthly.map(v=>v*0.55);
+    const n=DATA.months.length,pad={t:22,r:16,b:34,l:44};
+    const st=s1.map((v,i)=>v+s2[i]),maxV=Math.max(...st)*1.1;
+    const xAt=i=>pad.l+i*(W-pad.l-pad.r)/(n-1);
+    const yAt=v=>H-pad.b-(v/maxV)*(H-pad.t-pad.b);
+    ctx.strokeStyle='rgba(255,255,255,.05)';ctx.setLineDash([3,4]);
+    ctx.font='10px Segoe UI';ctx.textAlign='right';ctx.textBaseline='middle';
+    for(let g=0;g<=4;g++){const val=maxV*(4-g)/4,y=yAt(val);
+      ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillText(Math.round(val),pad.l-6,y);}
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,255,255,.45)';ctx.font='10px Segoe UI';ctx.textAlign='center';
+    ctx.fillText('Bulan',W/2,H-4);
+    ctx.save();ctx.translate(12,pad.t+(H-pad.t-pad.b)/2);ctx.rotate(-Math.PI/2);
+    ctx.fillStyle='rgba(255,255,255,.45)';ctx.font='10px Segoe UI';ctx.textAlign='center';
+    ctx.fillText('Ribu Ton',0,0);ctx.restore();
+    function path(arr){ctx.beginPath();ctx.moveTo(xAt(0),yAt(arr[0]));
+      for(let i=1;i<n;i++){const x0=xAt(i-1),y0=yAt(arr[i-1]),x1=xAt(i),y1=yAt(arr[i]);
+        const cx=(x0+x1)/2;ctx.bezierCurveTo(cx,y0,cx,y1,x1,y1);}}
+    ctx.save();ctx.beginPath();ctx.rect(0,0,W*p,H);ctx.clip();
+    path(st);ctx.lineTo(xAt(n-1),H-pad.b);ctx.lineTo(xAt(0),H-pad.b);ctx.closePath();
+    const g2=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
+    g2.addColorStop(0,'rgba(139,92,246,.45)');g2.addColorStop(1,'rgba(139,92,246,.02)');
+    ctx.fillStyle=g2;ctx.fill();
+    path(s1);ctx.lineTo(xAt(n-1),H-pad.b);ctx.lineTo(xAt(0),H-pad.b);ctx.closePath();
+    const g1=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
+    g1.addColorStop(0,'rgba(59,130,246,.5)');g1.addColorStop(1,'rgba(59,130,246,.02)');
+    ctx.fillStyle=g1;ctx.fill();
+    path(st);ctx.strokeStyle='#8b5cf6';ctx.lineWidth=2;ctx.stroke();
+    path(s1);ctx.strokeStyle='#3b82f6';ctx.lineWidth=2;ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.font='10px Segoe UI';
+    ctx.textAlign='center';ctx.textBaseline='top';
+    DATA.months.forEach((m,i)=>ctx.fillText(m,xAt(i),H-pad.b+8));
+    ctx.font='9px Segoe UI';ctx.textAlign='left';ctx.textBaseline='middle';
+    ctx.fillStyle='#3b82f6';ctx.fillRect(pad.l,8,8,3);
+    ctx.fillStyle='#9ca3af';ctx.fillText('Urea',pad.l+12,9);
+    ctx.fillStyle='#8b5cf6';ctx.fillRect(pad.l+64,8,8,3);
+    ctx.fillStyle='#9ca3af';ctx.fillText('NPK',pad.l+78,9);
+  });
+}
+
+/* =========================================================
+   3. DONUT
+   ========================================================= */
+function chartDonut(c){
+  const products=DATA.products,R=80,C=2*Math.PI*R;
+  let off=0,defs='',circles='';
+  products.forEach((pr,i)=>{
+    const[c1,c2]=PAL[i%PAL.length];
+    const len=C*pr.val/100,gap=3,dash=Math.max(len-gap,1);
+    defs+=`<linearGradient id="dg${i}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient>`;
+    circles+=`<circle cx="110" cy="110" r="${R}" fill="none" stroke="url(#dg${i})" stroke-width="24" stroke-linecap="round" stroke-dasharray="0 999" data-final="${dash} ${C-dash}" stroke-dashoffset="${-off}" style="transition:stroke-dasharray 1.2s cubic-bezier(.2,.8,.2,1) ${0.2+i*0.1}s"/>`;
+    off+=len;
+  });
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;align-items:center;gap:20px;height:100%;justify-content:center;flex-wrap:wrap';
+  wrap.innerHTML=`
+    <div style="position:relative;flex-shrink:0">
+      <svg viewBox="0 0 220 220" style="width:190px;height:190px;transform:rotate(-90deg);overflow:visible">${defs}${circles}</svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="font-size:28px;font-weight:700;color:#f9fafb">100%</div>
+        <div style="font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.12em">Total</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;min-width:150px">
+      ${products.map((pr,i)=>`<div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:${PAL[i%PAL.length][0]}"></span><span style="color:#d1d5db">${pr.label}</span><b style="margin-left:auto;color:#f9fafb">${pr.val}%</b></div>`).join('')}
+    </div>`;
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('circle').forEach(el=>el.style.strokeDasharray=el.dataset.final));
+}
+
+/* =========================================================
+   4. VERTICAL BARS
+   ========================================================= */
+function chartVBars(c){
+  const f=DATA.factories,maxV=Math.max(...f.map(x=>x.v));
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;height:100%';
+  const bars=document.createElement('div');
+  bars.style.cssText='display:flex;align-items:flex-end;gap:14px;flex:1;padding-top:8px';
+  f.forEach((x,i)=>{
+    const[c1,c2]=PAL[i%PAL.length];
+    const h=x.v/(maxV*1.1)*100;
+    const col=document.createElement('div');
+    col.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;height:100%';
+    col.innerHTML=`
+      <div style="flex:1;width:100%;display:flex;align-items:flex-end;background:#0b0f1a;border-radius:4px;position:relative">
+        <div class="vbar" style="width:100%;height:${h}%;border-radius:4px;background:linear-gradient(180deg,${c1},${c2});transform:scaleY(0);transform-origin:bottom;transition:transform .8s cubic-bezier(.2,.85,.25,1) ${.12+i*.07}s;position:relative">
+          <span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#f9fafb;white-space:nowrap">${x.v}</span>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#6b7280;margin-top:6px;text-align:center;font-weight:600">${x.n}</div>`;
+    bars.appendChild(col);
+  });
+  const axis=document.createElement('div');
+  axis.style.cssText='font-size:9px;color:#4b5563;text-align:center;margin-top:4px';
+  axis.textContent='Juta ton urea/tahun';
+  wrap.appendChild(bars);wrap.appendChild(axis);c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('.vbar').forEach(b=>b.style.transform='scaleY(1)'));
+}
+
+/* =========================================================
+   5. HORIZONTAL BARS
+   ========================================================= */
+function chartHBars(c){
+  const r=DATA.regions,maxV=Math.max(...r.map(x=>x.v));
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;gap:10px;justify-content:center;height:100%';
+  wrap.innerHTML=r.map((x,i)=>{
+    const[c1,c2]=PAL[i%PAL.length];
+    return `<div style="display:flex;align-items:center;gap:10px;font-size:12px">
+      <span style="width:90px;color:#9ca3af;text-align:right;flex-shrink:0">${x.n}</span>
+      <div style="flex:1;height:16px;background:#0b0f1a;border-radius:99px;overflow:hidden">
+        <div class="hbar" style="height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,${c1},${c2});transition:width .9s cubic-bezier(.2,.8,.2,1) ${.12+i*.06}s"></div>
+      </div>
+      <span style="width:32px;font-weight:600;color:#f9fafb;text-align:right">${x.v.toFixed(1)}</span>
+    </div>`;
+  }).join('');
+  const foot=document.createElement('div');
+  foot.style.cssText='font-size:9px;color:#4b5563;text-align:center;margin-top:6px';
+  foot.textContent='Juta ton';
+  const outer=document.createElement('div');
+  outer.style.cssText='display:flex;flex-direction:column;height:100%;justify-content:center';
+  outer.appendChild(wrap);outer.appendChild(foot);c.appendChild(outer);
+  onVisible(wrap,()=>wrap.querySelectorAll('.hbar').forEach((b,i)=>b.style.width=(r[i].v/maxV*100)+'%'));
+}
+
+/* =========================================================
+   6. RADAR
+   ========================================================= */
+function chartRadar(c){
+  canvasChart(c,(ctx,W,H,p)=>{
+    const axes=DATA.radar,n=axes.length,cx=W/2,cy=H/2+4,R=Math.min(W,H)*0.3;
+    for(let ring=1;ring<=4;ring++){
+      const r=R*ring/4;ctx.beginPath();
+      for(let i=0;i<=n;i++){const ang=-Math.PI/2+i*2*Math.PI/n;
+        const x=cx+Math.cos(ang)*r,y=cy+Math.sin(ang)*r;
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+      ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;ctx.stroke();
+    }
+    for(let i=0;i<n;i++){const ang=-Math.PI/2+i*2*Math.PI/n;
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+Math.cos(ang)*R,cy+Math.sin(ang)*R);
+      ctx.strokeStyle='rgba(255,255,255,.06)';ctx.stroke();}
+    const pts=axes.map((a,i)=>{const ang=-Math.PI/2+i*2*Math.PI/n;
+      const r=R*a.v/100*p;return[cx+Math.cos(ang)*r,cy+Math.sin(ang)*r];});
+    ctx.beginPath();pts.forEach(([x,y],i)=>i===0?ctx.moveTo(x,y):ctx.lineTo(x,y));
+    ctx.closePath();
+    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,R);
+    g.addColorStop(0,'rgba(139,92,246,.45)');g.addColorStop(1,'rgba(59,130,246,.1)');
+    ctx.fillStyle=g;ctx.fill();
+    ctx.strokeStyle='#8b5cf6';ctx.lineWidth=2;ctx.stroke();
+    pts.forEach(([x,y])=>{ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);
+      ctx.fillStyle='#8b5cf6';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.2;ctx.stroke();});
+    ctx.fillStyle='rgba(255,255,255,.65)';ctx.font='10px Segoe UI';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    axes.forEach((a,i)=>{const ang=-Math.PI/2+i*2*Math.PI/n;
+      ctx.fillText(a.axis,cx+Math.cos(ang)*(R+22),cy+Math.sin(ang)*(R+22));});
+  });
+}
+
+/* =========================================================
+   7. GAUGE
+   ========================================================= */
+function chartGauge(c){
+  canvasChart(c,(ctx,W,H,p)=>{
+    const val=82,cx=W/2,cy=H*0.7,R=Math.min(W*.32,H*.64);
+    ctx.beginPath();ctx.arc(cx,cy,R,Math.PI,0);
+    ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=16;ctx.lineCap='round';ctx.stroke();
+    const ang=Math.PI+Math.PI*val/100*p;
+    const g=ctx.createLinearGradient(cx-R,cy,cx+R,cy);
+    g.addColorStop(0,'#06b6d4');g.addColorStop(.5,'#3b82f6');g.addColorStop(1,'#8b5cf6');
+    ctx.beginPath();ctx.arc(cx,cy,R,Math.PI,ang);
+    ctx.strokeStyle=g;ctx.lineWidth=16;ctx.lineCap='round';ctx.stroke();
+    ctx.fillStyle='#f9fafb';ctx.font='bold 26px Segoe UI';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(Math.round(val*p)+'%',cx,cy-8);
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.font='9px Segoe UI';
+    ctx.fillText('UTILISASI',cx,cy+10);
+  });
+}
+
+/* =========================================================
+   8. STACKED BARS
+   ========================================================= */
+function chartStackedBars(c){
+  const months=['Jan','Feb','Mar','Apr','Mei','Jun'];
+  const series=[
+    {n:'Urea',c:PAL[0],data:[420,450,480,510,490,530]},
+    {n:'NPK',c:PAL[1],data:[280,300,310,330,320,350]},
+    {n:'Organik',c:PAL[2],data:[90,100,110,120,115,130]},
+  ];
+  const totals=months.map((_,i)=>series.reduce((s,se)=>s+se.data[i],0));
+  const maxV=Math.max(...totals)*1.1;
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;align-items:flex-end;gap:16px;height:100%;padding-top:12px';
+  wrap.innerHTML=months.map((m,i)=>{
+    const h=totals[i]/maxV*100;
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;height:100%">
+      <div style="flex:1;width:100%;display:flex;align-items:flex-end;position:relative">
+        <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:9px;color:#9ca3af;white-space:nowrap">${totals[i]}</div>
+        <div class="sbar" style="width:100%;height:${h}%;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;transform:scaleY(0);transform-origin:bottom;transition:transform .8s cubic-bezier(.2,.85,.25,1) ${.12+i*.06}s">
+          ${series.map(s=>`<div style="height:${s.data[i]/totals[i]*100}%;background:linear-gradient(90deg,${s.c[0]},${s.c[1]})" title="${s.n}: ${s.data[i]}"></div>`).join('')}
+        </div>
+      </div>
+      <div style="font-size:10px;color:#6b7280;margin-top:6px;font-weight:600">${m}</div>
+    </div>`;
+  }).join('');
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('.sbar').forEach(b=>b.style.transform='scaleY(1)'));
+}
+
+/* =========================================================
+   9. PIE
+   ========================================================= */
+function chartPie(c){
+  const data=DATA.products,cx=110,cy=110,R=85;
+  let angle=-Math.PI/2,paths='',defs='';
+  data.forEach((d,i)=>{
+    const[c1,c2]=PAL[i%PAL.length];
+    const slice=d.val/100*Math.PI*2;
+    const x1=cx+Math.cos(angle)*R,y1=cy+Math.sin(angle)*R;
+    const x2=cx+Math.cos(angle+slice)*R,y2=cy+Math.sin(angle+slice)*R;
+    const large=slice>Math.PI?1:0;
+    defs+=`<linearGradient id="pg${i}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient>`;
+    paths+=`<path d="M${cx},${cy} L${x1},${y1} A${R},${R} 0 ${large} 1 ${x2},${y2} Z" fill="url(#pg${i})" opacity="0" style="transition:opacity .4s ${.1+i*.08}s"><title>${d.label}: ${d.val}%</title></path>`;
+    angle+=slice;
+  });
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;align-items:center;gap:20px;height:100%;justify-content:center;flex-wrap:wrap';
+  wrap.innerHTML=`
+    <svg viewBox="0 0 220 220" style="width:190px;height:190px;flex-shrink:0">${defs}${paths}</svg>
+    <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;min-width:150px">
+      ${data.map((d,i)=>`<div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:${PAL[i%PAL.length][0]}"></span><span style="color:#d1d5db">${d.label}</span><b style="margin-left:auto;color:#f9fafb">${d.val}%</b></div>`).join('')}
+    </div>`;
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('path').forEach(p=>p.style.opacity='1'));
+}
+
+/* =========================================================
+   10. SCATTER
+   ========================================================= */
+function chartScatter(c){
+  canvasChart(c,(ctx,W,H,p)=>{
+    const pts=DATA.scatter,pad={t:20,r:20,b:34,l:42};
+    const xMin=Math.min(...pts.map(pt=>pt.x))*.9,xMax=Math.max(...pts.map(pt=>pt.x))*1.1;
+    const yMin=Math.min(...pts.map(pt=>pt.y))*.9,yMax=Math.max(...pts.map(pt=>pt.y))*1.1;
+    const xAt=v=>pad.l+(v-xMin)/(xMax-xMin)*(W-pad.l-pad.r);
+    const yAt=v=>H-pad.b-(v-yMin)/(yMax-yMin)*(H-pad.t-pad.b);
+    ctx.strokeStyle='rgba(255,255,255,.04)';
+    for(let i=0;i<=4;i++){const y=pad.t+(H-pad.t-pad.b)*i/4;
+      ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();}
+    pts.forEach((pt,i)=>{
+      const[c1,c2]=PAL[i%PAL.length];
+      const x=xAt(pt.x),y=yAt(pt.y),r=4+pt.r*2.5;
+      ctx.beginPath();ctx.arc(x,y,r*p,0,Math.PI*2);
+      const g=ctx.createRadialGradient(x-r*.3,y-r*.3,0,x,y,r);
+      g.addColorStop(0,c1);g.addColorStop(1,c2);
+      ctx.fillStyle=g;ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=1;ctx.stroke();
+    });
+    ctx.fillStyle='rgba(255,255,255,.45)';ctx.font='10px Segoe UI';
+    ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText('Harga Pupuk (Rp/kg)',W/2,H-4);
+    ctx.save();ctx.translate(12,pad.t+(H-pad.t-pad.b)/2);ctx.rotate(-Math.PI/2);
+    ctx.fillStyle='rgba(255,255,255,.45)';ctx.font='10px Segoe UI';ctx.textAlign='center';
+    ctx.fillText('Volume Penjualan (ton)',0,0);ctx.restore();
+  });
+}
+
+/* =========================================================
+   11. BUBBLE
+   ========================================================= */
+function chartBubble(c){
+  canvasChart(c,(ctx,W,H,p)=>{
+    const data=DATA.bubbles,pad={t:16,r:16,b:26,l:32};
+    const xAt=v=>pad.l+v/100*(W-pad.l-pad.r);
+    const yAt=v=>H-pad.b-v/100*(H-pad.t-pad.b);
+    ctx.strokeStyle='rgba(255,255,255,.04)';
+    for(let i=0;i<=4;i++){const y=pad.t+(H-pad.t-pad.b)*i/4;
+      ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();}
+    data.forEach((d,i)=>{
+      const[c1,c2]=PAL[i%PAL.length];
+      const x=xAt(d.x),y=yAt(d.y),r=(12+d.r*18)*p;
+      ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+      const g=ctx.createRadialGradient(x-r*.3,y-r*.3,0,x,y,r);
+      g.addColorStop(0,c1+'dd');g.addColorStop(1,c2+'44');
+      ctx.fillStyle=g;ctx.fill();
+      ctx.strokeStyle=c1;ctx.lineWidth=1.5;ctx.stroke();
+      if(p>.7){ctx.fillStyle='rgba(255,255,255,.85)';ctx.font='bold 10px Segoe UI';
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(d.n,x,y);}
+    });
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.font='10px Segoe UI';
+    ctx.textAlign='center';ctx.fillText('Volume →',W/2,H-4);
+  });
+}
+
+/* =========================================================
+   12. POLAR
+   ========================================================= */
+function chartPolar(c){
+  canvasChart(c,(ctx,W,H,p)=>{
+    const data=DATA.polar,n=data.length,cx=W/2,cy=H/2;
+    const maxV=Math.max(...data.map(d=>d.v)),R=Math.min(W,H)*0.32;
+    data.forEach((d,i)=>{
+      const ang=-Math.PI/2+i*2*Math.PI/n;
+      const r=R*d.v/maxV*p;
+      const[c1,c2]=PAL[i%PAL.length];
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,r,ang-(Math.PI/n)+.03,ang+(Math.PI/n)-.03);
+      ctx.closePath();
+      const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+      g.addColorStop(0,c1+'cc');g.addColorStop(1,c2+'33');
+      ctx.fillStyle=g;ctx.fill();
+      ctx.strokeStyle=c1;ctx.lineWidth=1;ctx.stroke();
+    });
+    ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.65)';ctx.font='10px Segoe UI';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    data.forEach((d,i)=>{const ang=-Math.PI/2+i*2*Math.PI/n;
+      ctx.fillText(d.n,cx+Math.cos(ang)*(R+20),cy+Math.sin(ang)*(R+20));});
+  });
+}
+
+/* =========================================================
+   13. FUNNEL
+   ========================================================= */
+function chartFunnel(c){
+  const steps=[
+    {n:'Kunjungan',v:100,c:PAL[0]},{n:'Prospek',v:70,c:PAL[1]},
+    {n:'Negosiasi',v:45,c:PAL[2]},{n:'Closing',v:25,c:PAL[3]},
+  ];
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;gap:6px;justify-content:center;height:100%';
+  wrap.innerHTML=steps.map((s,i)=>{
+    const prev=i===0?100:steps[i-1].v;
+    const conv=(s.v/prev*100).toFixed(0);
+    return `
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="width:70px;font-size:11px;color:#9ca3af;text-align:right">${s.n}</div>
+      <div style="flex:1;height:28px;position:relative">
+        <div class="fstep" style="height:100%;width:0;background:linear-gradient(90deg,${s.c[0]},${s.c[1]});border-radius:4px;transition:width .9s cubic-bezier(.2,.8,.2,1) ${.12+i*.08}s;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;font-size:11px;font-weight:600;color:#fff">${s.v}%</div>
+      </div>
+      <div style="width:42px;font-size:9px;color:#6b7280;text-align:right">${i===0?'':'↓'+conv+'%'}</div>
+    </div>`;
+  }).join('');
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('.fstep').forEach((el,i)=>el.style.width=steps[i].v+'%'));
+}
+
+/* =========================================================
+   14. TREEMAP
+   ========================================================= */
+function chartTreemap(c){
+  const data=[
+    {n:'Urea',v:38,c:PAL[0]},{n:'NPK',v:27,c:PAL[1]},
+    {n:'ZA',v:15,c:PAL[2]},{n:'SP-36',v:12,c:PAL[3]},
+    {n:'Organik',v:8,c:PAL[4]},
+  ];
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:relative;width:100%;height:100%;border-radius:6px;overflow:hidden';
+  const blocks=[];
+  function layout(items,x,y,w,h,horiz){
+    if(!items.length)return;
+    if(items.length===1){blocks.push({d:items[0],x,y,w,h});return;}
+    const mid=Math.ceil(items.length/2),a=items.slice(0,mid),b=items.slice(mid);
+    const aT=a.reduce((s,d)=>s+d.v,0),bT=b.reduce((s,d)=>s+d.v,0);
+    const ratio=aT/(aT+bT);
+    if(horiz){layout(a,x,y,w*ratio,h,false);layout(b,x+w*ratio,y,w*(1-ratio),h,false);}
+    else{layout(a,x,y,w,h*ratio,true);layout(b,x,y+h*ratio,w,h*(1-ratio),true);}
+  }
+  layout(data,0,0,100,100,true);
+  blocks.forEach((b,i)=>{
+    const div=document.createElement('div');
+    div.title=`${b.d.n}: ${b.d.v}%`;
+    div.style.cssText=`position:absolute;left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%;background:linear-gradient(135deg,${b.d.c[0]},${b.d.c[1]});display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;border:1px solid #111827;transform:scale(0);transition:transform .5s cubic-bezier(.2,.8,.2,1) ${.08+i*.06}s`;
+    div.innerHTML=`<span>${b.d.n}</span><span style="font-size:16px;margin-top:1px">${b.d.v}%</span>`;
+    wrap.appendChild(div);
+  });
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('div').forEach(d=>d.style.transform='scale(1)'));
+}
+
+/* =========================================================
+   15. HEATMAP
+   ========================================================= */
+function chartHeatmap(c){
+  const months=['J','F','M','A','M','J','J','A','S','O','N','D'];
+  const regions=['Jabar','Jatim','Sumut','Sulsel','Kaltim'];
+  const rand=seeded(7);
+  let html='<div></div>'+months.map(m=>`<div class="hmlabel">${m}</div>`).join('');
+  regions.forEach((r,ri)=>{
+    html+=`<div class="hmrow">${r}</div>`;
+    for(let i=0;i<12;i++){
+      const a=(.15+rand()*.85).toFixed(2);
+      const val=Math.round(a*100);
+      html+=`<div class="hm" title="${r} - ${months[i]}: ${val}" style="--a:${a};--d:${(ri*.08+i*.012).toFixed(2)}s"></div>`;
+    }
+  });
+  const wrap=document.createElement('div');
+  wrap.className='heatmap';wrap.innerHTML=html;
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('.hm').forEach(el=>el.style.transform='scale(1)'));
+}
+
+/* =========================================================
+   16. SPARKLINES
+   ========================================================= */
+function chartSparklines(c){
+  const items=[
+    {n:'Produksi',v:'14,65 jt ton',trend:[10,11,12,12,13,14,14,15],c:PAL[0]},
+    {n:'Penjualan',v:'12,00 jt ton',trend:[9,10,10,11,11,12,12,12],c:PAL[1]},
+    {n:'Ekspor',v:'1,72 jt ton',trend:[1.4,1.5,1.6,1.5,1.6,1.7,1.7,1.72],c:PAL[2]},
+    {n:'Pendapatan',v:'Rp90,4 T',trend:[75,78,80,82,85,88,90,90.4],c:PAL[3]},
+  ];
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:10px;height:100%;align-content:center';
+  items.forEach((it,i)=>{
+    const[c1,c2]=it.c,pts=it.trend;
+    const max=Math.max(...pts),min=Math.min(...pts);
+    const path=pts.map((v,j)=>{
+      const x=(j/(pts.length-1))*100;
+      const y=28-((v-min)/(max-min||1))*24;
+      return `${j===0?'M':'L'}${x},${y}`;
+    }).join(' ');
+    const area=path+' L100,28 L0,28 Z';
+    const div=document.createElement('div');
+    div.style.cssText='background:#0b0f1a;border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;justify-content:center';
+    div.innerHTML=`
+      <div style="font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;font-weight:600">${it.n}</div>
+      <div style="font-size:16px;font-weight:700;margin:2px 0 4px;color:#f9fafb">${it.v}</div>
+      <svg viewBox="0 0 100 28" preserveAspectRatio="none" style="width:100%;height:28px">
+        <defs>
+          <linearGradient id="spA${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${c1}" stop-opacity=".4"/><stop offset="100%" stop-color="${c1}" stop-opacity="0"/></linearGradient>
+          <linearGradient id="spL${i}" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient>
+        </defs>
+        <path class="sp-area" d="${area}" fill="url(#spA${i})" opacity="0" style="transition:opacity .5s ${.25+i*.08}s"/>
+        <path class="sp-line" d="${path}" fill="none" stroke="url(#spL${i})" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="500" stroke-dashoffset="500" style="transition:stroke-dashoffset 1s ease-out ${.15+i*.08}s"/>
+      </svg>`;
+    wrap.appendChild(div);
+  });
+  c.appendChild(wrap);
+  onVisible(wrap,()=>{
+    wrap.querySelectorAll('.sp-line').forEach(p=>p.style.strokeDashoffset='0');
+    wrap.querySelectorAll('.sp-area').forEach(p=>p.style.opacity='1');
+  });
+}
+
+/* =========================================================
+   17. RING
+   ========================================================= */
+function chartRing(c){
+  const val=76,R=72,C=2*Math.PI*R;
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center';
+  wrap.innerHTML=`
+    <svg viewBox="0 0 190 190" style="width:185px;height:185px;transform:rotate(-90deg)">
+      <defs><linearGradient id="ringG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#06b6d4"/><stop offset="50%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient></defs>
+      <circle cx="95" cy="95" r="${R}" fill="none" stroke="#1f2937" stroke-width="14"/>
+      <circle id="ringP" cx="95" cy="95" r="${R}" fill="none" stroke="url(#ringG)" stroke-width="14" stroke-linecap="round" stroke-dasharray="0 ${C}" style="transition:stroke-dasharray 1.3s cubic-bezier(.2,.8,.2,1) .25s"/>
+    </svg>
+    <div style="position:absolute;text-align:center">
+      <div style="font-size:32px;font-weight:700;color:#f9fafb">${val}%</div>
+      <div style="font-size:9px;letter-spacing:.14em;color:#6b7280;text-transform:uppercase;margin-top:2px">Target</div>
+    </div>`;
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelector('#ringP').style.strokeDasharray=`${C*val/100} ${C}`);
+}
+
+/* =========================================================
+   18. GROUPED BARS
+   ========================================================= */
+function chartGroupedBars(c){
+  const data=[
+    {n:'Urea',a:34,b:38},{n:'NPK',a:22,b:27},{n:'ZA',a:14,b:15},
+    {n:'SP-36',a:10,b:12},{n:'Organik',a:5,b:8},
+  ];
+  const maxV=Math.max(...data.map(d=>Math.max(d.a,d.b)))*1.15;
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;height:100%';
+  const bars=document.createElement('div');
+  bars.style.cssText='display:flex;align-items:flex-end;gap:14px;flex:1;padding-top:12px';
+  data.forEach((d,i)=>{
+    const col=document.createElement('div');
+    col.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;height:100%';
+    col.innerHTML=`
+      <div style="flex:1;width:100%;display:flex;align-items:flex-end;gap:4px">
+        <div class="gbar" style="flex:1;height:${d.a/maxV*100}%;background:linear-gradient(180deg,${PAL[0][0]},${PAL[0][1]});border-radius:3px 3px 0 0;transform:scaleY(0);transform-origin:bottom;transition:transform .7s cubic-bezier(.2,.8,.2,1) ${.12+i*.05}s;position:relative">
+          <span style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:8px;color:#9ca3af">${d.a}</span>
+        </div>
+        <div class="gbar" style="flex:1;height:${d.b/maxV*100}%;background:linear-gradient(180deg,${PAL[1][0]},${PAL[1][1]});border-radius:3px 3px 0 0;transform:scaleY(0);transform-origin:bottom;transition:transform .7s cubic-bezier(.2,.8,.2,1) ${.16+i*.05}s;position:relative">
+          <span style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:8px;color:#9ca3af">${d.b}</span>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#6b7280;margin-top:6px;font-weight:600">${d.n}</div>`;
+    bars.appendChild(col);
+  });
+  const legend=document.createElement('div');
+  legend.style.cssText='display:flex;gap:14px;font-size:10px;color:#9ca3af;margin-top:6px;justify-content:center';
+  legend.innerHTML=`<span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:1px;background:${PAL[0][0]}"></span>2024</span><span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:1px;background:${PAL[1][0]}"></span>2025</span>`;
+  wrap.appendChild(bars);wrap.appendChild(legend);c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('.gbar').forEach(b=>b.style.transform='scaleY(1)'));
+}
+
+/* =========================================================
+   19. LOLLIPOP
+   ========================================================= */
+function chartLollipop(c){
+  const data=[
+    {n:'Urea',v:38},{n:'NPK',v:27},{n:'ZA',v:15},
+    {n:'SP-36',v:12},{n:'Organik',v:8},
+  ];
+  const maxV=Math.max(...data.map(d=>d.v));
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;gap:12px;justify-content:center;height:100%';
+  data.forEach((d,i)=>{
+    const[c1,c2]=PAL[i%PAL.length];
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:10px;font-size:12px';
+    row.innerHTML=`
+      <span style="width:70px;color:#9ca3af;text-align:right;flex-shrink:0">${d.n}</span>
+      <div style="flex:1;height:2px;background:#1f2937;border-radius:1px;position:relative">
+        <div class="lstick" style="position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,${c1},${c2});transition:width .9s cubic-bezier(.2,.8,.2,1) ${.12+i*.06}s"></div>
+        <div class="ldot" style="position:absolute;top:50%;left:0;width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,${c1},${c2});transform:translate(-50%,-50%) scale(0);transition:left .9s cubic-bezier(.2,.8,.2,1) ${.12+i*.06}s,transform .3s ${.35+i*.06}s"></div>
+      </div>
+      <span style="width:24px;color:#f9fafb;font-weight:600;text-align:right">${d.v}</span>`;
+    wrap.appendChild(row);
+  });
+  c.appendChild(wrap);
+  onVisible(wrap,()=>{
+    wrap.querySelectorAll('.lstick').forEach((el,i)=>el.style.width=(data[i].v/maxV*100)+'%');
+    wrap.querySelectorAll('.ldot').forEach((el,i)=>{el.style.left=(data[i].v/maxV*100)+'%';
+      el.style.transform='translate(-50%,-50%) scale(1)';});
+  });
+}
+
+/* =========================================================
+   20. DUMBBELL
+   ========================================================= */
+function chartDumbbell(c){
+  const data=[
+    {n:'Urea',a:34,b:38},{n:'NPK',a:22,b:27},{n:'ZA',a:14,b:15},
+    {n:'SP-36',a:10,b:12},{n:'Organik',a:5,b:8},
+  ];
+  const maxV=42;
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;gap:10px;justify-content:center;height:100%';
+  data.forEach((d,i)=>{
+    const xa=d.a/maxV*100,xb=d.b/maxV*100;
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:10px;font-size:12px';
+    row.innerHTML=`
+      <span style="width:70px;color:#9ca3af;text-align:right;flex-shrink:0">${d.n}</span>
+      <div style="flex:1;position:relative;height:16px">
+        <div class="dline" style="position:absolute;left:${xa}%;right:${100-xb}%;top:50%;height:2px;background:linear-gradient(90deg,${PAL[0][0]},${PAL[1][0]});border-radius:1px;opacity:0;transition:opacity .4s ${.25+i*.06}s"></div>
+        <div class="ddot" style="position:absolute;left:${xa}%;top:50%;width:11px;height:11px;border-radius:50%;background:${PAL[0][0]};transform:translate(-50%,-50%) scale(0);transition:transform .3s ${.15+i*.06}s"></div>
+        <div class="ddot" style="position:absolute;left:${xb}%;top:50%;width:11px;height:11px;border-radius:50%;background:${PAL[1][0]};transform:translate(-50%,-50%) scale(0);transition:transform .3s ${.25+i*.06}s"></div>
+      </div>
+      <span style="width:28px;font-size:10px;color:#6b7280;text-align:right">${d.a}→${d.b}</span>`;
+    wrap.appendChild(row);
+  });
+  c.appendChild(wrap);
+  onVisible(wrap,()=>{
+    wrap.querySelectorAll('.dline').forEach(el=>el.style.opacity='1');
+    wrap.querySelectorAll('.ddot').forEach(el=>el.style.transform='translate(-50%,-50%) scale(1)');
+  });
+}
+
+/* =========================================================
+   21. WATERFALL
+   ========================================================= */
+function chartWaterfall(c){
+  const steps=[
+    {n:'2024',v:81.6,base:0,type:'total'},
+    {n:'Urea',v:5.0,base:81.6,type:'up'},
+    {n:'NPK',v:2.5,base:86.6,type:'up'},
+    {n:'ZA',v:-1.0,base:89.1,type:'down'},
+    {n:'Lainnya',v:2.3,base:88.1,type:'up'},
+    {n:'2025',v:90.4,base:0,type:'total'},
+  ];
+  const maxV=100;
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;gap:8px;height:100%;padding-top:16px';
+  steps.forEach((s,i)=>{
+    const col=document.createElement('div');
+    col.style.cssText='flex:1;display:flex;flex-direction:column;height:100%';
+    const h=Math.abs(s.v)/maxV*100;
+    const baseH=(s.type==='total'?0:s.base)/maxV*100;
+    const color=s.type==='total'?PAL[1]:(s.type==='up'?PAL[2]:PAL[4]);
+    col.innerHTML=`
+      <div style="flex:1;position:relative">
+        <div class="wbar" style="position:absolute;left:8%;right:8%;bottom:${baseH}%;height:${h}%;background:linear-gradient(180deg,${color[0]},${color[1]});border-radius:3px;transform:scaleY(0);transform-origin:bottom;transition:transform .7s cubic-bezier(.2,.8,.2,1) ${.12+i*.08}s">
+          <span style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:8px;color:#9ca3af;white-space:nowrap">${s.v}</span>
+        </div>
+      </div>
+      <div style="font-size:9px;color:#6b7280;margin-top:6px;font-weight:600;text-align:center">${s.n}</div>`;
+    wrap.appendChild(col);
+  });
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('.wbar').forEach(el=>el.style.transform='scaleY(1)'));
+}
+
+/* =========================================================
+   22. STEP LINE
+   ========================================================= */
+function chartStep(c){
+  canvasChart(c,(ctx,W,H,p)=>{
+    const d=[1800,1800,1800,1800,1800,1800,1800,1800,1800,1800,1800,1800];
+    const pad={t:18,r:16,b:34,l:50},maxV=Math.max(...d)*1.15,n=d.length;
+    const xAt=i=>pad.l+i*(W-pad.l-pad.r)/(n-1);
+    const yAt=v=>H-pad.b-(v/maxV)*(H-pad.t-pad.b);
+    ctx.strokeStyle='rgba(255,255,255,.05)';ctx.setLineDash([3,4]);
+    ctx.font='10px Segoe UI';ctx.textAlign='right';ctx.textBaseline='middle';
+    for(let i=0;i<=4;i++){const val=maxV*(4-i)/4,y=yAt(val);
+      ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillText(Math.round(val),pad.l-6,y);}
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,255,255,.45)';ctx.font='10px Segoe UI';ctx.textAlign='center';
+    ctx.fillText('Bulan',W/2,H-4);
+    ctx.save();ctx.translate(12,pad.t+(H-pad.t-pad.b)/2);ctx.rotate(-Math.PI/2);
+    ctx.fillStyle='rgba(255,255,255,.45)';ctx.font='10px Segoe UI';ctx.textAlign='center';
+    ctx.fillText('Rp/kg',0,0);ctx.restore();
+    ctx.save();ctx.beginPath();ctx.rect(0,0,W*p,H);ctx.clip();
+    ctx.beginPath();ctx.moveTo(xAt(0),yAt(d[0]));
+    for(let i=1;i<n;i++){ctx.lineTo(xAt(i),yAt(d[i-1]));ctx.lineTo(xAt(i),yAt(d[i]));}
+    const g=ctx.createLinearGradient(pad.l,0,W-pad.r,0);
+    g.addColorStop(0,'#06b6d4');g.addColorStop(1,'#8b5cf6');
+    ctx.strokeStyle=g;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.stroke();
+    ctx.lineTo(xAt(n-1),H-pad.b);ctx.lineTo(xAt(0),H-pad.b);ctx.closePath();
+    const ag=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
+    ag.addColorStop(0,'rgba(6,182,212,.25)');ag.addColorStop(1,'rgba(6,182,212,0)');
+    ctx.fillStyle=ag;ctx.fill();
+    ctx.restore();
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.font='10px Segoe UI';
+    ctx.textAlign='center';ctx.textBaseline='top';
+    DATA.months.forEach((m,i)=>ctx.fillText(m,xAt(i),H-pad.b+8));
+  });
+}
+
+/* =========================================================
+   23. NEEDLE GAUGE
+   ========================================================= */
+function chartNeedleGauge(c){
+  canvasChart(c,(ctx,W,H,p)=>{
+    const val=4.5,pct=val/5,cx=W/2,cy=H*.76,R=Math.min(W*.34,H*.62);
+    ctx.beginPath();ctx.arc(cx,cy,R,Math.PI,0);
+    ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=12;ctx.lineCap='round';ctx.stroke();
+    const g=ctx.createLinearGradient(cx-R,cy,cx+R,cy);
+    g.addColorStop(0,'#ef4444');g.addColorStop(.5,'#f59e0b');g.addColorStop(1,'#22c55e');
+    ctx.beginPath();ctx.arc(cx,cy,R,Math.PI,Math.PI+Math.PI*pct*p);
+    ctx.strokeStyle=g;ctx.lineWidth=12;ctx.lineCap='round';ctx.stroke();
+    const ang=Math.PI+Math.PI*pct*p;
+    const nx=cx+Math.cos(ang)*R*.8,ny=cy+Math.sin(ang)*R*.8;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(nx,ny);
+    ctx.strokeStyle='#f9fafb';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.stroke();
+    ctx.beginPath();ctx.arc(cx,cy,6,0,Math.PI*2);ctx.fillStyle='#f9fafb';ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);ctx.fillStyle='#111827';ctx.fill();
+    ctx.fillStyle='#f9fafb';ctx.font='bold 18px Segoe UI';
+    ctx.textAlign='center';ctx.textBaseline='bottom';
+    ctx.fillText(val.toFixed(1)+' / 5',cx,cy-18);
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='9px Segoe UI';
+    ctx.textBaseline='top';
+    ctx.textAlign='left';ctx.fillText('0',cx-R-8,cy+6);
+    ctx.textAlign='right';ctx.fillText('5',cx+R+8,cy+6);
+  });
+}
+
+/* =========================================================
+   24. WAFFLE
+   ========================================================= */
+function chartWaffle(c){
+  const data=[
+    {n:'Urea',v:38,c:PAL[0]},{n:'NPK',v:27,c:PAL[1]},
+    {n:'ZA',v:15,c:PAL[2]},{n:'SP-36',v:12,c:PAL[3]},
+    {n:'Organik',v:8,c:PAL[4]},
+  ];
+  const squares=[];
+  data.forEach(d=>{for(let i=0;i<d.v;i++)squares.push(d);});
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;align-items:center;gap:24px;height:100%;justify-content:center;flex-wrap:wrap';
+  const g=document.createElement('div');
+  g.style.cssText='display:grid;grid-template-columns:repeat(10,1fr);gap:2px;width:210px;height:210px';
+  g.innerHTML=squares.map((d,i)=>
+    `<div class="wf-sq" title="${d.n}" style="border-radius:2px;background:linear-gradient(135deg,${d.c[0]},${d.c[1]});transform:scale(0);transition:transform .25s ${(i*.006).toFixed(3)}s"></div>`
+  ).join('');
+  const leg=document.createElement('div');
+  leg.style.cssText='display:flex;flex-direction:column;gap:7px;font-size:12px;min-width:140px';
+  leg.innerHTML=data.map(d=>`<div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:${d.c[0]}"></span><span style="color:#d1d5db">${d.n}</span><b style="margin-left:auto;color:#f9fafb">${d.v}%</b></div>`).join('');
+  wrap.appendChild(g);wrap.appendChild(leg);c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('.wf-sq').forEach(el=>el.style.transform='scale(1)'));
+}
+
+/* =========================================================
+   25. STREAM GRAPH
+   ========================================================= */
+function chartStream(c){
+  canvasChart(c,(ctx,W,H,p)=>{
+    const n=DATA.months.length;
+    const series=[
+      {data:DATA.monthly,c1:'#3b82f6',c2:'#2563eb'},
+      {data:DATA.monthly.map(v=>v*.55),c1:'#8b5cf6',c2:'#7c3aed'},
+      {data:DATA.monthly.map(v=>v*.35),c1:'#22c55e',c2:'#16a34a'},
+    ];
+    const pad={t:14,r:10,b:26,l:10};
+    const totalAt=i=>series.reduce((s,se)=>s+se.data[i],0);
+    const maxTotal=Math.max(...Array.from({length:n},(_,i)=>totalAt(i)));
+    const xAt=i=>pad.l+i*(W-pad.l-pad.r)/(n-1);
+    const yMid=(H-pad.t-pad.b)/2+pad.t;
+    const scale=(H-pad.t-pad.b)/(maxTotal*1.2);
+    const cum=[];
+    for(let i=0;i<n;i++){const arr=[0];
+      for(let k=0;k<series.length;k++)arr.push(arr[k]+series[k].data[i]);
+      cum.push(arr);}
+    function yPos(i,k){const off=-cum[i][series.length]/2;return yMid-(off+cum[i][k])*scale;}
+    ctx.save();ctx.beginPath();ctx.rect(0,0,W*p,H);ctx.clip();
+    series.forEach((s,si)=>{
+      ctx.beginPath();
+      for(let i=0;i<n;i++){const x=xAt(i),y=yPos(i,si+1);
+        if(i===0)ctx.moveTo(x,y);else{const xp=xAt(i-1),yp=yPos(i-1,si+1),cx=(xp+x)/2;
+          ctx.bezierCurveTo(cx,yp,cx,y,x,y);}}
+      for(let i=n-1;i>=0;i--){const x=xAt(i),y=yPos(i,si);
+        if(i===n-1)ctx.lineTo(x,y);else{const xn=xAt(i+1),yn=yPos(i+1,si),cx=(x+xn)/2;
+          ctx.bezierCurveTo(cx,yn,cx,y,x,y);}}
+      ctx.closePath();
+      const g=ctx.createLinearGradient(0,0,W,0);
+      g.addColorStop(0,s.c1+'cc');g.addColorStop(1,s.c2+'cc');
+      ctx.fillStyle=g;ctx.fill();
+      ctx.strokeStyle=s.c1;ctx.lineWidth=1;ctx.stroke();
+    });
+    ctx.restore();
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='9px Segoe UI';
+    ctx.textAlign='center';
+    DATA.months.forEach((m,i)=>ctx.fillText(m,xAt(i),H-4));
+  });
+}
+
+/* =========================================================
+   26. BULLET
+   ========================================================= */
+function chartBullet(c){
+  const data=[
+    {n:'Kaltim',actual:3.1,target:3.435,max:4.0},
+    {n:'Gresik',actual:0.95,target:1.03,max:1.4},
+    {n:'Palembang',actual:2.4,target:2.617,max:3.0},
+    {n:'Kujang',actual:1.0,target:1.14,max:1.5},
+    {n:'Iskandar Muda',actual:0.9,target:1.14,max:1.4},
+  ];
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;gap:10px;justify-content:center;height:100%';
+  data.forEach((d,i)=>{
+    const tp=d.target/d.max*100;
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:10px;font-size:12px';
+    row.innerHTML=`
+      <span style="width:90px;color:#9ca3af;text-align:right;flex-shrink:0">${d.n}</span>
+      <div style="flex:1;height:16px;position:relative;background:#0b0f1a;border-radius:3px">
+        <div class="b-actual" style="position:absolute;left:0;top:3px;bottom:3px;width:0;background:linear-gradient(90deg,${PAL[0][0]},${PAL[0][1]});border-radius:2px;transition:width .9s cubic-bezier(.2,.8,.2,1) ${.15+i*.07}s"></div>
+        <div class="b-target" style="position:absolute;top:0;bottom:0;left:${tp}%;width:2px;background:#f9fafb;opacity:0;transition:opacity .3s ${.4+i*.07}s"></div>
+      </div>
+      <span style="width:60px;font-size:10px;color:#d1d5db;font-weight:600;text-align:right">${d.actual} / ${d.target}</span>`;
+    wrap.appendChild(row);
+  });
+  c.appendChild(wrap);
+  onVisible(wrap,()=>{
+    wrap.querySelectorAll('.b-actual').forEach((el,i)=>el.style.width=(data[i].actual/data[i].max*100)+'%');
+    wrap.querySelectorAll('.b-target').forEach(el=>el.style.opacity='1');
+  });
+}
+
+/* =========================================================
+   27. ARC
+   ========================================================= */
+function chartArc(c){
+  const nodes=[
+    {n:'Kaltim',c:PAL[0]},{n:'Gresik',c:PAL[1]},{n:'Palembang',c:PAL[2]},
+    {n:'Kujang',c:PAL[3]},{n:'Iskandar',c:PAL[4]},{n:'Jabar',c:PAL[5]},
+    {n:'Jatim',c:PAL[6]},{n:'Sumut',c:PAL[0]},{n:'Sulsel',c:PAL[1]},
+  ];
+  const links=[[0,5],[0,6],[1,5],[2,7],[3,6],[4,8],[0,8],[2,6]];
+  const VW=860,VH=200,pad=36;
+  const xAt=i=>pad+i*(VW-pad*2)/(nodes.length-1);
+  const yL=VH-36;
+  let arcs='';
+  links.forEach(([a,b],i)=>{
+    const x1=xAt(a),x2=xAt(b),r=Math.abs(x2-x1)/2;
+    const path=`M${x1},${yL} A${r},${r} 0 0,1 ${x2},${yL}`;
+    arcs+=`<path d="${path}" fill="none" stroke="rgba(99,102,241,.5)" stroke-width="1.5" stroke-dasharray="1000" stroke-dashoffset="1000" style="transition:stroke-dashoffset .9s ease-out ${.15+i*.08}s"/>`;
+  });
+  let circles='';
+  nodes.forEach((n,i)=>{
+    const x=xAt(i);
+    circles+=`<circle cx="${x}" cy="${yL}" r="6" fill="${n.c[0]}" stroke="#111827" stroke-width="1.5" opacity="0" style="transition:opacity .3s ${.08+i*.04}s"/>`;
+    circles+=`<text x="${x}" y="${yL+20}" font-size="10" fill="#6b7280" text-anchor="middle" opacity="0" style="transition:opacity .3s ${.08+i*.04}s">${n.n}</text>`;
+  });
+  const wrap=document.createElement('div');
+  wrap.style.cssText='width:100%;height:100%';
+  wrap.innerHTML=`<svg viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block">${arcs}${circles}</svg>`;
+  c.appendChild(wrap);
+  onVisible(wrap,()=>{
+    wrap.querySelectorAll('path').forEach(p=>p.style.strokeDashoffset='0');
+    wrap.querySelectorAll('circle,text').forEach(el=>el.style.opacity='1');
+  });
+}
+
+/* =========================================================
+   28. STACKED AREA 100%
+   ========================================================= */
+function chartStackedArea(c){
+  canvasChart(c,(ctx,W,H,p)=>{
+    const years=['2021','2022','2023','2024','2025'],n=years.length;
+    const raw=[[28,30,32,34,36],[22,23,24,25,26],[14,14,15,15,16],[10,10,11,11,12]];
+    const colors=[PAL[0],PAL[1],PAL[2],PAL[3]];
+    const totals=years.map((_,i)=>raw.reduce((s,r)=>s+r[i],0));
+    const series=raw.map(r=>r.map((v,i)=>v/totals[i]*100));
+    const pad={t:16,r:14,b:28,l:14};
+    const xAt=i=>pad.l+i*(W-pad.l-pad.r)/(n-1);
+    const yAt=v=>H-pad.b-(v/100)*(H-pad.t-pad.b);
+    const cum=[];
+    for(let i=0;i<n;i++){const arr=[0];
+      for(let k=0;k<series.length;k++)arr.push(arr[k]+series[k][i]);
+      cum.push(arr);}
+    ctx.save();ctx.beginPath();ctx.rect(0,0,W*p,H);ctx.clip();
+    series.forEach((s,si)=>{
+      ctx.beginPath();
+      for(let i=0;i<n;i++){const x=xAt(i),y=yAt(cum[i][si+1]);
+        if(i===0)ctx.moveTo(x,y);else{const xp=xAt(i-1),yp=yAt(cum[i-1][si+1]),cx=(xp+x)/2;
+          ctx.bezierCurveTo(cx,yp,cx,y,x,y);}}
+      for(let i=n-1;i>=0;i--){const x=xAt(i),y=yAt(cum[i][si]);
+        if(i===n-1)ctx.lineTo(x,y);else{const xn=xAt(i+1),yn=yAt(cum[i+1][si]),cx=(x+xn)/2;
+          ctx.bezierCurveTo(cx,yn,cx,y,x,y);}}
+      ctx.closePath();
+      const g=ctx.createLinearGradient(0,0,W,0);
+      g.addColorStop(0,colors[si][0]+'dd');g.addColorStop(1,colors[si][1]+'aa');
+      ctx.fillStyle=g;ctx.fill();
+      ctx.strokeStyle=colors[si][0];ctx.lineWidth=1;ctx.stroke();
+    });
+    ctx.restore();
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.font='10px Segoe UI';
+    ctx.textAlign='center';ctx.textBaseline='top';
+    years.forEach((y,i)=>ctx.fillText(y,xAt(i),H-pad.b+6));
+  });
+}
+
+/* =========================================================
+   29. HISTOGRAM
+   ========================================================= */
+function chartHistogram(c){
+  const bins=[
+    {n:'<0.5',v:12},{n:'0.5-1',v:24},{n:'1-2',v:38},
+    {n:'2-5',v:18},{n:'5-10',v:6},{n:'>10',v:2},
+  ];
+  const maxV=Math.max(...bins.map(b=>b.v));
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;align-items:flex-end;gap:6px;height:100%;padding-top:12px';
+  bins.forEach((b,i)=>{
+    const[c1,c2]=PAL[i%PAL.length];
+    const col=document.createElement('div');
+    col.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;height:100%';
+    col.innerHTML=`
+      <div style="flex:1;width:100%;display:flex;align-items:flex-end;position:relative">
+        <div class="hist" style="width:100%;height:${b.v/maxV*100}%;background:linear-gradient(180deg,${c1},${c2});border-radius:3px 3px 0 0;transform:scaleY(0);transform-origin:bottom;transition:transform .7s cubic-bezier(.2,.8,.2,1) ${.12+i*.06}s">
+          <span style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:8px;color:#9ca3af">${b.v}</span>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#6b7280;margin-top:6px;text-align:center;white-space:nowrap;font-weight:600">${b.n}</div>`;
+    wrap.appendChild(col);
+  });
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('.hist').forEach(el=>el.style.transform='scaleY(1)'));
+}
+
+/* =========================================================
+   30. VOLUME
+   ========================================================= */
+function chartVolume(c){
+  canvasChart(c,(ctx,W,H,p)=>{
+    const rand=seeded(42),n=30;
+    const d=Array.from({length:n},()=>30+rand()*70);
+    const pad={t:12,r:12,b:22,l:12};
+    const maxV=Math.max(...d)*1.1;
+    const xStep=(W-pad.l-pad.r)/n,barW=xStep*.68;
+    ctx.save();ctx.beginPath();ctx.rect(0,0,W*p,H);ctx.clip();
+    d.forEach((v,i)=>{
+      const x=pad.l+i*xStep;
+      const y=H-pad.b-(v/maxV)*(H-pad.t-pad.b);
+      const h=H-pad.b-y;
+      const g=ctx.createLinearGradient(0,y,0,H-pad.b);
+      g.addColorStop(0,'#06b6d4');g.addColorStop(1,'rgba(37,99,235,.1)');
+      ctx.fillStyle=g;
+      ctx.beginPath();
+      if(ctx.roundRect)ctx.roundRect(x,y,barW,h,2);
+      else ctx.rect(x,y,barW,h);
+      ctx.fill();
+    });
+    ctx.restore();
+    ctx.strokeStyle='rgba(255,255,255,.06)';
+    ctx.beginPath();ctx.moveTo(pad.l,H-pad.b);ctx.lineTo(W-pad.r,H-pad.b);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='9px Segoe UI';
+    ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText('Hari 1',pad.l+16,H-4);
+    ctx.fillText('Hari 30',W-pad.r-20,H-4);
+  });
+}
+
+/* =========================================================
+   31. MAP — PABRIK (Esri)
+   ========================================================= */
+function chartMap(c){
+  const wrap=document.createElement('div');
+  wrap.className='map-container';
+  wrap.id='map-pabrik';
+  c.appendChild(wrap);
+
+  setTimeout(()=>{
+    const map=L.map(wrap,{
+      center:[-2.5,118],zoom:5,
+      zoomControl:true,attributionControl:true,scrollWheelZoom:false
+    });
+    L.esri.basemapLayer('DarkGray').addTo(map);
+    L.esri.basemapLayer('DarkGrayLabels').addTo(map);
+
+    DATA.factories.forEach(f=>{
+      const color=f.v>=3?'#22c55e':f.v>=2?'#3b82f6':'#f59e0b';
+      const radius=6+(f.v/3.435)*10;
+      L.circleMarker([f.lat,f.lng],{
+        radius:radius,color:color,fillColor:color,fillOpacity:.85,weight:2
+      }).addTo(map).bindPopup(`
+        <div style="font-family:Segoe UI;font-size:12px;min-width:160px">
+          <b style="font-size:13px">${f.n}</b><br>
+          <span style="color:#6b7280">Kapasitas Urea</span><br>
+          <b>${f.v.toFixed(3)} juta ton/tahun</b>
+        </div>
+      `);
+    });
+
+    const legend=L.control({position:'bottomright'});
+    legend.onAdd=()=>{
+      const div=L.DomUtil.create('div','map-legend');
+      div.innerHTML=`
+        <div style="font-weight:600;color:#f9fafb;margin-bottom:4px">Kapasitas Urea</div>
+        <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-right:5px"></span>> 3 juta ton</div>
+        <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;margin-right:5px"></span>2–3 juta ton</div>
+        <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:5px"></span>< 2 juta ton</div>
+      `;
+      return div;
+    };
+    legend.addTo(map);
+    L.control.scale({imperial:false,position:'bottomleft'}).addTo(map);
+    setTimeout(()=>map.invalidateSize(),200);
+  },120);
+}
+
+/* =========================================================
+   32. MAP — ALOKASI SUBSIDI PER PROVINSI
+   ========================================================= */
+function chartMapSubsidi(c){
+  const wrap=document.createElement('div');
+  wrap.className='map-container';
+  wrap.id='map-subsidi';
+  c.appendChild(wrap);
+
+  setTimeout(()=>{
+    const map=L.map(wrap,{
+      center:[-2.5,118],zoom:4.6,
+      zoomControl:true,scrollWheelZoom:false
+    });
+    L.esri.basemapLayer('DarkGray').addTo(map);
+    L.esri.basemapLayer('DarkGrayLabels').addTo(map);
+
+    const data=[
+      {prov:'Jawa Timur',lat:-7.2575,lng:112.7521,val:1.88,color:'#ef4444'},
+      {prov:'Jawa Tengah',lat:-6.9667,lng:110.4167,val:1.38,color:'#f59e0b'},
+      {prov:'Jawa Barat',lat:-6.9175,lng:107.6191,val:1.10,color:'#f97316'},
+      {prov:'Sulawesi Selatan',lat:-5.1477,lng:119.4327,val:0.922,color:'#3b82f6'},
+      {prov:'Lampung',lat:-5.3971,lng:105.2668,val:0.812,color:'#8b5cf6'},
+    ];
+
+    data.forEach(d=>{
+      const r=8+(d.val/1.88)*22;
+      L.circleMarker([d.lat,d.lng],{
+        radius:r,color:d.color,fillColor:d.color,fillOpacity:.75,weight:2
+      }).addTo(map).bindPopup(`
+        <div style="font-family:Segoe UI;font-size:12px;min-width:160px">
+          <b style="font-size:13px">${d.prov}</b><br>
+          <span style="color:#6b7280">Alokasi Subsidi 2025</span><br>
+          <b style="font-size:14px;color:${d.color}">${d.val} juta ton</b>
+        </div>
+      `);
+    });
+
+    const legend=L.control({position:'bottomright'});
+    legend.onAdd=()=>{
+      const div=L.DomUtil.create('div','map-legend');
+      div.innerHTML=`
+        <div style="font-weight:600;color:#f9fafb;margin-bottom:4px">Alokasi Subsidi 2025</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;margin-right:5px"></span>Jatim 1,88 jt ton</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f59e0b;margin-right:5px"></span>Jateng 1,38 jt ton</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f97316;margin-right:5px"></span>Jabar 1,10 jt ton</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;margin-right:5px"></span>Sulsel 0,92 jt ton</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#8b5cf6;margin-right:5px"></span>Lampung 0,81 jt ton</div>
+      `;
+      return div;
+    };
+    legend.addTo(map);
+    L.control.scale({imperial:false,position:'bottomleft'}).addTo(map);
+    setTimeout(()=>map.invalidateSize(),200);
+  },120);
+}
+
+/* =========================================================
+   33. MAP — SEBARAN KIOS & DISTRIBUTOR
+   ========================================================= */
+function chartMapKios(c){
+  const wrap=document.createElement('div');
+  wrap.className='map-container';
+  wrap.id='map-kios';
+  c.appendChild(wrap);
+
+  setTimeout(()=>{
+    const map=L.map(wrap,{
+      center:[-2.5,118],zoom:4.6,
+      zoomControl:true,scrollWheelZoom:false
+    });
+    L.esri.basemapLayer('DarkGray').addTo(map);
+    L.esri.basemapLayer('DarkGrayLabels').addTo(map);
+
+    const data=[
+      {prov:'Jawa Timur',lat:-7.2575,lng:112.7521,kios:5875,dist:188,color:'#ef4444'},
+      {prov:'Nusa Tenggara Barat',lat:-8.5833,lng:116.1167,kios:1600,dist:34,color:'#22c55e'},
+      {prov:'Sulawesi Selatan',lat:-5.1477,lng:119.4327,kios:1105,dist:54,color:'#3b82f6'},
+    ];
+
+    data.forEach(d=>{
+      const r=10+(d.kios/5875)*20;
+      L.circleMarker([d.lat,d.lng],{
+        radius:r,color:d.color,fillColor:d.color,fillOpacity:.7,weight:2
+      }).addTo(map).bindPopup(`
+        <div style="font-family:Segoe UI;font-size:12px;min-width:170px">
+          <b style="font-size:13px">${d.prov}</b><br>
+          <span style="color:#6b7280">Jaringan Distribusi</span><br>
+          <b>${d.kios.toLocaleString('id-ID')}</b> kios/pengecer<br>
+          <b>${d.dist}</b> distributor
+        </div>
+      `);
+    });
+
+    L.circleMarker([-2.5,118],{
+      radius:6,color:'#94a3b8',fillColor:'#94a3b8',
+      fillOpacity:.4,weight:1,dashArray:'3,3'
+    }).addTo(map).bindPopup(`
+      <div style="font-family:Segoe UI;font-size:12px">
+        <b>Total Nasional</b><br>
+        25.903 kios/pengecer<br>
+        1.067 distributor
+      </div>
+    `);
+
+    const legend=L.control({position:'bottomright'});
+    legend.onAdd=()=>{
+      const div=L.DomUtil.create('div','map-legend');
+      div.innerHTML=`
+        <div style="font-weight:600;color:#f9fafb;margin-bottom:4px">Kios per Provinsi</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;margin-right:5px"></span>Jatim 5.875</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#22c55e;margin-right:5px"></span>NTB 1.600</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;margin-right:5px"></span>Sulsel 1.105</div>
+        <div style="margin-top:4px;color:#94a3b8">● Total 25.903 (nasional)</div>
+      `;
+      return div;
+    };
+    legend.addTo(map);
+    L.control.scale({imperial:false,position:'bottomleft'}).addTo(map);
+    setTimeout(()=>map.invalidateSize(),200);
+  },120);
+}
+
+/* =========================================================
+   34. MAP — RUTE LOGISTIK LAUT
+   ========================================================= */
+function chartMapLogistics(c){
+  const wrap=document.createElement('div');
+  wrap.className='map-container';
+  wrap.id='map-logistik';
+  c.appendChild(wrap);
+
+  setTimeout(()=>{
+    const map=L.map(wrap,{
+      center:[-2.5,118],zoom:4.4,
+      zoomControl:true,scrollWheelZoom:false
+    });
+    L.esri.basemapLayer('DarkGray').addTo(map);
+    L.esri.basemapLayer('DarkGrayLabels').addTo(map);
+
+    const factories=[
+      {n:'Kaltim (Bontang)',lat:0.132,lng:117.485},
+      {n:'Gresik',lat:-7.166,lng:112.655},
+      {n:'Palembang',lat:-2.976,lng:104.757},
+      {n:'Kujang (Cikampek)',lat:-6.402,lng:107.459},
+      {n:'Iskandar Muda',lat:5.180,lng:97.150},
+    ];
+
+    const ports=[
+      {n:'Belawan',lat:3.78,lng:98.69},
+      {n:'Tanjung Priok',lat:-6.10,lng:106.88},
+      {n:'Tanjung Perak',lat:-7.20,lng:112.73},
+      {n:'Makassar',lat:-5.13,lng:119.40},
+      {n:'Balikpapan',lat:-1.27,lng:116.83},
+      {n:'Semarang',lat:-6.95,lng:110.42},
+      {n:'Panjang',lat:-5.47,lng:105.32},
+      {n:'Teluk Bayur',lat:-0.99,lng:100.37},
+      {n:'Jayapura',lat:-2.53,lng:140.70},
+      {n:'Ambon',lat:-3.70,lng:128.18},
+    ];
+
+    factories.forEach(f=>{
+      L.circleMarker([f.lat,f.lng],{
+        radius:7,color:'#f59e0b',fillColor:'#f59e0b',fillOpacity:.9,weight:2
+      }).addTo(map).bindPopup(`<b>Pabrik ${f.n}</b>`);
+    });
+
+    ports.forEach(p=>{
+      L.circleMarker([p.lat,p.lng],{
+        radius:4,color:'#94a3b8',fillColor:'#94a3b8',fillOpacity:.6,weight:1
+      }).addTo(map).bindPopup(`<b>Pelabuhan ${p.n}</b>`);
+    });
+
+    const routes=[
+      [0,3],[0,4],[0,9],[0,8],
+      [1,2],[1,5],[1,3],[1,6],
+      [2,0],[2,5],[2,3],
+      [3,0],[3,1],[3,7],
+      [4,0],[4,6],
+    ];
+
+    function arcPoints(lat1,lng1,lat2,lng2,curvature=0.18){
+      const mx=(lat1+lat2)/2, my=(lng1+lng2)/2;
+      const dx=lat2-lat1, dy=lng2-lng1;
+      const cx=mx - dy*curvature, cy=my + dx*curvature;
+      const pts=[];
+      for(let t=0;t<=1;t+=0.05){
+        const x=(1-t)*(1-t)*lat1 + 2*(1-t)*t*cx + t*t*lat2;
+        const y=(1-t)*(1-t)*lng1 + 2*(1-t)*t*cy + t*t*lng2;
+        pts.push([x,y]);
+      }
+      return pts;
+    }
+
+    routes.forEach(([fi,pi])=>{
+      const f=factories[fi],p=ports[pi];
+      const pts=arcPoints(f.lat,f.lng,p.lat,p.lng,0.15);
+      L.polyline(pts,{
+        color:'#38bdf8',weight:1.5,opacity:.7,dashArray:'6,6'
+      }).addTo(map);
+    });
+
+    const legend=L.control({position:'bottomright'});
+    legend.onAdd=()=>{
+      const div=L.DomUtil.create('div','map-legend');
+      div.innerHTML=`
+        <div style="font-weight:600;color:#f9fafb;margin-bottom:4px">Rute Logistik Laut</div>
+        <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:5px"></span>Pabrik</div>
+        <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#94a3b8;margin-right:5px"></span>Pelabuhan</div>
+        <div><span style="display:inline-block;width:14px;height:2px;background:#38bdf8;margin-right:5px"></span>Rute pelayaran</div>
+      `;
+      return div;
+    };
+    legend.addTo(map);
+    L.control.scale({imperial:false,position:'bottomleft'}).addTo(map);
+    setTimeout(()=>map.invalidateSize(),200);
+  },120);
+}
+
+/* =========================================================
+   35. MAP — GUDANG PENYANGGA
+   ========================================================= */
+function chartMapWarehouse(c){
+  const wrap=document.createElement('div');
+  wrap.className='map-container';
+  wrap.id='map-gudang';
+  c.appendChild(wrap);
+
+  setTimeout(()=>{
+    const map=L.map(wrap,{
+      center:[-2.5,118],zoom:4.6,
+      zoomControl:true,scrollWheelZoom:false
+    });
+    L.esri.basemapLayer('DarkGray').addTo(map);
+    L.esri.basemapLayer('DarkGrayLabels').addTo(map);
+
+    const data=[
+      {n:'Gresik (Curah Urea)',lat:-7.166,lng:112.655,cap:20,type:'Lini III'},
+      {n:'Nganjuk',lat:-7.60,lng:111.90,cap:5,type:'Lini III'},
+      {n:'Dumai',lat:1.68,lng:101.45,cap:8,type:'Non-Subsidi'},
+      {n:'Makassar',lat:-5.147,lng:119.432,cap:15,type:'Lini II'},
+      {n:'Medan (Payapasir)',lat:3.70,lng:98.65,cap:12,type:'Lini II'},
+      {n:'Semarang (UPP)',lat:-6.95,lng:110.42,cap:10,type:'Lini II'},
+      {n:'Pati',lat:-6.75,lng:111.04,cap:8,type:'Lini II'},
+      {n:'Palembang',lat:-2.976,lng:104.757,cap:25,type:'Lini II'},
+      {n:'Bontang',lat:0.132,lng:117.485,cap:30,type:'Lini II'},
+      {n:'Cikampek',lat:-6.402,lng:107.459,cap:18,type:'Lini II'},
+    ];
+
+    data.forEach(d=>{
+      const r=5+(d.cap/30)*15;
+      const color=d.type==='Lini II'?'#3b82f6':d.type==='Lini III'?'#22c55e':'#f59e0b';
+      L.circleMarker([d.lat,d.lng],{
+        radius:r,color:color,fillColor:color,fillOpacity:.7,weight:2
+      }).addTo(map).bindPopup(`
+        <div style="font-family:Segoe UI;font-size:12px;min-width:180px">
+          <b style="font-size:13px">${d.n}</b><br>
+          <span style="color:#6b7280">${d.type}</span><br>
+          Kapasitas ±<b>${d.cap} ribu ton</b>
+        </div>
+      `);
+    });
+
+    const legend=L.control({position:'bottomright'});
+    legend.onAdd=()=>{
+      const div=L.DomUtil.create('div','map-legend');
+      div.innerHTML=`
+        <div style="font-weight:600;color:#f9fafb;margin-bottom:4px">Gudang Penyangga</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;margin-right:5px"></span>Lini II (Provinsi)</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#22c55e;margin-right:5px"></span>Lini III (Kab/Kota)</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f59e0b;margin-right:5px"></span>Non-Subsidi</div>
+        <div style="margin-top:4px;color:#94a3b8">516 gudang · 2,89 jt ton</div>
+      `;
+      return div;
+    };
+    legend.addTo(map);
+    L.control.scale({imperial:false,position:'bottomleft'}).addTo(map);
+    setTimeout(()=>map.invalidateSize(),200);
+  },120);
+}
+
+/* =========================================================
+   36. MAP — REGIONAL OPERASI
+   ========================================================= */
+function chartMapRegional(c){
+  const wrap=document.createElement('div');
+  wrap.className='map-container';
+  wrap.id='map-regional';
+  c.appendChild(wrap);
+
+  setTimeout(()=>{
+    const map=L.map(wrap,{
+      center:[-2.5,118],zoom:4.4,
+      zoomControl:true,scrollWheelZoom:false
+    });
+    L.esri.basemapLayer('DarkGray').addTo(map);
+    L.esri.basemapLayer('DarkGrayLabels').addTo(map);
+
+    const regions=[
+      {n:'Regional 1',sub:'Sumatera & Sekitarnya',lat:0.5,lng:101.5,color:'#ef4444',
+       desc:'Dikelola PT Pupuk Iskandar Muda & PT Pupuk Sriwidjaja'},
+      {n:'Regional 2',sub:'Jabar · Jateng · DIY',lat:-6.9,lng:110.0,color:'#f59e0b',
+       desc:'Dikelola PT Pupuk Kujang & PT Petrokimia Gresik'},
+      {n:'Regional 3',sub:'Jatim · Bali · NTB',lat:-7.8,lng:113.5,color:'#22c55e',
+       desc:'Dikelola PT Petrokimia Gresik & PT Pupuk Kalimantan Timur'},
+      {n:'Regional 4',sub:'Kaltim · Sulawesi · Maluku · Papua',lat:-2.5,lng:122.0,color:'#3b82f6',
+       desc:'Dikelola PT Pupuk Kalimantan Timur & PT Pupuk Indonesia'},
+    ];
+
+    regions.forEach(r=>{
+      L.circle([r.lat,r.lng],{
+        radius:600000,color:r.color,fillColor:r.color,
+        fillOpacity:0.12,weight:2,dashArray:'6,4'
+      }).addTo(map).bindPopup(`
+        <div style="font-family:Segoe UI;font-size:12px;min-width:200px">
+          <b style="font-size:14px;color:${r.color}">${r.n}</b><br>
+          <span style="color:#6b7280">${r.sub}</span><br><br>
+          ${r.desc}
+        </div>
+      `);
+
+      L.marker([r.lat,r.lng],{
+        icon:L.divIcon({
+          html:`<div style="
+            background:#111827;border:2px solid ${r.color};
+            border-radius:6px;padding:4px 8px;color:#f9fafb;
+            font-size:11px;font-weight:600;white-space:nowrap;
+            font-family:Segoe UI;box-shadow:0 2px 8px rgba(0,0,0,.5)">
+            ${r.n}
+          </div>`,
+          className:'',
+          iconSize:[80,30],
+          iconAnchor:[40,15]
+        })
+      }).addTo(map);
+    });
+
+    const legend=L.control({position:'bottomright'});
+    legend.onAdd=()=>{
+      const div=L.DomUtil.create('div','map-legend');
+      div.innerHTML=`
+        <div style="font-weight:600;color:#f9fafb;margin-bottom:4px">Regional Operasi</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;margin-right:5px"></span>R1 · Sumatera</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f59e0b;margin-right:5px"></span>R2 · Jabar–Jateng–DIY</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#22c55e;margin-right:5px"></span>R3 · Jatim–Bali–NTB</div>
+        <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;margin-right:5px"></span>R4 · Kaltim–Sul–Mal–Papua</div>
+      `;
+      return div;
+    };
+    legend.addTo(map);
+    L.control.scale({imperial:false,position:'bottomleft'}).addTo(map);
+    setTimeout(()=>map.invalidateSize(),200);
+  },120);
+}
+
+/* =========================================================
+   37. SUBSIDI REALIZATION (Donut)
+   ========================================================= */
+function chartSubsidi(c){
+  const real=8.11,alloc=9.55,pct=real/alloc*100;
+  const R=70,C=2*Math.PI*R;
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;align-items:center;gap:24px;height:100%;justify-content:center;flex-wrap:wrap';
+  wrap.innerHTML=`
+    <div style="position:relative;flex-shrink:0">
+      <svg viewBox="0 0 200 200" style="width:170px;height:170px;transform:rotate(-90deg)">
+        <circle cx="100" cy="100" r="${R}" fill="none" stroke="#1f2937" stroke-width="18"/>
+        <circle id="subP" cx="100" cy="100" r="${R}" fill="none" stroke="#22c55e" stroke-width="18" stroke-linecap="round" stroke-dasharray="0 ${C}" style="transition:stroke-dasharray 1.2s cubic-bezier(.2,.8,.2,1) .3s"/>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="font-size:26px;font-weight:700;color:#f9fafb">${pct.toFixed(1)}%</div>
+        <div style="font-size:9px;color:#6b7280;margin-top:2px">Tersalur</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:#d1d5db;line-height:1.8">
+      <div><span style="color:#6b7280">Alokasi 2025</span><br><b style="font-size:16px">9,55 jt ton</b></div>
+      <div style="margin-top:8px"><span style="color:#6b7280">Realisasi</span><br><b style="font-size:16px;color:#22c55e">8,11 jt ton</b></div>
+    </div>`;
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelector('#subP').style.strokeDasharray=`${C*pct/100} ${C}`);
+}
+
+/* =========================================================
+   38. MARKET SHARE
+   ========================================================= */
+function chartMarketShare(c){
+  const data=[
+    {n:'Urea',v:99.99},{n:'Amonia',v:63.71},{n:'NPK',v:44.66},
+  ];
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;gap:14px;justify-content:center;height:100%';
+  data.forEach((d,i)=>{
+    const[c1,c2]=PAL[i%PAL.length];
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:12px;font-size:12px';
+    row.innerHTML=`
+      <span style="width:60px;color:#9ca3af;text-align:right;flex-shrink:0">${d.n}</span>
+      <div style="flex:1;height:18px;background:#0b0f1a;border-radius:3px;overflow:hidden">
+        <div class="msbar" style="height:100%;width:0;background:linear-gradient(90deg,${c1},${c2});border-radius:3px;transition:width 1s cubic-bezier(.2,.8,.2,1) ${.1+i*.1}s"></div>
+      </div>
+      <span style="width:50px;font-weight:700;color:#f9fafb;text-align:right">${d.v}%</span>`;
+    wrap.appendChild(row);
+  });
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('.msbar').forEach((el,i)=>el.style.width=data[i].v+'%'));
+}
+
+/* =========================================================
+   39. FINANCIAL COMPARISON
+   ========================================================= */
+function chartFinancial(c){
+  const data=[
+    {n:'Pendapatan',a:81.62,b:90.40},
+    {n:'Laba Bersih',a:8.89,b:4.07},
+    {n:'Total Aset',a:139.30,b:139.30},
+    {n:'Ekuitas',a:99.36,b:99.36},
+  ];
+  const maxV=Math.max(...data.map(d=>Math.max(d.a,d.b)))*1.15;
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;height:100%';
+  const bars=document.createElement('div');
+  bars.style.cssText='display:flex;align-items:flex-end;gap:18px;flex:1;padding-top:12px';
+  data.forEach((d,i)=>{
+    const col=document.createElement('div');
+    col.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;height:100%';
+    col.innerHTML=`
+      <div style="flex:1;width:100%;display:flex;align-items:flex-end;gap:4px">
+        <div class="fbar" style="flex:1;height:${d.a/maxV*100}%;background:linear-gradient(180deg,${PAL[0][0]},${PAL[0][1]});border-radius:3px 3px 0 0;transform:scaleY(0);transform-origin:bottom;transition:transform .7s cubic-bezier(.2,.8,.2,1) ${.12+i*.06}s;position:relative">
+          <span style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:8px;color:#9ca3af;white-space:nowrap">${d.a}</span>
+        </div>
+        <div class="fbar" style="flex:1;height:${d.b/maxV*100}%;background:linear-gradient(180deg,${PAL[1][0]},${PAL[1][1]});border-radius:3px 3px 0 0;transform:scaleY(0);transform-origin:bottom;transition:transform .7s cubic-bezier(.2,.8,.2,1) ${.16+i*.06}s;position:relative">
+          <span style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:8px;color:#9ca3af;white-space:nowrap">${d.b}</span>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#6b7280;margin-top:6px;font-weight:600">${d.n}</div>`;
+    bars.appendChild(col);
+  });
+  const legend=document.createElement('div');
+  legend.style.cssText='display:flex;gap:14px;font-size:10px;color:#9ca3af;margin-top:6px;justify-content:center';
+  legend.innerHTML=`<span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:1px;background:${PAL[0][0]}"></span>2024</span><span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:1px;background:${PAL[1][0]}"></span>2025</span>`;
+  wrap.appendChild(bars);wrap.appendChild(legend);c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('.fbar').forEach(b=>b.style.transform='scaleY(1)'));
+}
+
+/* =========================================================
+   40. PROD VS SALES
+   ========================================================= */
+function chartProdSales(c){
+  canvasChart(c,(ctx,W,H,p)=>{
+    const prod=[14.65,14.65,14.65,14.65,14.65];
+    const sales=[12.00,12.50,13.20,14.00,14.45];
+    const years=['2021','2022','2023','2024','2025'];
+    const n=years.length,pad={t:24,r:16,b:30,l:40};
+    const maxV=16;
+    const xAt=i=>pad.l+i*(W-pad.l-pad.r)/(n-1);
+    const yAt=v=>H-pad.b-(v/maxV)*(H-pad.t-pad.b);
+    ctx.strokeStyle='rgba(255,255,255,.05)';ctx.setLineDash([3,4]);
+    ctx.font='10px Segoe UI';ctx.textAlign='right';ctx.textBaseline='middle';
+    for(let i=0;i<=4;i++){const val=maxV*(4-i)/4,y=yAt(val);
+      ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillText(val.toFixed(1),pad.l-6,y);}
+    ctx.setLineDash([]);
+    function drawLine(arr,color){
+      ctx.beginPath();ctx.moveTo(xAt(0),yAt(arr[0]));
+      for(let i=1;i<n;i++){const x0=xAt(i-1),y0=yAt(arr[i-1]),x1=xAt(i),y1=yAt(arr[i]);
+        const cx=(x0+x1)/2;ctx.bezierCurveTo(cx,y0,cx,y1,x1,y1);}
+      ctx.strokeStyle=color;ctx.lineWidth=2.2;ctx.stroke();
+    }
+    ctx.save();ctx.beginPath();ctx.rect(0,0,W*p,H);ctx.clip();
+    drawLine(prod,'#8b5cf6');drawLine(sales,'#22c55e');
+    prod.forEach((v,i)=>{ctx.beginPath();ctx.arc(xAt(i),yAt(v),3,0,Math.PI*2);
+      ctx.fillStyle='#111827';ctx.fill();ctx.strokeStyle='#8b5cf6';ctx.lineWidth=1.5;ctx.stroke();});
+    sales.forEach((v,i)=>{ctx.beginPath();ctx.arc(xAt(i),yAt(v),3,0,Math.PI*2);
+      ctx.fillStyle='#111827';ctx.fill();ctx.strokeStyle='#22c55e';ctx.lineWidth=1.5;ctx.stroke();
+      ctx.fillStyle='#d1d5db';ctx.font='bold 8px Segoe UI';ctx.textAlign='center';ctx.textBaseline='bottom';
+      ctx.fillText(v,xAt(i),yAt(v)-5);});
+    ctx.restore();
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.font='10px Segoe UI';
+    ctx.textAlign='center';ctx.textBaseline='top';
+    years.forEach((y,i)=>ctx.fillText(y,xAt(i),H-pad.b+8));
+    ctx.fillStyle='rgba(255,255,255,.45)';ctx.font='9px Segoe UI';ctx.textAlign='center';
+    ctx.fillText('Tahun',W/2,H-4);
+    ctx.font='9px Segoe UI';ctx.textAlign='left';ctx.textBaseline='middle';
+    ctx.fillStyle='#8b5cf6';ctx.fillRect(pad.l,8,8,3);ctx.fillStyle='#9ca3af';ctx.fillText('Kapasitas',pad.l+12,9);
+    ctx.fillStyle='#22c55e';ctx.fillRect(pad.l+80,8,8,3);ctx.fillStyle='#9ca3af';ctx.fillText('Penjualan',pad.l+92,9);
+  });
+}
+
+/* =========================================================
+   41. AMMONIA
+   ========================================================= */
+function chartAmmonia(c){
+  const data=[
+    {n:'Kaltim',v:2.739},{n:'Palembang',v:1.831},{n:'Gresik',v:1.105},
+    {n:'Kujang',v:0.660},{n:'Iskandar Muda',v:0.759},
+  ];
+  const maxV=Math.max(...data.map(d=>d.v));
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;gap:10px;justify-content:center;height:100%';
+  data.forEach((d,i)=>{
+    const[c1,c2]=PAL[i%PAL.length];
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:10px;font-size:12px';
+    row.innerHTML=`
+      <span style="width:90px;color:#9ca3af;text-align:right;flex-shrink:0">${d.n}</span>
+      <div style="flex:1;height:16px;background:#0b0f1a;border-radius:3px;overflow:hidden">
+        <div class="ambar" style="height:100%;width:0;background:linear-gradient(90deg,${c1},${c2});border-radius:3px;transition:width .9s cubic-bezier(.2,.8,.2,1) ${.1+i*.06}s"></div>
+      </div>
+      <span style="width:42px;font-weight:600;color:#f9fafb;text-align:right">${d.v}</span>`;
+    wrap.appendChild(row);
+  });
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('.ambar').forEach((el,i)=>el.style.width=(data[i].v/maxV*100)+'%'));
+}
+
+/* =========================================================
+   42. NPK CAP
+   ========================================================= */
+function chartNPKCap(c){
+  const data=[
+    {n:'Gresik',v:2.620},{n:'Iskandar Muda',v:0.500},{n:'Palembang',v:0.300},
+    {n:'Kujang',v:0.230},{n:'Kaltim',v:0.230},
+  ];
+  const maxV=Math.max(...data.map(d=>d.v));
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;gap:10px;justify-content:center;height:100%';
+  data.forEach((d,i)=>{
+    const[c1,c2]=PAL[i%PAL.length];
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:10px;font-size:12px';
+    row.innerHTML=`
+      <span style="width:90px;color:#9ca3af;text-align:right;flex-shrink:0">${d.n}</span>
+      <div style="flex:1;height:16px;background:#0b0f1a;border-radius:3px;overflow:hidden">
+        <div class="npkbar" style="height:100%;width:0;background:linear-gradient(90deg,${c1},${c2});border-radius:3px;transition:width .9s cubic-bezier(.2,.8,.2,1) ${.1+i*.06}s"></div>
+      </div>
+      <span style="width:42px;font-weight:600;color:#f9fafb;text-align:right">${d.v}</span>`;
+    wrap.appendChild(row);
+  });
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('.npkbar').forEach((el,i)=>el.style.width=(data[i].v/maxV*100)+'%'));
+}
+
+/* =========================================================
+   43. SUBSIDI MIX
+   ========================================================= */
+function chartSubsidiMix(c){
+  const data=[
+    {label:'Subsidi',val:65,c:PAL[2]},
+    {label:'Non-Subsidi',val:35,c:PAL[0]},
+  ];
+  const R=65,C=2*Math.PI*R;
+  let off=0,defs='',circles='';
+  data.forEach((d,i)=>{
+    const[c1,c2]=d.c;
+    const len=C*d.val/100,gap=4,dash=Math.max(len-gap,1);
+    defs+=`<linearGradient id="sm${i}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient>`;
+    circles+=`<circle cx="100" cy="100" r="${R}" fill="none" stroke="url(#sm${i})" stroke-width="20" stroke-linecap="round" stroke-dasharray="0 999" data-final="${dash} ${C-dash}" stroke-dashoffset="${-off}" style="transition:stroke-dasharray 1s cubic-bezier(.2,.8,.2,1) ${.15+i*.12}s"/>`;
+    off+=len;
+  });
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;align-items:center;gap:20px;height:100%;justify-content:center;flex-wrap:wrap';
+  wrap.innerHTML=`
+    <svg viewBox="0 0 200 200" style="width:170px;height:170px;transform:rotate(-90deg);overflow:visible">${defs}${circles}</svg>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;min-width:120px">
+      ${data.map(d=>`<div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:${d.c[0]}"></span><span style="color:#d1d5db">${d.label}</span><b style="margin-left:auto;color:#f9fafb">${d.val}%</b></div>`).join('')}
+    </div>`;
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('circle').forEach(el=>el.style.strokeDasharray=el.dataset.final));
+}
+
+/* =========================================================
+   44. EXPORT COUNTRIES
+   ========================================================= */
+function chartExportCountries(c){
+  const data=[
+    {n:'India',v:90},{n:'Australia',v:75},{n:'Brazil',v:65},
+    {n:'Filipina',v:50},{n:'Vietnam',v:40},
+  ];
+  const maxV=Math.max(...data.map(d=>d.v));
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;gap:10px;justify-content:center;height:100%';
+  data.forEach((d,i)=>{
+    const[c1,c2]=PAL[i%PAL.length];
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:10px;font-size:12px';
+    row.innerHTML=`
+      <span style="width:70px;color:#9ca3af;text-align:right;flex-shrink:0">${d.n}</span>
+      <div style="flex:1;height:14px;background:#0b0f1a;border-radius:2px;overflow:hidden">
+        <div class="expbar" style="height:100%;width:0;background:linear-gradient(90deg,${c1},${c2});border-radius:2px;transition:width .9s cubic-bezier(.2,.8,.2,1) ${.1+i*.07}s"></div>
+      </div>
+      <span style="width:32px;font-weight:600;color:#f9fafb;text-align:right">${d.v}</span>`;
+    wrap.appendChild(row);
+  });
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('.expbar').forEach((el,i)=>el.style.width=(data[i].v/maxV*100)+'%'));
+}
+
+/* =========================================================
+   45. REVENUE SEG
+   ========================================================= */
+function chartRevenueSeg(c){
+  const data=[
+    {n:'Pupuk',v:48.12,c:PAL[0]},
+    {n:'Amonia',v:12.5,c:PAL[1]},
+    {n:'Kimia',v:8.3,c:PAL[2]},
+    {n:'Lainnya',v:6.7,c:PAL[3]},
+  ];
+  const total=data.reduce((s,d)=>s+d.v,0);
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;gap:4px;height:100%;justify-content:center';
+  data.forEach((d,i)=>{
+    const pct=d.v/total*100;
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;height:100%;border-radius:3px;overflow:hidden';
+    row.innerHTML=`
+      <div class="revbar" title="${d.n}: Rp${d.v} T (${pct.toFixed(0)}%)" style="width:0;height:100%;background:linear-gradient(90deg,${d.c[0]},${d.c[1]});transition:width .9s cubic-bezier(.2,.8,.2,1) ${.1+i*.08}s;display:flex;align-items:center;padding-left:10px;font-size:10px;font-weight:600;color:#fff;white-space:nowrap">
+        ${d.n} ${pct.toFixed(0)}%
+      </div>`;
+    wrap.appendChild(row);
+  });
+  c.appendChild(wrap);
+  onVisible(wrap,()=>wrap.querySelectorAll('.revbar').forEach((el,i)=>el.style.width=(data[i].v/total*100)+'%'));
+}
+
+/* =========================================================
+   INIT ALL 45 CHARTS
+   ========================================================= */
+const charts=[
+  {title:'Tren Penjualan Bulanan',sub:'Jan–Des 2024 · estimasi dari total 12,00 juta ton',badge:'12,00 jt ton',height:280,
+   desc:'<b>Line chart</b> distribusi penjualan bulanan 2024. Total penjualan <b>12,00 juta ton</b> (102,14% RKAP), puncak Desember 1.240 ribu ton. Label nilai di setiap titik.',render:chartLine},
+
+  {title:'Volume Produksi Urea vs NPK',sub:'Area bertumpuk · estimasi proporsional',height:280,
+   desc:'<b>Stacked area</b> estimasi Urea dan NPK bulanan. Kapasitas Urea <b>9,36 juta ton</b> dan NPK <b>4,52 juta ton</b> per tahun.',render:chartArea},
+
+  {title:'Komposisi Produk',sub:'Pangsa pasar per lini',height:280,
+   desc:'<b>Donut chart</b> komposisi produk. Urea <b>38%</b>, NPK 27%, ZA 15%.',render:chartDonut},
+
+  {title:'Kapasitas Urea per Pabrik',sub:'Juta ton per tahun',height:280,
+   desc:'<b>Bar chart</b> kapasitas urea. Kaltim <b>3,435 juta ton</b>, Palembang 2,617, Kujang 1,140, Iskandar Muda 1,140, Gresik 1,030.',render:chartVBars},
+
+  {title:'Penjualan per Wilayah',sub:'Estimasi regional · juta ton',height:280,
+   desc:'<b>Horizontal bar</b> estimasi distribusi wilayah. Jawa Barat dan Jawa Timur menjadi pasar terbesar.',render:chartHBars},
+
+  {title:'KPI Perusahaan',sub:'Enam dimensi kinerja',height:300,
+   desc:'<b>Radar chart</b> kinerja enam dimensi. Penjualan (95%) dan Produksi (92%) menjadi indikator terkuat.',render:chartRadar},
+
+  {title:'Utilisasi Kapasitas',sub:'Tingkat pemanfaatan pabrik',height:260,
+   desc:'<b>Gauge</b> utilisasi kapasitas sekitar <b>82%</b> dari total <b>14,65 juta ton/tahun</b>.',render:chartGauge},
+
+  {title:'Distribusi Kategori Produk',sub:'6 bulan pertama · estimasi',height:280,
+   desc:'<b>Stacked bar</b> distribusi tiga kategori. Urea mendominasi. Total per bulan ditampilkan.',render:chartStackedBars},
+
+  {title:'Pangsa Pasar Produk',sub:'Pie chart distribusi',height:280,
+   desc:'<b>Pie chart</b> pangsa pasar. Setiap irisan memiliki tooltip native.',render:chartPie},
+
+  {title:'Harga vs Volume',sub:'Scatter korelasi · harga 2025',height:280,
+   desc:'<b>Scatter</b> harga vs volume. HET 2025: Urea <b>Rp1.800/kg</b>, NPK Rp1.840, ZA Rp1.360, Organik Rp640.',render:chartScatter},
+
+  {title:'Petani Terlayani',sub:'Bubble chart · estimasi relatif',height:280,
+   desc:'<b>Bubble chart</b> estimasi petani terlayani. Jawa Barat dan Jawa Timur memiliki gelembung terbesar.',render:chartBubble},
+
+  {title:'Ekspor per Negara',sub:'Volume relatif · 2025',height:300,
+   desc:'<b>Polar area</b> ekspor ke negara tujuan. Total ekspor urea 2025 <b>1,72 juta ton</b>, naik dari 1,41 juta ton 2024.',render:chartPolar},
+
+  {title:'Funnel Konversi',sub:'Tahapan penjualan',height:240,
+   desc:'<b>Funnel chart</b> konversi penjualan. Tingkat konversi antar tahap ditampilkan.',render:chartFunnel},
+
+  {title:'Treemap Pasar',sub:'Proporsi area = proporsi pasar',height:260,
+   desc:'<b>Treemap</b> pangsa pasar. Urea area terbesar (38%), Organik terkecil (8%). Tooltip per blok.',render:chartTreemap},
+
+  {title:'Heatmap Region × Bulan',sub:'Intensitas penjualan · estimasi',height:280,
+   desc:'<b>Heatmap</b> intensitas penjualan per wilayah dan bulan. Tooltip native per sel.',render:chartHeatmap},
+
+  {title:'Mini Tren KPI',sub:'4 sparkline indikator',height:240,
+   desc:'<b>Sparklines</b> tren 4 indikator: produksi, penjualan, ekspor, pendapatan.',render:chartSparklines},
+
+  {title:'Target vs Realisasi',sub:'Progress pencapaian',height:260,
+   desc:'<b>Progress ring</b> estimasi pencapaian target produksi tahunan <b>76%</b>.',render:chartRing},
+
+  {title:'2024 vs 2025 per Produk',sub:'Grouped bar · estimasi',height:280,
+   desc:'<b>Grouped bar</b> perbandingan penjualan produk 2024 vs 2025. Label nilai per batang.',render:chartGroupedBars},
+
+  {title:'Top 5 Produk',sub:'Lollipop chart',height:280,
+   desc:'<b>Lollipop</b> lima produk pangsa terbesar.',render:chartLollipop},
+
+  {title:'Dumbbell Chart',sub:'Perbandingan dua periode',height:260,
+   desc:'<b>Dumbbell chart</b> perbandingan dua periode per produk.',render:chartDumbbell},
+
+  {title:'Waterfall Pendapatan',sub:'2024 → 2025 · triliun rupiah',height:280,
+   desc:'<b>Waterfall</b> perubahan pendapatan <b>Rp81,6 T → Rp90,4 T</b>. Label nilai per komponen.',render:chartWaterfall},
+
+  {title:'HET Urea 2025',sub:'Step line · Rp/kg',height:280,
+   desc:'<b>Step line</b> HET Urea <b>Rp1.800/kg</b> sepanjang 2025 (turun dari Rp2.250/kg).',render:chartStep},
+
+  {title:'Kepuasan Petani',sub:'Skor 0-5',height:260,
+   desc:'<b>Needle gauge</b> estimasi kepuasan petani <b>4,5 dari 5</b>.',render:chartNeedleGauge},
+
+  {title:'Waffle Distribusi',sub:'100 kotak = 100%',height:280,
+   desc:'<b>Waffle chart</b> distribusi produk. Tooltip per kotak.',render:chartWaffle},
+
+  {title:'Stream Graph Multi-Produk',sub:'Aliran tiga produk',height:300,
+   desc:'<b>Stream graph</b> aliran Urea, NPK, Organik sepanjang tahun.',render:chartStream},
+
+  {title:'Target per Pabrik',sub:'Bullet chart · realisasi vs target',height:260,
+   desc:'<b>Bullet chart</b> realisasi vs target kapasitas urea tiap pabrik.',render:chartBullet},
+
+  {title:'Jaringan Distribusi',sub:'Arc diagram',height:260,
+   desc:'<b>Arc diagram</b> hubungan pabrik dan wilayah distribusi.',render:chartArc},
+
+  {title:'Pangsa Pasar per Tahun',sub:'Stacked area 100% · estimasi',height:280,
+   desc:'<b>Stacked area 100%</b> pergeseran pangsa pasar 2021–2025.',render:chartStackedArea},
+
+  {title:'Ukuran Kebun Petani',sub:'Histogram · estimasi',height:280,
+   desc:'<b>Histogram</b> distribusi ukuran kebun. Mayoritas 1-2 hektar.',render:chartHistogram},
+
+  {title:'Volume Transaksi Harian',sub:'30 hari · ilustrasi',height:280,
+   desc:'<b>Volume bar</b> fluktuasi transaksi harian 30 hari.',render:chartVolume},
+
+  // ===== 6 PETA =====
+  {title:'Peta Pabrik PT Pupuk Indonesia',sub:'Esri Dark Gray Canvas · 5 pabrik utama',badge:'Esri Map',height:420,full:true,
+   desc:'<b>Peta interaktif Esri Leaflet</b> lokasi 5 pabrik utama: Kaltim (Bontang), Gresik, Palembang, Kujang (Cikampek), Iskandar Muda (Lhokseumawe). Ukuran gelembung = kapasitas urea. Klik marker untuk detail.',render:chartMap},
+
+  {title:'Peta Alokasi Pupuk Bersubsidi 2025',sub:'Top 5 provinsi · juta ton',badge:'9,55 jt ton nasional',height:420,full:true,
+   desc:'<b>Peta bubble Esri</b> alokasi pupuk bersubsidi 2025. Jawa Timur <b>1,88 juta ton</b>, Jawa Tengah 1,38 juta ton, Jawa Barat 1,10 juta ton, Sulawesi Selatan 922 ribu ton, Lampung 812 ribu ton. Ukuran gelembung proporsional terhadap alokasi.',render:chartMapSubsidi},
+
+  {title:'Peta Sebaran Kios & Distributor',sub:'Jaringan distribusi per provinsi',badge:'25.903 kios',height:420,full:true,
+   desc:'<b>Peta bubble Esri</b> sebaran kios/pengecer dan distributor. Jawa Timur <b>5.875 kios</b> (188 distributor), NTB 1.600 kios (34 distributor), Sulawesi Selatan 1.105 kios (54 distributor). Total nasional <b>25.903 kios</b> dan <b>1.067 distributor</b>.',render:chartMapKios},
+
+  {title:'Peta Rute Logistik Laut',sub:'Pabrik → pelabuhan utama',badge:'179 trayek',height:420,full:true,
+   desc:'<b>Peta rute Esri</b> jalur distribusi laut dari pabrik ke pelabuhan utama. Didukung <b>107 penyedia jasa kapal</b> dengan <b>179 trayek pelayaran</b> dan 274 penyedia jasa truk dengan 1.288 rute darat. Garis putus-putus = rute pelayaran.',render:chartMapLogistics},
+
+  {title:'Peta Gudang Penyangga',sub:'Lini II & Lini III · kapasitas',badge:'516 gudang',height:420,full:true,
+   desc:'<b>Peta gudang Esri</b> lokasi gudang penyangga utama. Total <b>516 gudang</b> provinsi/kabupaten dengan kapasitas <b>2,89 juta ton</b>. Gresik memiliki gudang curah urea 20.000 ton; Makassar, Medan, Semarang, Pati, Palembang, Bontang, dan Cikampek menjadi hub Lini II.',render:chartMapWarehouse},
+
+  {title:'Peta Regional Operasi',sub:'4 regional distribusi',badge:'Regional 1–4',height:420,full:true,
+   desc:'<b>Peta regional Esri</b> pembagian wilayah operasi. <b>Regional 1</b> Sumatera (PIM & Pusri), <b>Regional 2</b> Jabar–Jateng–DIY (Kujang & Petrokimia), <b>Regional 3</b> Jatim–Bali–NTB (Petrokimia & PKT), <b>Regional 4</b> Kalimantan–Sulawesi–Maluku–Papua (PKT & PI).',render:chartMapRegional},
+
+  // ===== CHART NON-PETA SETELAH PETA =====
+  {title:'Realisasi Pupuk Bersubsidi 2025',sub:'Alokasi vs realisasi',badge:'8,11 jt ton',height:260,
+   desc:'<b>Donut chart</b> realisasi pupuk bersubsidi. Alokasi 2025 <b>9,55 juta ton</b>, realisasi <b>8,11 juta ton</b> (96,35% dari kontrak). Urea 4,55 juta ton dan NPK 4,00 juta ton.',render:chartSubsidi},
+
+  {title:'Pangsa Pasar Produk Utama',sub:'Urea · NPK · Amonia',badge:'Urea 99,99%',height:260,
+   desc:'<b>Bar chart</b> pangsa pasar. PIHC menguasai <b>99,99%</b> urea, <b>63,71%</b> amonia, dan <b>44,66%</b> NPK nasional.',render:chartMarketShare},
+
+  {title:'Kinerja Keuangan 2024 vs 2025',sub:'Pendapatan · Laba · Aset · Ekuitas',height:280,
+   desc:'<b>Grouped bar</b> perbandingan keuangan. Pendapatan naik Rp81,62 T → Rp90,40 T (+10,76%). Laba bersih 2024 Rp8,89 T (termasuk one-time gain restrukturisasi).',render:chartFinancial},
+
+  {title:'Kapasitas vs Penjualan',sub:'2021–2025 · juta ton',height:280,
+   desc:'<b>Line comparison</b> kapasitas produksi (14,65 juta ton) vs penjualan. Target penjualan 2025 <b>14,45 juta ton</b> (+10,34% YoY).',render:chartProdSales},
+
+  {title:'Kapasitas Amonia per Pabrik',sub:'Juta ton per tahun',height:260,
+   desc:'<b>Bar chart</b> kapasitas amonia. Kaltim 2,739 juta ton, Palembang 1,831, Gresik 1,105, Iskandar Muda 0,759, Kujang 0,660.',render:chartAmmonia},
+
+  {title:'Kapasitas NPK per Pabrik',sub:'Juta ton per tahun',height:260,
+   desc:'<b>Bar chart</b> kapasitas NPK. Gresik <b>2,620 juta ton</b> terbesar, disusul Iskandar Muda 0,500 dan Palembang 0,300.',render:chartNPKCap},
+
+  {title:'Subsidi vs Non-Subsidi',sub:'Komposisi penjualan',height:260,
+   desc:'<b>Donut chart</b> estimasi komposisi penjualan subsidi vs non-subsidi.',render:chartSubsidiMix},
+
+  {title:'Top Negara Tujuan Ekspor',sub:'Indeks volume relatif',height:260,
+   desc:'<b>Bar chart</b> negara tujuan ekspor utama. Total ekspor 2025 <b>1,72 juta ton</b>.',render:chartExportCountries},
+
+  {title:'Segmen Pendapatan 2025',sub:'Total Rp90,40 triliun',height:240,
+   desc:'<b>Stacked bar</b> estimasi segmen pendapatan. Pupuk menyumbang porsi terbesar (<b>Rp48,12 T</b>).',render:chartRevenueSeg},
+];
+
+charts.forEach(cfg=>buildCard(cfg));
+</script>
+
+</body>
+</html>
