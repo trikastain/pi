@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Pupuk Indonesia Unified Portal — Final v2</title>
+<link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png"/>
+<style>
+  :root{
+    --bg:#f4f7f6;--panel:#fff;--text:#1d2b28;--muted:#6b7c78;--border:#dce7e3;
+    --primary:#0b7a5c;--blue:#1467b3;--danger:#c0392b;--warn:#d97706;
+    --shadow:0 8px 24px rgba(15,47,42,.08);--shadow-lg:0 18px 40px rgba(15,47,42,.12);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+  code{font-family:ui-monospace,Menlo,monospace;background:#f0f5f3;padding:1px 6px;border-radius:6px;font-size:12px}
+  button{font-family:inherit}
+  .app{display:flex;min-height:100vh}
+  .sidebar{width:252px;background:linear-gradient(180deg,#0f2f2a,#123d36 60%,#0b2a25);color:#e9f5f1;padding:18px 14px;position:sticky;top:0;height:100vh;overflow:auto}
+  .brand{padding:6px 4px 18px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+  .brand-logo{background:#fff;border-radius:10px;padding:8px 12px;display:flex;justify-content:center;margin-bottom:8px}
+  .brand-logo img{height:32px;width:auto;max-width:200px;display:block}
+  .brand-text{text-align:center}
+  .brand-text b{font-size:12px;display:block;color:#cfe7df;font-weight:600;letter-spacing:.03em}
+  .brand-text small{display:block;color:#9fc8bb;font-weight:400;font-size:10px}
+  .nav a{display:flex;align-items:center;gap:10px;color:#cfe7df;text-decoration:none;padding:10px 12px;border-radius:10px;margin:4px 0;font-size:14px;cursor:pointer;transition:.15s}
+  .nav a:hover{background:rgba(255,255,255,.06);color:#fff}
+  .nav a.active{background:linear-gradient(90deg,rgba(25,169,116,.35),rgba(25,169,116,.05));color:#fff;box-shadow:inset 2px 0 0 #19a974}
+  .nav .count{margin-left:auto;background:rgba(255,255,255,.14);border-radius:999px;padding:1px 7px;font-size:11px}
+  .sidebar-footer{margin-top:20px;padding:12px;background:rgba(255,255,255,.05);border-radius:12px;font-size:11px;color:#9fc8bb}
+  .main{flex:1;min-width:0}
+  .topbar{height:64px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 20px;position:sticky;top:0;z-index:20}
+  .search{flex:1;max-width:520px;position:relative}
+  .search input{width:100%;padding:10px 12px 10px 36px;border:1px solid var(--border);border-radius:10px;background:#f8fbfa;outline:none;font-size:14px}
+  .search input:focus{border-color:#19a974;background:#fff;box-shadow:0 0 0 3px rgba(25,169,116,.12)}
+  .search span{position:absolute;left:12px;top:9px;color:var(--muted)}
+  .top-actions{display:flex;align-items:center;gap:10px;margin-left:auto;position:relative}
+  .icon-btn{border:1px solid var(--border);background:#fff;border-radius:10px;padding:8px 10px;cursor:pointer;color:var(--text);position:relative;font-size:14px;display:flex;align-items:center;gap:6px}
+  .icon-btn:hover{background:#f4f7f6}
+  .badge-dot{position:absolute;top:4px;right:6px;width:8px;height:8px;background:var(--danger);border-radius:50%;border:2px solid #fff}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#19a974,#0b7a5c);color:#fff;display:grid;place-items:center;font-weight:700;cursor:pointer;font-size:12px}
+  .dropdown{position:absolute;top:48px;right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);width:340px;padding:8px;display:none;z-index:30;max-height:420px;overflow:auto}
+  .dropdown.show{display:block}
+  .dropdown h4{margin:8px 10px 4px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .dropdown .item{padding:10px;border-radius:8px;cursor:pointer;font-size:13px;display:flex;gap:10px;align-items:flex-start}
+  .dropdown .item:hover{background:#f4f7f6}
+  .dropdown .item small{color:var(--muted);display:block;font-size:11px;margin-top:2px}
+  .dropdown .item.unread{background:#eef9f4}
+  .dropdown .item.danger{color:var(--danger)}
+  .content{padding:22px}
+  .hero{position:relative;overflow:hidden;background:linear-gradient(120deg,#0b7a5c 0%,#1467b3 55%,#7c3aed 100%);color:#fff;border-radius:22px;padding:26px;box-shadow:var(--shadow-lg);display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+  .hero::before{content:'';position:absolute;top:-90px;right:-60px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.22),transparent 70%);pointer-events:none}
+  .hero::after{content:'';position:absolute;bottom:-120px;left:15%;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(251,191,36,.22),transparent 70%);pointer-events:none}
+  .hero-shape{position:absolute;pointer-events:none;opacity:.5}
+  .hero-content{position:relative;z-index:2}
+  .hero h1{margin:0 0 6px;font-size:24px;letter-spacing:-.01em}
+  .hero p{margin:0 0 12px;color:#d7f2ea;font-size:14px}
+  .hero .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{background:rgba(255,255,255,.16);padding:5px 12px;border-radius:999px;font-size:12px;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.15)}
+  .hero .btn{background:#fff;color:#0b5e48;border:0;border-radius:12px;padding:12px 18px;font-weight:700;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.18);position:relative;z-index:2}
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+  .kpi{background:#fff;border-radius:16px;padding:16px;border:1px solid var(--border);box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--kpi-c,#19a974),transparent)}
+  .kpi-label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .kpi-value{font-size:26px;font-weight:800;margin:6px 0 2px;letter-spacing:-.02em}
+  .kpi-sub{font-size:12px;color:var(--muted)}
+  .kpi-spark{position:absolute;bottom:-2px;right:0;width:60%;height:44px;opacity:.55}
+  .section-title{display:flex;align-items:center;justify-content:space-between;margin:22px 0 12px;gap:10px;flex-wrap:wrap}
+  .section-title h2{font-size:16px;margin:0}
+  .section-title small{color:var(--muted)}
+  .section-title a{color:var(--blue);text-decoration:none;font-size:13px;font-weight:600}
+  .apps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+  .app-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+  .app-card::before{content:'';position:absolute;top:0;right:0;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,var(--app-c,#19a974),transparent 70%);opacity:.12;transform:translate(40px,-40px)}
+  .app-card:hover{transform:translateY(-3px);border-color:#b9d9cf;box-shadow:var(--shadow-lg)}
+  .app-card .logo{width:44px;height:44px;margin-bottom:12px;display:block}
+  .app-card h3{margin:0 0 4px;font-size:15px}
+  .app-card p{margin:0;color:var(--muted);font-size:13px;min-height:36px;line-height:1.4}
+  .app-meta{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:12px;position:relative;z-index:1}
+  .status{display:flex;align-items:center;gap:6px;color:#0b7a5c;font-weight:600}
+  .status.warn{color:var(--warn)}
+  .status.offline{color:var(--danger)}
+  .dot{width:7px;height:7px;border-radius:50%;background:#19a974;display:inline-block}
+  .dot.warn{background:var(--warn)}
+  .dot.offline{background:var(--danger)}
+  .charts-row{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:14px;margin-bottom:14px}
+  .chart-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);min-width:0}
+  .chart-title{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .chart-title small{color:var(--muted);font-weight:500;font-size:12px}
+  .chart-body{min-height:140px}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:12px}
+  .legend-item{display:flex;align-items:center;gap:6px}
+  .legend-dot{width:8px;height:8px;border-radius:50%}
+  .grid-2{display:grid;grid-template-columns:1.6fr 1fr;gap:14px}
+  .panel{background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+  .activity{list-style:none;margin:0;padding:0}
+  .activity li{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #eef4f2;font-size:13px;align-items:flex-start}
+  .activity li:last-child{border-bottom:0}
+  .badge{font-size:11px;padding:4px 8px;border-radius:999px;background:#e8f6f1;color:#0b7a5c;font-weight:700;height:fit-content;white-space:nowrap}
+  .badge.b-nwbc{background:#e7f0fb;color:#1467b3}
+  .badge.b-dof{background:#e8f6f1;color:#0b7a5c}
+  .badge.b-sistro{background:#fdf1e0;color:#b45309}
+  .badge.b-ppts{background:#f1eaff;color:#6d28d9}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #eef4f2;vertical-align:middle}
+  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;background:#fafdfb;position:sticky;top:0}
+  tr:hover td{background:#fafdfb}
+  .pill{font-size:11px;padding:2px 8px;border-radius:999px;background:#e8f6f1;color:#0b7a5c;font-weight:700;white-space:nowrap}
+  .pill.warn{background:#fdf1e0;color:#b45309}
+  .pill.err{background:#fdecea;color:#c0392b}
+  .btn-primary{background:linear-gradient(135deg,#19a974,#0b7a5c);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:13px}
+  .btn-primary:hover{filter:brightness(1.05)}
+  .btn-ghost{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:600;font-size:13px}
+  .btn-ghost:hover{background:#f4f7f6}
+  .btn-danger{background:#fdecea;color:var(--danger);border:1px solid #fadbd8;border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:600;font-size:13px}
+  .btn-danger:hover{background:#fbd5d2}
+  .btn-sm{padding:5px 9px;font-size:12px;border-radius:7px}
+  .btn-icon{background:#f4f7f6;border:1px solid var(--border);border-radius:7px;padding:5px 8px;cursor:pointer;font-size:13px;line-height:1}
+  .btn-icon:hover{background:#e8f6f1;border-color:#b9d9cf}
+  .btn-icon.del:hover{background:#fdecea;border-color:#fadbd8;color:var(--danger)}
+  .actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+  .toolbar .btn-primary{display:flex;align-items:center;gap:6px}
+  .toolbar .spacer{flex:1}
+  .filters{display:flex;gap:8px;flex-wrap:wrap}
+  .filters select,.filters input{padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:#fff}
+  .tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+  .tabs button{background:none;border:0;padding:10px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent}
+  .tabs button.active{color:var(--primary);border-bottom-color:var(--primary)}
+  .modal{position:fixed;inset:0;background:rgba(8,30,26,.55);display:none;place-items:center;padding:20px;z-index:40;backdrop-filter:blur(4px)}
+  .modal.show{display:grid}
+  .modal-card{background:#fff;border-radius:20px;max-width:680px;width:100%;padding:22px;box-shadow:0 24px 60px rgba(0,0,0,.3);max-height:88vh;overflow:auto}
+  .modal-card h3{margin:0 0 6px;font-size:18px}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+  .empty{color:var(--muted);font-size:13px;padding:16px;text-align:center}
+  .form-group{margin-bottom:14px}
+  .form-group label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+  .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:#fff}
+  .form-group textarea{min-height:70px;resize:vertical}
+  .form-group .hint{font-size:11px;color:var(--muted);margin-top:4px}
+  .toast{position:fixed;bottom:20px;right:20px;background:#0b2a25;color:#fff;padding:12px 18px;border-radius:10px;box-shadow:var(--shadow-lg);font-size:13px;z-index:100;transform:translateY(20px);opacity:0;transition:.3s;pointer-events:none;max-width:400px}
+  .toast.show{transform:translateY(0);opacity:1}
+  .toast.err{background:var(--danger)}
+  .data-group{margin-bottom:20px}
+  .data-group h3{margin:0 0 10px;font-size:14px}
+  .data-actions{display:flex;gap:6px;flex-wrap:wrap}
+  .data-info{background:#eef9f4;border:1px solid #b9e5d3;border-radius:10px;padding:12px;font-size:12px;color:#0b5e48;margin-bottom:14px;line-height:1.6}
+  .data-info code{background:#fff}
+  @media(max-width:1200px){.charts-row{grid-template-columns:1fr 1fr}.charts-row>div:nth-child(3){grid-column:span 2}.apps{grid-template-columns:repeat(2,1fr)}.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:900px){.grid-2{grid-template-columns:1fr}.charts-row{grid-template-columns:1fr}.charts-row>div:nth-child(3){grid-column:auto}}
+  @media(max-width:760px){.sidebar{display:none}.content{padding:14px}.topbar{padding:0 12px}.apps{grid-template-columns:1fr}.hero{padding:18px}.search{display:none}.kpi-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="nwbcGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient>
+    <linearGradient id="dofGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#047857"/></linearGradient>
+    <linearGradient id="sistroGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbbf24"/><stop offset="1" stop-color="#d97706"/></linearGradient>
+    <linearGradient id="pptsGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#6d28d9"/></linearGradient>
+    <linearGradient id="piGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#047857"/></linearGradient>
+    <symbol id="logo-pi" viewBox="0 0 48 48"><rect x="1" y="1" width="46" height="46" rx="13" fill="url(#piGrad)"/><path d="M13 32 Q13 17 24 12 Q35 17 35 32 Q29 24 24 27 Q19 24 13 32 Z" fill="#fff" opacity="0.96"/></symbol>
+    <symbol id="logo-nwbc" viewBox="0 0 48 48"><rect x="1" y="1" width="46" height="46" rx="13" fill="url(#nwbcGrad)"/><path d="M24 11 L35 17 L35 31 L24 37 L13 31 L13 17 Z" fill="#fff" opacity="0.22"/><path d="M24 11 L35 17 L24 23 L13 17 Z" fill="#fff"/><path d="M24 23 L35 17 L35 31 L24 37 Z" fill="#fff" opacity="0.9"/><path d="M13 17 L24 23 L24 37 L13 31 Z" fill="#fff" opacity="0.65"/></symbol>
+    <symbol id="logo-dof" viewBox="0 0 48 48"><rect x="1" y="1" width="46" height="46" rx="13" fill="url(#dofGrad)"/><rect x="12" y="10" width="24" height="28" rx="3" fill="#fff" opacity="0.97"/><line x1="17" y1="18" x2="31" y2="18" stroke="#047857" stroke-width="2" stroke-linecap="round"/><line x1="17" y1="24" x2="31" y2="24" stroke="#047857" stroke-width="2" stroke-linecap="round"/><path d="M17 30 L20 33 L27 26" stroke="#fbbf24" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
+    <symbol id="logo-sistro" viewBox="0 0 48 48"><rect x="1" y="1" width="46" height="46" rx="13" fill="url(#sistroGrad)"/><rect x="8" y="19" width="20" height="13" rx="2" fill="#fff"/><path d="M28 22 L35 22 L40 28 L40 32 L28 32 Z" fill="#fff" opacity="0.9"/><rect x="30" y="23" width="6" height="5" rx="1" fill="#1f2937" opacity="0.4"/><circle cx="15" cy="34.5" r="3" fill="#1f2937"/><circle cx="34" cy="34.5" r="3" fill="#1f2937"/><circle cx="15" cy="34.5" r="1.2" fill="#fff"/><circle cx="34" cy="34.5" r="1.2" fill="#fff"/></symbol>
+    <symbol id="logo-ppts" viewBox="0 0 48 48"><rect x="1" y="1" width="46" height="46" rx="13" fill="url(#pptsGrad)"/><circle cx="19" cy="18" r="5.5" fill="#fff"/><path d="M9 34 Q9 25 19 25 Q29 25 29 34 Z" fill="#fff"/><circle cx="31" cy="20" r="4" fill="#fff" opacity="0.7"/><path d="M24 34 Q24 27 31 27 Q38 27 38 34 Z" fill="#fff" opacity="0.7"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png" alt="Pupuk Indonesia"/>
+      </div>
+      <div class="brand-text">
+        <b>UNIFIED PORTAL</b>
+        <small>Build v2.0 · Final</small>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="active" data-view="dashboard">▦ Dashboard</a>
+      <a data-view="apps">▤ Aplikasi & Modul</a>
+      <a data-view="activity">◷ Aktivitas <span class="count" id="navActivityCount">0</span></a>
+      <a data-view="audit">🛡 Audit Log</a>
+      <a data-view="admin">⚙ Admin & RBAC</a>
+      <a data-view="data">📦 Import / Export</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span class="dot"></span> Data lokal (localStorage)</div>
+      <div style="opacity:.7">CSV + JSON supported</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="search"><span>⌕</span><input id="globalSearch" placeholder="Cari data... (Enter)"/></div>
+      <div class="top-actions">
+        <button class="icon-btn" id="btnNotif">🔔<span class="badge-dot" id="notifDot"></span></button>
+        <button class="icon-btn" id="btnCompany"><span id="companyLabel">Pupuk Indonesia</span> ▾</button>
+        <div class="avatar" id="btnProfile">AD</div>
+        <div class="dropdown" id="ddNotif"><h4>Notifikasi</h4><div id="notifList"></div></div>
+        <div class="dropdown" id="ddCompany"><h4>Perusahaan</h4><div id="companyList"></div></div>
+        <div class="dropdown" id="ddProfile">
+          <h4>Profil & Data</h4>
+          <div class="item"><div><b id="profName">-</b><small id="profRole">-</small><small id="profEmail">-</small></div></div>
+          <div class="item" onclick="switchView('data')">📦 <div><b>Import / Export</b><small>CSV & JSON</small></div></div>
+          <div class="item">🔐 <div><b>Keamanan</b><small>Ganti password via SSO</small></div></div>
+        </div>
+      </div>
+    </header>
+    <div class="content" id="view"></div>
+  </main>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <h3 id="modalTitle">Detail</h3>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal()">Tutup</button>
+      <button class="btn-primary" id="modalPrimary" onclick="closeModal()">Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="fileJSON" accept=".json" style="display:none"/>
+<input type="file" id="fileCSV" accept=".csv,text/csv" style="display:none"/>
+
+<script>
+/* ============================================================
+   1. STORE
+   ============================================================ */
+const KEY = "pi-portal-final-v2";
+let store = { users:[], companies:[], apps:[], activities:[], auditLogs:[],
+              notifications:[], moduleData:{NWBC:[],DOF:[],SISTRO:[],PPTS:[]},
+              rbac:[], health:[] };
+let currentView = "dashboard";
+let currentUser = null;
+let currentCompany = null;
+
+function seed(){
+  store.companies = [
+    {id:"PIHC",  name:"PT Pupuk Indonesia (Persero)",         short:"Pupuk Indonesia"},
+    {id:"PIM",   name:"PT Pupuk Iskandar Muda",               short:"PIM"},
+    {id:"PUSRI", name:"PT Pupuk Sriwidjaja Palembang",        short:"PUSRI"},
+    {id:"PKT",   name:"PT Pupuk Kujang",                      short:"PKT"},
+    {id:"PKG",   name:"PT Pupuk Kalimantan Timur",            short:"PKG"},
+    {id:"PGA",   name:"PT Petrokimia Gresik",                 short:"PGA"},
+    {id:"PIHC-LOG","name":"PI Logistik (Anak Perusahaan)",    short:"PI Logistik"},
+    {id:"PIHC-IT", "name":"PI Shared Service IT",             short:"PI IT"}
+  ];
+  store.rbac = [
+    {role:"Super Admin",       apps:["NWBC","DOF","SISTRO","PPTS"], users:2},
+    {role:"Admin SAP",         apps:["NWBC"],                        users:8},
+    {role:"Operator DOF",      apps:["DOF"],                         users:32},
+    {role:"Approver DOF",      apps:["DOF"],                         users:12},
+    {role:"Petugas SISTRO",    apps:["SISTRO"],                      users:28},
+    {role:"Supervisor SISTRO", apps:["SISTRO"],                      users:9},
+    {role:"Verifikator PPTS",  apps:["PPTS"],                        users:16},
+    {role:"Auditor PPTS",      apps:["PPTS"],                        users:4},
+    {role:"Logistik PI Log",   apps:["SISTRO","DOF"],                users:14},
+    {role:"Read Only",         apps:["NWBC","DOF","SISTRO","PPTS"], users:22}
+  ];
+  store.users = [
+    {id:"u01", name:"Andi Darmawan",    initials:"AD", role:"Super Admin",       email:"andi.d@pupuk-indonesia.com",     company:"PIHC",  lastLogin:"2026-10-19 08:40", status:"active"},
+    {id:"u02", name:"Sari Wulandari",   initials:"SW", role:"Operator DOF",      email:"sari.w@pupuk-indonesia.com",     company:"PIHC",  lastLogin:"2026-10-19 09:05", status:"active"},
+    {id:"u03", name:"Budi Santoso",     initials:"BS", role:"Petugas SISTRO",    email:"budi.s@pupuk-indonesia.com",     company:"PIHC",  lastLogin:"2026-10-19 07:30", status:"active"},
+    {id:"u04", name:"Rina Kurnia",      initials:"RK", role:"Verifikator PPTS",  email:"rina.k@pupuk-indonesia.com",     company:"PIHC",  lastLogin:"2026-10-19 07:55", status:"active"},
+    {id:"u05", name:"Dedi Prasetyo",    initials:"DP", role:"Operator DOF",      email:"dedi.p@pupuk-indonesia.com",     company:"PUSRI", lastLogin:"2026-10-18 16:20", status:"active"},
+    {id:"u06", name:"Lestari Ningsih",  initials:"LN", role:"Admin SAP",         email:"lestari.n@pupuk-indonesia.com",  company:"PKT",   lastLogin:"2026-10-19 06:10", status:"active"},
+    {id:"u07", name:"Hendra Wijaya",    initials:"HW", role:"Petugas SISTRO",    email:"hendra.w@pupuk-indonesia.com",   company:"PIM",   lastLogin:"2026-10-17 14:00", status:"suspended"},
+    {id:"u08", name:"Yuliana Sari",     initials:"YS", role:"Verifikator PPTS",  email:"yuliana.s@pupuk-indonesia.com",  company:"PKG",   lastLogin:"2026-10-19 08:15", status:"active"},
+    {id:"u09", name:"Bagus Hermawan",   initials:"BH", role:"Supervisor SISTRO", email:"bagus.h@pupuk-indonesia.com",    company:"PKG",   lastLogin:"2026-10-19 07:45", status:"active"},
+    {id:"u10", name:"Fitri Handayani",  initials:"FH", role:"Approver DOF",      email:"fitri.h@pupuk-indonesia.com",    company:"PUSRI", lastLogin:"2026-10-19 08:30", status:"active"},
+    {id:"u11", name:"Agus Setiawan",    initials:"AS", role:"Admin SAP",         email:"agus.s@pupuk-indonesia.com",     company:"PGA",   lastLogin:"2026-10-19 06:55", status:"active"},
+    {id:"u12", name:"Maya Anggraini",   initials:"MA", role:"Auditor PPTS",      email:"maya.a@pupuk-indonesia.com",     company:"PIHC",  lastLogin:"2026-10-18 15:40", status:"active"},
+    {id:"u13", name:"Rizal Pratama",    initials:"RP", role:"Petugas SISTRO",    email:"rizal.p@pupuk-indonesia.com",    company:"PKT",   lastLogin:"2026-10-19 05:20", status:"active"},
+    {id:"u14", name:"Indah Permatasari",initials:"IP", role:"Verifikator PPTS",  email:"indah.p@pupuk-indonesia.com",    company:"PUSRI", lastLogin:"2026-10-19 09:02", status:"active"},
+    {id:"u15", name:"Fajar Nugroho",    initials:"FN", role:"Logistik PI Log",   email:"fajar.n@pupuk-indonesia.com",    company:"PIHC-LOG",lastLogin:"2026-10-19 07:10",status:"active"},
+    {id:"u16", name:"Nadia Safitri",    initials:"NS", role:"Read Only",         email:"nadia.s@pupuk-indonesia.com",    company:"PIHC-IT",lastLogin:"2026-10-18 13:00", status:"active"},
+    {id:"u17", name:"Eko Prasetyo",     initials:"EP", role:"Operator DOF",      email:"eko.p@pupuk-indonesia.com",      company:"PKG",   lastLogin:"2026-10-17 10:30", status:"suspended"},
+    {id:"u18", name:"Wulan Sari",       initials:"WS", role:"Approver DOF",      email:"wulan.s@pupuk-indonesia.com",    company:"PGA",   lastLogin:"2026-10-19 08:50", status:"active"}
+  ];
+  store.apps = [
+    {key:"NWBC", name:"NWBC / SAP", logo:"#logo-nwbc", color:"#1467b3",
+     desc:"Akses ERP, task, dan transaksi SAP sesuai entitas perusahaan.",
+     url:"https://hcservices.pupuk-indonesia.com/nwbc",
+     status:"online", lastAccess:"2026-10-19 08:42",
+     stats:"pending:14 · approved:186 · rejected:6",
+     trend:[62,71,68,88,79,54,47]},
+    {key:"DOF", name:"Digital Office", logo:"#logo-dof", color:"#0b7a5c",
+     desc:"Workflow dokumen, approval, dan otomasi proses bisnis.",
+     url:"https://dof.pupuk-indonesia.com/Account/Login",
+     status:"online", lastAccess:"2026-10-19 09:10",
+     stats:"draft:42 · menunggu:57 · selesai:189",
+     trend:[145,168,192,181,214,124,98]},
+    {key:"SISTRO", name:"SISTRO", logo:"#logo-sistro", color:"#d97706",
+     desc:"Penjadwalan truk, booking, tiket muat, dan checkpoint.",
+     url:"https://sistro.pupuk-indonesia.com/",
+     status:"online", lastAccess:"2026-10-18 16:30",
+     stats:"booking:86 · perjalanan:47 · selesai:79",
+     trend:[58,64,71,82,74,49,66]},
+    {key:"PPTS", name:"PPTS", logo:"#logo-ppts", color:"#7c3aed",
+     desc:"Pendaftaran dan verifikasi penerima pupuk bersubsidi.",
+     url:"https://ppts.pupuk-indonesia.com/login",
+     status:"degraded", lastAccess:"2026-10-19 07:55",
+     stats:"terdaftar:4820 · menunggu:127 · ditolak:23",
+     trend:[4420,4498,4560,4640,4712,4768,4820]}
+  ];
+  store.activities = [
+    {id:"a01", ts:"2026-10-19 09:22", user:"Fitri Handayani",  app:"DOF",    action:"Menyetujui dokumen pengadaan PR-2026-0205 senilai Rp 2.400.000.000"},
+    {id:"a02", ts:"2026-10-19 09:14", user:"Sari Wulandari",   app:"DOF",    action:"Menyetujui dokumen pengadaan PR-2026-0198"},
+    {id:"a03", ts:"2026-10-19 09:10", user:"Indah Permatasari",app:"PPTS",   action:"Memverifikasi kios KIOS-0702 (Koperasi Subur Jaya)"},
+    {id:"a04", ts:"2026-10-19 09:08", user:"Andi Darmawan",    app:"NWBC",   action:"Approve PR-2026-0199 senilai Rp 1.100.000.000"},
+    {id:"a05", ts:"2026-10-19 09:02", user:"Budi Santoso",     app:"SISTRO", action:"Booking truk TRK-102 masuk checkpoint Cikampek"},
+    {id:"a06", ts:"2026-10-19 08:58", user:"Yuliana Sari",     app:"PPTS",   action:"Memverifikasi kios KIOS-0478 (Gapoktan Tani Makmur)"},
+    {id:"a07", ts:"2026-10-19 08:55", user:"Agus Setiawan",    app:"NWBC",   action:"Posting jurnal FI dokumen 51000321"},
+    {id:"a08", ts:"2026-10-19 08:50", user:"Lestari Ningsih",  app:"NWBC",   action:"Membuka task MRP Plant PKT-2A"},
+    {id:"a09", ts:"2026-10-19 08:47", user:"Andi Darmawan",    app:"NWBC",   action:"Membuka task MRP untuk Plant Pusri-1B"},
+    {id:"a10", ts:"2026-10-19 08:42", user:"Dedi Prasetyo",    app:"DOF",    action:"Submit memo internal M-2026-334"},
+    {id:"a11", ts:"2026-10-19 08:38", user:"Rizal Pratama",    app:"SISTRO", action:"Konfirmasi booking TRK-140 untuk Gudang Bontang"},
+    {id:"a12", ts:"2026-10-19 08:35", user:"Rina Kurnia",      app:"PPTS",   action:"Memverifikasi kios KIOS-0451 (Koperasi Tani Makmur)"},
+    {id:"a13", ts:"2026-10-19 08:30", user:"Fajar Nugroho",    app:"SISTRO", action:"Mengubah jadwal pengiriman TRK-115 ke Cilacap"},
+    {id:"a14", ts:"2026-10-19 08:25", user:"Wulan Sari",       app:"DOF",    action:"Approval memo M-2026-329 revisi anggaran Q4"},
+    {id:"a15", ts:"2026-10-19 08:20", user:"Sistem",           app:"PPTS",   action:"Sinkronisasi data penerima e-RDKK selesai (4.820 record)"},
+    {id:"a16", ts:"2026-10-19 08:10", user:"Budi Santoso",     app:"SISTRO", action:"Checkout truk TRK-105 dari Gudang Gresik"},
+    {id:"a17", ts:"2026-10-19 08:05", user:"Budi Santoso",     app:"SISTRO", action:"Mencetak tiket muat TKT-88421"},
+    {id:"a18", ts:"2026-10-19 08:00", user:"Fitri Handayani",  app:"DOF",    action:"Menyetujui PR-2026-0203 (pengadaan karung)"},
+    {id:"a19", ts:"2026-10-19 07:58", user:"Sari Wulandari",   app:"DOF",    action:"Membuat draft memo internal M-2026-331"},
+    {id:"a20", ts:"2026-10-19 07:45", user:"Lestari Ningsih",  app:"NWBC",   action:"Menjalankan laporan bulanan FI periode Sep 2026"},
+    {id:"a21", ts:"2026-10-19 07:40", user:"Bagus Hermawan",   app:"SISTRO", action:"Menyetujui penambahan slot truk sore Gudang Bontang"},
+    {id:"a22", ts:"2026-10-19 07:30", user:"Budi Santoso",     app:"SISTRO", action:"Konfirmasi booking TRK-118 untuk Gudang Gresik"},
+    {id:"a23", ts:"2026-10-19 07:20", user:"Agus Setiawan",    app:"NWBC",   action:"Membuka PO-2026-0802 untuk pengadaan amonia"},
+    {id:"a24", ts:"2026-10-19 07:10", user:"Fajar Nugroho",    app:"DOF",    action:"Submit dokumen logistik L-2026-118"},
+    {id:"a25", ts:"2026-10-19 06:55", user:"Indah Permatasari",app:"PPTS",   action:"Import 78 data penerima dari wilayah Indramayu"},
+    {id:"a26", ts:"2026-10-18 17:35", user:"Maya Anggraini",   app:"PPTS",   action:"Menjalankan audit verifikasi kios Q3 2026"},
+    {id:"a27", ts:"2026-10-18 17:20", user:"Rina Kurnia",      app:"PPTS",   action:"Menolak kios KIOS-0611 (data tidak lengkap)"},
+    {id:"a28", ts:"2026-10-18 17:12", user:"Andi Darmawan",    app:"NWBC",   action:"Approval PR-2026-0197 senilai Rp 1.250.000.000"},
+    {id:"a29", ts:"2026-10-18 16:55", user:"Fajar Nugroho",    app:"SISTRO", action:"Konfirmasi ulang rute TRK-121 ke Cilacap"},
+    {id:"a30", ts:"2026-10-18 16:44", user:"Sistem",           app:"SISTRO", action:"Auto-cancel booking TRK-099 karena lewat SLA 4 jam"},
+    {id:"a31", ts:"2026-10-18 16:30", user:"Sari Wulandari",   app:"DOF",    action:"Mengirim notifikasi approval ke Kepala Divisi"},
+    {id:"a32", ts:"2026-10-18 16:10", user:"Dedi Prasetyo",    app:"DOF",    action:"Upload lampiran dokumen pengadaan PR-2026-0198"},
+    {id:"a33", ts:"2026-10-18 15:40", user:"Maya Anggraini",   app:"PPTS",   action:"Menjalankan laporan mingguan kios baru"},
+    {id:"a34", ts:"2026-10-18 15:20", user:"Bagus Hermawan",   app:"SISTRO", action:"Menyetujui perpanjangan jam operasional Gudang Gresik"},
+    {id:"a35", ts:"2026-10-18 14:30", user:"Yuliana Sari",     app:"PPTS",   action:"Mengubah alamat kios KIOS-0331"},
+    {id:"a36", ts:"2026-10-18 13:20", user:"Lestari Ningsih",  app:"NWBC",   action:"Melakukan posting jurnal FI dokumen 51000234"},
+    {id:"a37", ts:"2026-10-18 12:00", user:"Agus Setiawan",    app:"NWBC",   action:"Membuat laporan MPS periode Okt 2026"},
+    {id:"a38", ts:"2026-10-18 11:10", user:"Andi Darmawan",    app:"NWBC",   action:"Approve PO-2026-0781 untuk kantong pupuk"},
+    {id:"a39", ts:"2026-10-18 10:40", user:"Wulan Sari",       app:"DOF",    action:"Approval dokumen pengadaan PR-2026-0201"},
+    {id:"a40", ts:"2026-10-18 09:45", user:"Sistem",           app:"SISTRO", action:"Rekap harian truk selesai (79 dari 86 booking)"},
+    {id:"a41", ts:"2026-10-18 09:20", user:"Indah Permatasari",app:"PPTS",   action:"Memverifikasi 24 kios dari wilayah Subang"},
+    {id:"a42", ts:"2026-10-18 08:30", user:"Rina Kurnia",      app:"PPTS",   action:"Import 120 data penerima dari wilayah Karawang"},
+    {id:"a43", ts:"2026-10-18 08:00", user:"Hendra Wijaya",    app:"SISTRO", action:"Konfirmasi booking TRK-088 untuk Gudang Cilacap"},
+    {id:"a44", ts:"2026-10-18 07:30", user:"Fitri Handayani",  app:"DOF",    action:"Approval memo M-2026-330 revisi anggaran marketing"},
+    {id:"a45", ts:"2026-10-17 16:45", user:"Rizal Pratama",    app:"SISTRO", action:"Mengubah data truk TRK-077 (update plat)"},
+    {id:"a46", ts:"2026-10-17 15:30", user:"Sari Wulandari",   app:"DOF",    action:"Membuat draft pengadaan PR-2026-0204"},
+    {id:"a47", ts:"2026-10-17 14:00", user:"Hendra Wijaya",    app:"SISTRO", action:"Account suspended by admin"},
+    {id:"a48", ts:"2026-10-17 11:20", user:"Andi Darmawan",    app:"NWBC",   action:"Approve PO-2026-0779 (pengadaan suku cadang)"},
+    {id:"a49", ts:"2026-10-17 10:15", user:"Maya Anggraini",   app:"PPTS",   action:"Menjalankan audit verifikasi kios PUSRI"},
+    {id:"a50", ts:"2026-10-17 09:40", user:"Yuliana Sari",     app:"PPTS",   action:"Menambahkan kios KIOS-0702 ke sistem"},
+    {id:"a51", ts:"2026-10-17 08:20", user:"Lestari Ningsih",  app:"NWBC",   action:"Menjalankan laporan stok bulanan"},
+    {id:"a52", ts:"2026-10-17 07:05", user:"Budi Santoso",     app:"SISTRO", action:"Checkout truk TRK-080 dari Gudang Bontang"}
+  ];
+  store.auditLogs = [
+    {id:"g01", ts:"2026-10-19 09:22:14", user:"Fitri Handayani",  company:"PUSRI", app:"DOF",    action:"APPROVE_DOC",   target:"PR-2026-0205", ip:"10.20.4.11", status:"ok"},
+    {id:"g02", ts:"2026-10-19 09:14:22", user:"Sari Wulandari",   company:"PIHC",  app:"DOF",    action:"APPROVE_DOC",   target:"PR-2026-0198", ip:"10.20.5.14", status:"ok"},
+    {id:"g03", ts:"2026-10-19 09:10:05", user:"Indah Permatasari",company:"PUSRI", app:"PPTS",   action:"VERIFY_KIOS",   target:"KIOS-0702",    ip:"10.20.4.22", status:"ok"},
+    {id:"g04", ts:"2026-10-19 09:08:10", user:"Andi Darmawan",    company:"PIHC",  app:"NWBC",   action:"APPROVE_PR",    target:"PR-2026-0199", ip:"10.20.1.8",  status:"ok"},
+    {id:"g05", ts:"2026-10-19 09:02:11", user:"Budi Santoso",     company:"PIHC",  app:"SISTRO", action:"CHECKPOINT_IN", target:"TRK-102",      ip:"10.20.5.51", status:"ok"},
+    {id:"g06", ts:"2026-10-19 08:58:40", user:"Yuliana Sari",     company:"PKG",   app:"PPTS",   action:"VERIFY_KIOS",   target:"KIOS-0478",    ip:"10.20.7.12", status:"ok"},
+    {id:"g07", ts:"2026-10-19 08:55:30", user:"Agus Setiawan",    company:"PGA",   app:"NWBC",   action:"POST_JOURNAL",  target:"51000321",     ip:"10.20.8.33", status:"ok"},
+    {id:"g08", ts:"2026-10-19 08:50:00", user:"Lestari Ningsih",  company:"PKT",   app:"NWBC",   action:"OPEN_TASK",     target:"MRP-PKT-2A",   ip:"10.20.9.33", status:"ok"},
+    {id:"g09", ts:"2026-10-19 08:42:12", user:"Dedi Prasetyo",    company:"PUSRI", app:"DOF",    action:"SUBMIT_MEMO",   target:"M-2026-334",   ip:"10.20.4.10", status:"ok"},
+    {id:"g10", ts:"2026-10-19 08:30:00", user:"Fajar Nugroho",    company:"PIHC-LOG",app:"SISTRO",action:"UPDATE_SCHEDULE",target:"TRK-115",    ip:"10.20.10.20",status:"ok"},
+    {id:"g11", ts:"2026-10-19 08:20:00", user:"Sistem",           company:"-",     app:"PPTS",   action:"SYNC_ERDKK",    target:"4820 records", ip:"-",          status:"ok"},
+    {id:"g12", ts:"2026-10-19 08:12:05", user:"unknown",          company:"-",     app:"PPTS",   action:"LOGIN_FAILED",  target:"ppts/login",   ip:"103.12.44.9",status:"err"},
+    {id:"g13", ts:"2026-10-19 08:12:30", user:"unknown",          company:"-",     app:"PPTS",   action:"LOGIN_FAILED",  target:"ppts/login",   ip:"103.12.44.9",status:"err"},
+    {id:"g14", ts:"2026-10-19 08:15:05", user:"unknown",          company:"-",     app:"NWBC",   action:"LOGIN_FAILED",  target:"nwbc",         ip:"45.76.112.8",status:"err"},
+    {id:"g15", ts:"2026-10-19 08:05:30", user:"Budi Santoso",     company:"PIHC",  app:"SISTRO", action:"PRINT_TICKET",  target:"TKT-88421",    ip:"10.20.5.51", status:"ok"},
+    {id:"g16", ts:"2026-10-19 07:55:00", user:"Indah Permatasari",company:"PUSRI", app:"PPTS",   action:"IMPORT_DATA",   target:"78 rows",      ip:"10.20.4.22", status:"ok"},
+    {id:"g17", ts:"2026-10-19 07:45:00", user:"Lestari Ningsih",  company:"PKT",   app:"NWBC",   action:"RUN_REPORT",    target:"FI-2026-09",   ip:"10.20.9.33", status:"ok"},
+    {id:"g18", ts:"2026-10-19 07:40:00", user:"Bagus Hermawan",   company:"PKG",   app:"SISTRO", action:"APPROVE_SLOT",  target:"SLOT-SORE",    ip:"10.20.7.5",  status:"ok"},
+    {id:"g19", ts:"2026-10-18 17:35:00", user:"Maya Anggraini",   company:"PIHC",  app:"PPTS",   action:"RUN_AUDIT",     target:"Q3-2026",      ip:"10.20.6.40", status:"ok"},
+    {id:"g20", ts:"2026-10-18 17:20:15", user:"Rina Kurnia",      company:"PIHC",  app:"PPTS",   action:"REJECT_KIOS",   target:"KIOS-0611",    ip:"10.20.6.22", status:"warn"},
+    {id:"g21", ts:"2026-10-18 17:12:55", user:"Andi Darmawan",    company:"PIHC",  app:"NWBC",   action:"APPROVE_PR",    target:"PR-2026-0197", ip:"10.20.1.8",  status:"ok"},
+    {id:"g22", ts:"2026-10-18 16:55:00", user:"Fajar Nugroho",    company:"PIHC-LOG",app:"SISTRO",action:"UPDATE_ROUTE",target:"TRK-121",      ip:"10.20.10.20",status:"ok"},
+    {id:"g23", ts:"2026-10-18 16:44:00", user:"Sistem",           company:"-",     app:"SISTRO", action:"AUTO_CANCEL",   target:"TRK-099",      ip:"-",          status:"warn"},
+    {id:"g24", ts:"2026-10-18 16:30:40", user:"Sari Wulandari",   company:"PIHC",  app:"DOF",    action:"SEND_NOTIF",    target:"PR-2026-0198", ip:"10.20.5.14", status:"ok"},
+    {id:"g25", ts:"2026-10-18 16:10:05", user:"Dedi Prasetyo",    company:"PUSRI", app:"DOF",    action:"UPLOAD_FILE",   target:"PR-2026-0198", ip:"10.20.4.10", status:"ok"},
+    {id:"g26", ts:"2026-10-18 15:40:00", user:"Maya Anggraini",   company:"PIHC",  app:"PPTS",   action:"RUN_REPORT",    target:"KIOS-NEW-WEEK",ip:"10.20.6.40", status:"ok"},
+    {id:"g27", ts:"2026-10-18 15:20:10", user:"Bagus Hermawan",   company:"PKG",   app:"SISTRO", action:"APPROVE_SLOT",  target:"JAM-OPERASIONAL",ip:"10.20.7.5",status:"ok"},
+    {id:"g28", ts:"2026-10-18 14:30:10", user:"Yuliana Sari",     company:"PKG",   app:"PPTS",   action:"UPDATE_KIOS",   target:"KIOS-0331",    ip:"10.20.7.12", status:"ok"},
+    {id:"g29", ts:"2026-10-18 13:20:45", user:"Lestari Ningsih",  company:"PKT",   app:"NWBC",   action:"POST_JOURNAL",  target:"51000234",     ip:"10.20.9.33", status:"ok"},
+    {id:"g30", ts:"2026-10-18 12:00:00", user:"Agus Setiawan",    company:"PGA",   app:"NWBC",   action:"RUN_REPORT",    target:"MPS-2026-10",  ip:"10.20.8.33", status:"ok"},
+    {id:"g31", ts:"2026-10-18 11:10:00", user:"Andi Darmawan",    company:"PIHC",  app:"NWBC",   action:"APPROVE_PO",    target:"PO-2026-0781", ip:"10.20.1.8",  status:"ok"},
+    {id:"g32", ts:"2026-10-18 10:40:00", user:"Wulan Sari",       company:"PGA",   app:"DOF",    action:"APPROVE_DOC",   target:"PR-2026-0201", ip:"10.20.8.5",  status:"ok"},
+    {id:"g33", ts:"2026-10-18 09:45:00", user:"Sistem",           company:"-",     app:"SISTRO", action:"DAILY_SUMMARY", target:"79/86",        ip:"-",          status:"ok"},
+    {id:"g34", ts:"2026-10-18 09:20:00", user:"Indah Permatasari",company:"PUSRI", app:"PPTS",   action:"VERIFY_BULK",   target:"24 kios",      ip:"10.20.4.22", status:"ok"},
+    {id:"g35", ts:"2026-10-18 08:30:00", user:"Rina Kurnia",      company:"PIHC",  app:"PPTS",   action:"IMPORT_DATA",   target:"120 rows",     ip:"10.20.6.22", status:"ok"},
+    {id:"g36", ts:"2026-10-18 08:00:00", user:"Hendra Wijaya",    company:"PIM",   app:"SISTRO", action:"CHECKPOINT_IN", target:"TRK-088",      ip:"10.20.2.44", status:"ok"},
+    {id:"g37", ts:"2026-10-18 07:30:00", user:"Fitri Handayani",  company:"PUSRI", app:"DOF",    action:"APPROVE_MEMO",  target:"M-2026-330",   ip:"10.20.4.11", status:"ok"},
+    {id:"g38", ts:"2026-10-17 16:45:00", user:"Rizal Pratama",    company:"PKT",   app:"SISTRO", action:"UPDATE_TRUCK",  target:"TRK-077",      ip:"10.20.9.55", status:"ok"},
+    {id:"g39", ts:"2026-10-17 15:30:00", user:"Sari Wulandari",   company:"PIHC",  app:"DOF",    action:"CREATE_DRAFT",  target:"PR-2026-0204", ip:"10.20.5.14", status:"ok"},
+    {id:"g40", ts:"2026-10-17 14:00:00", user:"Andi Darmawan",    company:"PIHC",  app:"-",      action:"SUSPEND_USER",  target:"u07",          ip:"10.20.1.8",  status:"warn"},
+    {id:"g41", ts:"2026-10-17 11:20:00", user:"Andi Darmawan",    company:"PIHC",  app:"NWBC",   action:"APPROVE_PO",    target:"PO-2026-0779", ip:"10.20.1.8",  status:"ok"},
+    {id:"g42", ts:"2026-10-17 10:15:00", user:"Maya Anggraini",   company:"PIHC",  app:"PPTS",   action:"RUN_AUDIT",     target:"PUSRI-Q3",     ip:"10.20.6.40", status:"ok"},
+    {id:"g43", ts:"2026-10-17 09:40:00", user:"Yuliana Sari",     company:"PKG",   app:"PPTS",   action:"CREATE_KIOS",   target:"KIOS-0702",    ip:"10.20.7.12", status:"ok"},
+    {id:"g44", ts:"2026-10-17 08:20:00", user:"Lestari Ningsih",  company:"PKT",   app:"NWBC",   action:"RUN_REPORT",    target:"STOK-2026-10", ip:"10.20.9.33", status:"ok"},
+    {id:"g45", ts:"2026-10-17 07:05:00", user:"Budi Santoso",     company:"PIHC",  app:"SISTRO", action:"CHECKPOINT_OUT",target:"TRK-080",      ip:"10.20.5.51", status:"ok"},
+    {id:"g46", ts:"2026-10-17 06:30:00", user:"unknown",          company:"-",     app:"DOF",    action:"LOGIN_FAILED",  target:"dof/login",    ip:"45.76.112.9",status:"err"}
+  ];
+  store.notifications = [
+    {id:"n01", text:"3 dokumen DOF menunggu approval Anda",               ts:"2 menit lalu",  unread:true,  app:"DOF"},
+    {id:"n02", text:"Truk TRK-118 terlambat masuk checkpoint Gresik",     ts:"18 menit lalu", unread:true,  app:"SISTRO"},
+    {id:"n03", text:"PPTS: 127 penerima baru menunggu verifikasi",        ts:"28 menit lalu", unread:true,  app:"PPTS"},
+    {id:"n04", text:"NWBC: password akan kedaluwarsa dalam 5 hari",       ts:"1 jam lalu",    unread:true,  app:"NWBC"},
+    {id:"n05", text:"Approval PR-2026-0205 senilai Rp 2,4 M menunggu",    ts:"1 jam lalu",    unread:true,  app:"DOF"},
+    {id:"n06", text:"SISTRO: booking TRK-140 dikonfirmasi",               ts:"2 jam lalu",    unread:true,  app:"SISTRO"},
+    {id:"n07", text:"PPTS: kios KIOS-0702 berhasil diverifikasi",         ts:"2 jam lalu",    unread:false, app:"PPTS"},
+    {id:"n08", text:"NWBC: sinkronisasi master data GL selesai",          ts:"3 jam lalu",    unread:false, app:"NWBC"},
+    {id:"n09", text:"SISTRO: maintenance terjadwal Minggu 02:00 WIB",     ts:"kemarin",       unread:false, app:"SISTRO"},
+    {id:"n10", text:"DOF: 42 draft belum disubmit minggu ini",            ts:"kemarin",       unread:false, app:"DOF"},
+    {id:"n11", text:"PPTS: kios KIOS-0611 ditolak, mohon tindak lanjut",  ts:"kemarin",       unread:false, app:"PPTS"},
+    {id:"n12", text:"NWBC: 6 PO siap approval",                           ts:"2 hari lalu",   unread:false, app:"NWBC"},
+    {id:"n13", text:"SISTRO: booking TRK-099 auto-cancel (SLA lewat)",    ts:"2 hari lalu",   unread:false, app:"SISTRO"},
+    {id:"n14", text:"DOF: perubahan kebijakan approval efektif 1 Nov",    ts:"3 hari lalu",   unread:false, app:"DOF"},
+    {id:"n15", text:"PPTS: 23 kios ditolak bulan ini",                    ts:"3 hari lalu",   unread:false, app:"PPTS"},
+    {id:"n16", text:"NWBC: penutupan periode Okt dijadwalkan 31 Okt",     ts:"4 hari lalu",   unread:false, app:"NWBC"},
+    {id:"n17", text:"SISTRO: rekap harian truk selesai (79/86)",          ts:"4 hari lalu",   unread:false, app:"SISTRO"},
+    {id:"n18", text:"DOF: memo M-2026-330 sudah disetujui",               ts:"5 hari lalu",   unread:false, app:"DOF"},
+    {id:"n19", text:"PPTS: audit verifikasi Q3 2026 selesai",             ts:"5 hari lalu",   unread:false, app:"PPTS"},
+    {id:"n20", text:"NWBC: jurnal FI 51000321 berhasil diposting",        ts:"6 hari lalu",   unread:false, app:"NWBC"},
+    {id:"n21", text:"SISTRO: rute TRK-121 diperbarui ke Cilacap",         ts:"6 hari lalu",   unread:false, app:"SISTRO"},
+    {id:"n22", text:"Sistem: user u07 (Hendra Wijaya) disuspend",         ts:"1 minggu lalu", unread:false, app:"NWBC"}
+  ];
+  store.moduleData.NWBC = [
+    {id:"PR-2026-0198", title:"Pengadaan Amonia 500 ton",               status:"Menunggu Approval", company:"PIHC"},
+    {id:"PR-2026-0199", title:"Pengadaan Pupuk Urea 1.000 ton",         status:"Menunggu Approval", company:"PIHC"},
+    {id:"PR-2026-0201", title:"Pengadaan Karung Pupuk 200.000 lembar",  status:"Menunggu Approval", company:"PUSRI"},
+    {id:"PR-2026-0203", title:"Pengadaan Karung 150.000 lembar",        status:"Approved",          company:"PUSRI"},
+    {id:"PR-2026-0204", title:"Pengadaan Forklift 2 unit",              status:"In Progress",       company:"PKG"},
+    {id:"PR-2026-0205", title:"Pengadaan Amonia 1.000 ton",             status:"Approved",          company:"PUSRI"},
+    {id:"MRP-PUSRI-1B", title:"MRP Plant Pusri-1B Periode Okt",         status:"In Progress",       company:"PUSRI"},
+    {id:"MRP-PUSRI-2A", title:"MRP Plant Pusri-2A Periode Okt",         status:"In Progress",       company:"PUSRI"},
+    {id:"MRP-PKT-2A",   title:"MRP Plant PKT-2A Periode Okt",           status:"In Progress",       company:"PKT"},
+    {id:"MRP-PKT-1A",   title:"MRP Plant PKT-1A Periode Okt",           status:"Completed",         company:"PKT"},
+    {id:"MRP-PKG-3",    title:"MRP Plant PKG-3 Periode Okt",            status:"Completed",         company:"PKG"},
+    {id:"PO-2026-0779", title:"Purchase Order Suku Cadang Mesin",       status:"Approved",          company:"PGA"},
+    {id:"PO-2026-0780", title:"Purchase Order Pelumas Industri",        status:"Approved",          company:"PUSRI"},
+    {id:"PO-2026-0781", title:"Purchase Order Kantong Pupuk",           status:"Approved",          company:"PKT"},
+    {id:"PO-2026-0802", title:"Purchase Order Amonia Cair",             status:"Menunggu Approval", company:"PGA"},
+    {id:"FI-2026-09",   title:"Laporan Bulanan FI Sept 2026",           status:"Completed",         company:"PIHC"},
+    {id:"FI-2026-10",   title:"Laporan Bulanan FI Okt 2026",            status:"In Progress",       company:"PIHC"},
+    {id:"51000321",     title:"Posting Jurnal FI 51000321",             status:"Completed",         company:"PGA"}
+  ];
+  store.moduleData.DOF = [
+    {id:"PR-2026-0197", title:"Renovasi Gudang Cikampek",               status:"Selesai",           pic:"Budi S."},
+    {id:"PR-2026-0198", title:"Pengadaan Amonia 500 ton",               status:"Menunggu Approval", pic:"Sari W."},
+    {id:"PR-2026-0199", title:"Pengadaan Urea 1.000 ton",               status:"Menunggu Approval", pic:"Dedi P."},
+    {id:"PR-2026-0201", title:"Pengadaan Karung Pupuk",                 status:"Menunggu Approval", pic:"Fitri H."},
+    {id:"PR-2026-0203", title:"Pengadaan Karung 150.000 lembar",        status:"Selesai",           pic:"Wulan S."},
+    {id:"PR-2026-0204", title:"Pengadaan Forklift 2 unit",              status:"Draft",             pic:"Sari W."},
+    {id:"PR-2026-0205", title:"Pengadaan Amonia 1.000 ton",             status:"Selesai",           pic:"Fitri H."},
+    {id:"M-2026-329",   title:"Revisi Anggaran Q4",                     status:"Selesai",           pic:"Wulan S."},
+    {id:"M-2026-330",   title:"Revisi Anggaran Marketing",              status:"Selesai",           pic:"Fitri H."},
+    {id:"M-2026-331",   title:"Memo Internal Rapat Distribusi",         status:"Draft",             pic:"Andi D."},
+    {id:"M-2026-332",   title:"Memo Rapat Koordinasi Logistik",         status:"Selesai",           pic:"Sari W."},
+    {id:"M-2026-333",   title:"Memo SOP Baru Verifikasi Kios",          status:"Selesai",           pic:"Rina K."},
+    {id:"M-2026-334",   title:"Memo Penyesuaian Anggaran Q4",           status:"Menunggu Approval", pic:"Dedi P."},
+    {id:"L-2026-115",   title:"Laporan Logistik September 2026",        status:"Selesai",           pic:"Fajar N."},
+    {id:"L-2026-116",   title:"Laporan Logistik Awal Okt 2026",         status:"Selesai",           pic:"Fajar N."},
+    {id:"L-2026-117",   title:"Laporan Audit Kios Q3 2026",             status:"Selesai",           pic:"Maya A."},
+    {id:"L-2026-118",   title:"Laporan Logistik Minggu ke-3 Okt",       status:"Menunggu Approval", pic:"Fajar N."},
+    {id:"L-2026-119",   title:"Laporan Stock Opname Gudang",            status:"Draft",             pic:"Budi S."},
+    {id:"L-2026-120",   title:"Laporan Pengiriman Regional Jabar",      status:"Menunggu Approval", pic:"Fajar N."},
+    {id:"L-2026-121",   title:"Laporan Kinerja Vendor Amonia",          status:"Draft",             pic:"Dedi P."},
+    {id:"M-2026-335",   title:"Memo Penggunaan Dana Cadangan",          status:"Draft",             pic:"Wulan S."},
+    {id:"M-2026-336",   title:"Memo Rapat Tahunan 2026",                status:"Draft",             pic:"Andi D."}
+  ];
+  store.moduleData.SISTRO = [
+    {id:"TRK-099",  plat:"D 6611 QRS", gudang:"Cilacap",  status:"Auto-cancel",     eta:"-"},
+    {id:"TRK-100",  plat:"B 9001 AAA", gudang:"Cikampek", status:"Selesai",         eta:"07:00"},
+    {id:"TRK-101",  plat:"B 9011 BBB", gudang:"Cikampek", status:"Selesai",         eta:"07:30"},
+    {id:"TRK-102",  plat:"B 9123 XYZ", gudang:"Cikampek", status:"Checkpoint",      eta:"09:45"},
+    {id:"TRK-103",  plat:"B 9401 CCC", gudang:"Cikampek", status:"Dalam Perjalanan",eta:"10:15"},
+    {id:"TRK-104",  plat:"B 8412 KJU", gudang:"Gresik",   status:"Selesai",         eta:"07:55"},
+    {id:"TRK-105",  plat:"B 8451 KJU", gudang:"Gresik",   status:"Selesai",         eta:"08:10"},
+    {id:"TRK-106",  plat:"B 8499 KJU", gudang:"Gresik",   status:"Dalam Perjalanan",eta:"10:30"},
+    {id:"TRK-107",  plat:"D 7711 ABC", gudang:"Gresik",   status:"Selesai",         eta:"06:45"},
+    {id:"TRK-108",  plat:"D 7722 ABC", gudang:"Gresik",   status:"Terlambat",       eta:"07:20"},
+    {id:"TRK-109",  plat:"D 7733 ABC", gudang:"Cilacap",  status:"Selesai",         eta:"07:10"},
+    {id:"TRK-110",  plat:"D 7744 ABC", gudang:"Cilacap",  status:"Dalam Perjalanan",eta:"10:45"},
+    {id:"TRK-111",  plat:"E 5511 RST", gudang:"Bontang",  status:"Selesai",         eta:"06:00"},
+    {id:"TRK-112",  plat:"E 5522 RST", gudang:"Bontang",  status:"Checkpoint",      eta:"09:30"},
+    {id:"TRK-113",  plat:"E 5533 RST", gudang:"Bontang",  status:"Dalam Perjalanan",eta:"11:00"},
+    {id:"TRK-115",  plat:"E 5555 RST", gudang:"Cilacap",  status:"Dalam Perjalanan",eta:"10:20"},
+    {id:"TRK-118",  plat:"D 7711 ABC", gudang:"Gresik",   status:"Terlambat",       eta:"08:30"},
+    {id:"TRK-121",  plat:"B 9201 XYZ", gudang:"Cilacap",  status:"Selesai",         eta:"08:45"},
+    {id:"TRK-140",  plat:"E 5566 RST", gudang:"Bontang",  status:"Dalam Perjalanan",eta:"11:30"},
+    {id:"TKT-88421",plat:"B 9123 XYZ", gudang:"Cikampek", status:"Tiket tercetak",  eta:"09:45"}
+  ];
+  store.moduleData.PPTS = [
+    {id:"KIOS-0320", name:"Kios Sinar Tani",         wilayah:"Karawang", status:"Terverifikasi"},
+    {id:"KIOS-0325", name:"Kios Barokah",            wilayah:"Karawang", status:"Terverifikasi"},
+    {id:"KIOS-0330", name:"UD Sumber Rejeki",        wilayah:"Karawang", status:"Terverifikasi"},
+    {id:"KIOS-0331", name:"Kios Berkah Tani",        wilayah:"Cirebon",  status:"Terverifikasi"},
+    {id:"KIOS-0340", name:"Koperasi Bumi Tani",      wilayah:"Cirebon",  status:"Terverifikasi"},
+    {id:"KIOS-0350", name:"UD Tani Mulya",           wilayah:"Cirebon",  status:"Menunggu"},
+    {id:"KIOS-0360", name:"Kios Sumber Makmur",      wilayah:"Subang",   status:"Terverifikasi"},
+    {id:"KIOS-0370", name:"Gapoktan Subur",          wilayah:"Subang",   status:"Terverifikasi"},
+    {id:"KIOS-0380", name:"UD Harapan Tani",         wilayah:"Subang",   status:"Menunggu"},
+    {id:"KIOS-0390", name:"Koperasi Sejahtera",      wilayah:"Indramayu",status:"Terverifikasi"},
+    {id:"KIOS-0400", name:"Kios Tani Jaya",          wilayah:"Indramayu",status:"Terverifikasi"},
+    {id:"KIOS-0420", name:"UD Barokah Jaya",         wilayah:"Indramayu",status:"Terverifikasi"},
+    {id:"KIOS-0451", name:"Koperasi Tani Makmur",    wilayah:"Karawang", status:"Terverifikasi"},
+    {id:"KIOS-0478", name:"Gapoktan Tani Makmur",    wilayah:"Subang",   status:"Terverifikasi"},
+    {id:"KIOS-0500", name:"UD Makmur Sentosa",       wilayah:"Karawang", status:"Terverifikasi"},
+    {id:"KIOS-0522", name:"Gapoktan Sido Makmur",    wilayah:"Subang",   status:"Menunggu"},
+    {id:"KIOS-0550", name:"Kios Sumber Tani",        wilayah:"Cirebon",  status:"Terverifikasi"},
+    {id:"KIOS-0580", name:"UD Berkah Jaya",          wilayah:"Indramayu",status:"Menunggu"},
+    {id:"KIOS-0600", name:"Koperasi Agro Mandiri",   wilayah:"Karawang", status:"Terverifikasi"},
+    {id:"KIOS-0611", name:"UD Tani Jaya",            wilayah:"Indramayu",status:"Ditolak"},
+    {id:"KIOS-0650", name:"Gapoktan Makmur Bersama", wilayah:"Subang",   status:"Menunggu"},
+    {id:"KIOS-0680", name:"Kios Karya Tani",         wilayah:"Cirebon",  status:"Terverifikasi"},
+    {id:"KIOS-0700", name:"UD Sumber Rejeki Baru",   wilayah:"Karawang", status:"Terverifikasi"},
+    {id:"KIOS-0702", name:"Koperasi Subur Jaya",     wilayah:"Indramayu",status:"Terverifikasi"},
+    {id:"KIOS-0720", name:"Kios Berkah Jaya",        wilayah:"Subang",   status:"Terverifikasi"}
+  ];
+  store.health = [
+    {app:"NWBC",          latency:"118 ms", uptime:"99.95%", state:"online"},
+    {app:"DOF",           latency:"92 ms",  uptime:"99.98%", state:"online"},
+    {app:"SISTRO",        latency:"142 ms", uptime:"99.91%", state:"online"},
+    {app:"PPTS",          latency:"820 ms", uptime:"99.10%", state:"degraded"},
+    {app:"DOF-Approval",  latency:"86 ms",  uptime:"99.99%", state:"online"},
+    {app:"SISTRO-GPS",    latency:"245 ms", uptime:"98.85%", state:"degraded"},
+    {app:"SSO-IdP",       latency:"64 ms",  uptime:"100%",   state:"online"},
+    {app:"Gateway",       latency:"22 ms",  uptime:"100%",   state:"online"}
+  ];
+}
+
+function load(){
+  const raw = localStorage.getItem(KEY);
+  if (raw) { try { store = JSON.parse(raw); return; } catch(e){} }
+  seed(); save();
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify(store)); }
+function resetAll(){
+  if (!confirm("Reset semua data ke kondisi dummy awal? Semua perubahan akan hilang.")) return;
+  localStorage.removeItem(KEY); seed(); save();
+  currentUser = store.users[0]; currentCompany = store.companies[0];
+  toast("Data direset ke dummy awal");
+  renderView(); refreshTop();
+}
+
+/* ============================================================
+   2. SCHEMAS
+   ============================================================ */
+const SCHEMAS = {
+  users: { label:"Pengguna", key:"id", fields:[
+    {name:"name", label:"Nama Lengkap", type:"text", required:true},
+    {name:"initials", label:"Inisial (2 huruf)", type:"text", required:true},
+    {name:"role", label:"Role", type:"select", optionsFn:()=>store.rbac.map(r=>r.role)},
+    {name:"email", label:"Email", type:"email", required:true},
+    {name:"company", label:"Perusahaan", type:"select", optionsFn:()=>store.companies.map(c=>({value:c.id,label:c.short}))},
+    {name:"lastLogin", label:"Login Terakhir", type:"text"},
+    {name:"status", label:"Status", type:"select", options:["active","suspended"]}
+  ]},
+  companies: { label:"Perusahaan", key:"id", fields:[
+    {name:"id", label:"Kode", type:"text", required:true},
+    {name:"name", label:"Nama Lengkap", type:"text", required:true},
+    {name:"short", label:"Nama Pendek", type:"text", required:true}
+  ]},
+  apps: { label:"Aplikasi", key:"key", fields:[
+    {name:"key", label:"Kunci", type:"text", required:true},
+    {name:"name", label:"Nama", type:"text", required:true},
+    {name:"desc", label:"Deskripsi", type:"textarea"},
+    {name:"url", label:"URL", type:"text"},
+    {name:"status", label:"Status", type:"select", options:["online","degraded","offline"]},
+    {name:"lastAccess", label:"Akses Terakhir", type:"text"},
+    {name:"stats", label:"Statistik", type:"text"},
+    {name:"trend", label:"Trend (7 angka, pisah koma)", type:"text", parse:"nums"}
+  ]},
+  activities: { label:"Aktivitas", key:"id", fields:[
+    {name:"ts", label:"Waktu", type:"text", required:true},
+    {name:"user", label:"User", type:"text"},
+    {name:"app", label:"Modul", type:"select", optionsFn:()=>store.apps.map(a=>a.key)},
+    {name:"action", label:"Aksi", type:"textarea", required:true}
+  ]},
+  auditLogs: { label:"Audit Log", key:"id", fields:[
+    {name:"ts", label:"Waktu", type:"text", required:true},
+    {name:"user", label:"User", type:"text"},
+    {name:"company", label:"Perusahaan", type:"text"},
+    {name:"app", label:"Modul", type:"select", optionsFn:()=>store.apps.map(a=>a.key)},
+    {name:"action", label:"Aksi", type:"text"},
+    {name:"target", label:"Target", type:"text"},
+    {name:"ip", label:"IP", type:"text"},
+    {name:"status", label:"Status", type:"select", options:["ok","warn","err"]}
+  ]},
+  notifications: { label:"Notifikasi", key:"id", fields:[
+    {name:"text", label:"Pesan", type:"textarea", required:true},
+    {name:"ts", label:"Waktu", type:"text"},
+    {name:"app", label:"Modul", type:"select", optionsFn:()=>store.apps.map(a=>a.key)},
+    {name:"unread", label:"Belum Dibaca", type:"checkbox"}
+  ]},
+  rbac: { label:"Role", key:"role", fields:[
+    {name:"role", label:"Nama Role", type:"text", required:true},
+    {name:"apps", label:"Aplikasi (pisah koma)", type:"text", parse:"csv"},
+    {name:"users", label:"Jumlah User", type:"number"}
+  ]},
+  health: { label:"Health", key:"app", fields:[
+    {name:"app", label:"Aplikasi", type:"text", required:true},
+    {name:"latency", label:"Latency", type:"text"},
+    {name:"uptime", label:"Uptime", type:"text"},
+    {name:"state", label:"State", type:"select", options:["online","degraded","offline"]}
+  ]}
+};
+
+const MODULE_SCHEMAS = {
+  NWBC: {label:"NWBC", fields:[
+    {name:"id", label:"ID", type:"text", required:true},
+    {name:"title", label:"Judul", type:"text", required:true},
+    {name:"status", label:"Status", type:"text"},
+    {name:"company", label:"Perusahaan", type:"text"}
+  ]},
+  DOF: {label:"DOF", fields:[
+    {name:"id", label:"ID", type:"text", required:true},
+    {name:"title", label:"Judul", type:"text", required:true},
+    {name:"status", label:"Status", type:"text"},
+    {name:"pic", label:"PIC", type:"text"}
+  ]},
+  SISTRO: {label:"SISTRO", fields:[
+    {name:"id", label:"ID", type:"text", required:true},
+    {name:"plat", label:"Plat", type:"text"},
+    {name:"gudang", label:"Gudang", type:"text"},
+    {name:"status", label:"Status", type:"text"},
+    {name:"eta", label:"ETA", type:"text"}
+  ]},
+  PPTS: {label:"PPTS", fields:[
+    {name:"id", label:"ID", type:"text", required:true},
+    {name:"name", label:"Nama", type:"text", required:true},
+    {name:"wilayah", label:"Wilayah", type:"text"},
+    {name:"status", label:"Status", type:"text"}
+  ]}
+};
+
+/* ============================================================
+   3. UTILITIES
+   ============================================================ */
+const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
+const fmt = n => (n||0).toLocaleString("id-ID");
+const uid = () => "x" + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+const escapeHTML = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function toast(msg, isErr){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.className = "toast show" + (isErr?" err":"");
+  clearTimeout(t._to);
+  t._to = setTimeout(()=>{ t.className = "toast" + (isErr?" err":""); }, 2600);
+}
+function closeModal(){ $("#modal").classList.remove("show"); }
+function openModal(title, bodyHTML, primaryText, primaryFn){
+  $("#modalTitle").textContent = title;
+  $("#modalBody").innerHTML = bodyHTML;
+  const btn = $("#modalPrimary");
+  btn.textContent = primaryText || "Tutup";
+  btn.onclick = primaryFn || closeModal;
+  $("#modal").classList.add("show");
+}
+function pill(status){
+  const s = (status||"").toLowerCase();
+  let cls = "";
+  if (s.includes("tolak")||s.includes("cancel")||s.includes("err")||s.includes("suspend")||s.includes("offline")) cls = "err";
+  else if (s.includes("menunggu")||s.includes("draft")||s.includes("terlambat")||s.includes("progress")||s.includes("degraded")||s.includes("warn")) cls = "warn";
+  return `<span class="pill ${cls}">${status||"-"}</span>`;
+}
+function sparkline(data, color="#0b7a5c", w=140, h=44){
+  if (!data || !data.length) data = [0,0,0];
+  const max = Math.max(...data), min = Math.min(...data), range = max-min || 1;
+  const pts = data.map((v,i)=>{
+    const x = (i/Math.max(1,(data.length-1)))*w;
+    const y = h - ((v-min)/range)*(h-10) - 5;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+  const gid = "spk"+uid();
+  return `<svg class="kpi-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity=".35"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+    <polygon points="0,${h} ${pts} ${w},${h}" fill="url(#${gid})"/>
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+function lineChart(values, labels, color="#0b7a5c", w=420, h=150){
+  if (!values || !values.length) return `<div class="empty">Tidak ada data trend</div>`;
+  const pad = 14;
+  const max = Math.max(...values)*1.1, min = 0, range = max-min || 1;
+  const pts = values.map((v,i)=>{
+    const x = pad + (i/Math.max(1,values.length-1))*(w-pad*2);
+    const y = h - pad - 12 - ((v-min)/range)*(h-pad*2-12);
+    return [x,y];
+  });
+  const line = pts.map((p,i)=>(i===0?"M":"L")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+  const area = line + ` L${pts[pts.length-1][0]} ${h-pad-12} L${pts[0][0]} ${h-pad-12} Z`;
+  const gid = "lc"+uid();
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity=".35"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+    ${[0.25,0.5,0.75,1].map(f=>`<line x1="${pad}" y1="${h-pad-12-f*(h-pad*2-12)}" x2="${w-pad}" y2="${h-pad-12-f*(h-pad*2-12)}" stroke="#eef4f2" stroke-width="1"/>`).join("")}
+    <path d="${area}" fill="url(#${gid})"/>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="#fff" stroke="${color}" stroke-width="2"/>`).join("")}
+    ${labels.map((l,i)=>{
+      const x = pad + (i/Math.max(1,labels.length-1))*(w-pad*2);
+      return `<text x="${x}" y="${h-2}" text-anchor="middle" font-size="10" fill="#6b7c78">${l}</text>`;
+    }).join("")}
+  </svg>`;
+}
+function barChart(data, color="#1467b3", w=340, h=150){
+  if (!data || !data.length) return `<div class="empty">Tidak ada data</div>`;
+  const max = Math.max(...data.map(d=>d.value)) * 1.15 || 1;
+  const pad = 14;
+  const gap = (w-pad*2)/data.length;
+  const barW = gap*0.55;
+  const gid = "bc"+uid();
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}"/><stop offset="100%" stop-color="${color}" stop-opacity=".45"/></linearGradient></defs>
+    ${[0.25,0.5,0.75,1].map(f=>`<line x1="${pad}" y1="${h-pad-12-f*(h-pad*2-12)}" x2="${w-pad}" y2="${h-pad-12-f*(h-pad*2-12)}" stroke="#eef4f2" stroke-width="1"/>`).join("")}
+    ${data.map((d,i)=>{
+      const bh = (d.value/max)*(h-pad*2-12);
+      const x = pad + i*gap + (gap-barW)/2;
+      const y = h - pad - 12 - bh;
+      return `<rect x="${x}" y="${y}" width="${barW}" height="${bh}" fill="url(#${gid})" rx="5"/>
+        <text x="${x+barW/2}" y="${y-5}" text-anchor="middle" font-size="11" font-weight="700" fill="#1d2b28">${d.value}</text>
+        <text x="${x+barW/2}" y="${h-pad+2}" text-anchor="middle" font-size="10" fill="#6b7c78">${d.label}</text>`;
+    }).join("")}
+  </svg>`;
+}
+function donutChart(segments, size=140){
+  const total = segments.reduce((s,x)=>s+x.value,0) || 1;
+  const r = size/2 - 16;
+  const c = 2*Math.PI*r;
+  let acc = 0;
+  const circles = segments.map(s=>{
+    const frac = s.value/total;
+    const dash = c*frac;
+    const offset = c*acc;
+    acc += frac;
+    return `<circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${s.color}" stroke-width="20" stroke-dasharray="${dash.toFixed(2)} ${(c-dash).toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}" transform="rotate(-90 ${size/2} ${size/2})"/>`;
+  }).join("");
+  return `<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+    <svg viewBox="0 0 ${size} ${size}" style="width:${size}px;height:${size}px;flex-shrink:0">${circles}
+      <text x="${size/2}" y="${size/2}" text-anchor="middle" font-size="20" font-weight="800" fill="#1d2b28" dy=".35em">${fmt(total)}</text>
+    </svg>
+    <div class="legend" style="flex-direction:column;gap:8px;margin:0;flex:1;min-width:120px">
+      ${segments.map(s=>`<div class="legend-item"><span class="legend-dot" style="background:${s.color}"></span>${s.label}: <b style="margin-left:auto">${fmt(s.value)}</b></div>`).join("")}
+    </div>
+  </div>`;
+}
+function hbar(data){
+  if (!data || !data.length) return `<div class="empty">Tidak ada data</div>`;
+  const max = Math.max(...data.map(d=>d.value)) || 1;
+  return `<div style="display:flex;flex-direction:column;gap:10px">
+    ${data.map(d=>`
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><b>${d.label}</b><span style="color:var(--muted)">${d.value}</span></div>
+        <div style="height:8px;background:#eef4f2;border-radius:999px;overflow:hidden">
+          <div style="height:100%;width:${(d.value/max*100).toFixed(1)}%;background:linear-gradient(90deg,${d.color},${d.color}99);border-radius:999px"></div>
+        </div>
+      </div>`).join("")}
+  </div>`;
+}
+function countBy(arr, key){
+  const m = {};
+  arr.forEach(x => { const k = x[key] || "(kosong)"; m[k] = (m[k]||0)+1; });
+  return Object.entries(m).map(([label,value])=>({label,value}));
+}
+const PALETTE = ["#0b7a5c","#d97706","#c0392b","#1467b3","#7c3aed","#19a974","#0891b2"];
+function colored(arr){ return arr.map((x,i)=>({...x, color: PALETTE[i%PALETTE.length]})); }
+
+/* ============================================================
+   4. CSV UTILITIES
+   ============================================================ */
+function downloadFile(content, filename, mimeType){
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 200);
+}
+
+function toCSV(rows, fields){
+  const escape = v => {
+    if (v === null || v === undefined) return '';
+    let s;
+    if (Array.isArray(v)) s = v.join(';');
+    else if (typeof v === 'boolean') s = v ? 'true' : 'false';
+    else s = String(v);
+    if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  };
+  const header = fields.map(f => escape(f.name)).join(',');
+  const body = rows.map(row => fields.map(f => escape(row[f.name])).join(',')).join('\r\n');
+  return header + '\r\n' + body;
+}
+
+function parseCSV(text){
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const rows = [];
+  let cur = [], val = '', inQuotes = false, i = 0;
+  while (i < text.length) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i+1] === '"') { val += '"'; i += 2; continue; }
+        inQuotes = false; i++; continue;
+      }
+      val += c; i++; continue;
+    }
+    if (c === '"') { inQuotes = true; i++; continue; }
+    if (c === ',') { cur.push(val); val = ''; i++; continue; }
+    if (c === '\r') { i++; continue; }
+    if (c === '\n') { cur.push(val); rows.push(cur); cur = []; val = ''; i++; continue; }
+    val += c; i++;
+  }
+  if (val !== '' || cur.length) { cur.push(val); rows.push(cur); }
+  return rows;
+}
+
+function parseFieldValue(raw, field){
+  raw = (raw || '').trim();
+  if (field.type === 'checkbox') {
+    const l = raw.toLowerCase();
+    return l === 'true' || l === '1' || l === 'yes' || l === 'ya';
+  }
+  if (field.type === 'number') return Number(raw) || 0;
+  if (field.parse === 'nums') return raw.split(';').map(x => parseFloat(x.trim())).filter(n => !isNaN(n));
+  if (field.parse === 'csv') return raw.split(';').map(x => x.trim()).filter(Boolean);
+  return raw;
+}
+
+function parseCSVImport(text, entity, isModule){
+  const parsed = parseCSV(text);
+  if (parsed.length < 2) throw new Error("File CSV kosong atau hanya berisi header");
+  const headers = parsed[0].map(h => h.trim());
+  const fields = isModule ? MODULE_SCHEMAS[entity].fields : SCHEMAS[entity].fields;
+  const headerIdx = {};
+  headers.forEach((h, i) => { headerIdx[h] = i; });
+  const fieldIdx = {};
+  fields.forEach(f => {
+    if (headerIdx[f.name] !== undefined) fieldIdx[f.name] = headerIdx[f.name];
+    else if (headerIdx[f.label] !== undefined) fieldIdx[f.name] = headerIdx[f.label];
+    else fieldIdx[f.name] = -1;
+  });
+  const records = [];
+  for (let i = 1; i < parsed.length; i++) {
+    const row = parsed[i];
+    if (row.every(c => (c||'').trim() === '')) continue;
+    const obj = {};
+    fields.forEach(f => {
+      const idx = fieldIdx[f.name];
+      const raw = idx >= 0 ? (row[idx] || '') : '';
+      obj[f.name] = parseFieldValue(raw, f);
+    });
+    if (!isModule && ['users','activities','auditLogs','notifications'].includes(entity) && !obj.id) {
+      obj.id = uid();
+    }
+    records.push(obj);
+  }
+  return records;
+}
+
+/* ============================================================
+   5. IMPORT/EXPORT ACTIONS
+   ============================================================ */
+let pendingImport = null;
+
+function exportCSV(entity, isModule){
+  const fields = isModule ? MODULE_SCHEMAS[entity].fields : SCHEMAS[entity].fields;
+  const rows = isModule ? store.moduleData[entity] : store[entity];
+  const csv = toCSV(rows, fields);
+  downloadFile(csv, `${entity}-${Date.now()}.csv`, 'text/csv;charset=utf-8');
+  toast(`Export ${entity}: ${rows.length} baris`);
+}
+
+function downloadTemplate(entity, isModule){
+  const fields = isModule ? MODULE_SCHEMAS[entity].fields : SCHEMAS[entity].fields;
+  const csv = fields.map(f => f.name).join(',') + '\r\n';
+  downloadFile(csv, `${entity}-template.csv`, 'text/csv;charset=utf-8');
+  toast(`Template ${entity} diunduh`);
+}
+
+function triggerImportCSV(entity, isModule){
+  pendingImport = { entity, isModule, stage: 'file' };
+  const input = $("#fileCSV");
+  input.value = '';
+  input.dataset.entity = entity;
+  input.dataset.isModule = isModule ? '1' : '0';
+  input.click();
+}
+
+$("#fileCSV").addEventListener("change", e => {
+  const f = e.target.files[0];
+  if (!f) { pendingImport = null; return; }
+  const entity = e.target.dataset.entity;
+  const isModule = e.target.dataset.isModule === '1';
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const records = parseCSVImport(ev.target.result, entity, isModule);
+      pendingImport = { entity, isModule, records };
+      showImportModal(entity, isModule, records.length, f.name);
+    } catch (err) {
+      toast("CSV tidak valid: " + err.message, true);
+      pendingImport = null;
+    }
+  };
+  reader.readAsText(f, 'UTF-8');
+  e.target.value = '';
+});
+
+function showImportModal(entity, isModule, count, fileName){
+  const label = isModule ? `Data ${entity}` : SCHEMAS[entity].label;
+  openModal(`Import CSV: ${label}`,
+    `<p>File: <b>${escapeHTML(fileName)}</b></p>
+     <p>Ditemukan <b>${count}</b> baris data yang siap diimport.</p>
+     <div class="form-group">
+       <label>Mode Import</label>
+       <select id="importMode">
+         <option value="upsert">Upsert — perbarui yang sudah ada, tambah yang baru</option>
+         <option value="replace">Replace — ganti semua data entity ini</option>
+       </select>
+       <div class="hint">Upsert menggunakan field kunci utama (ID/Key). Replace menghapus data lama terlebih dahulu.</div>
+     </div>`,
+    "Import Sekarang",
+    () => {
+      const mode = $("#importMode").value;
+      applyImport(mode);
+    });
+}
+
+function applyImport(mode){
+  if (!pendingImport) return;
+  const { entity, isModule, records } = pendingImport;
+  try {
+    if (mode === 'replace') {
+      if (isModule) store.moduleData[entity] = records;
+      else store[entity] = records;
+    } else {
+      const keyField = isModule ? 'id' : SCHEMAS[entity].key;
+      const target = isModule ? store.moduleData[entity] : store[entity];
+      const map = new Map(target.map(x => [String(x[keyField]), x]));
+      for (const rec of records) {
+        const k = String(rec[keyField]);
+        if (map.has(k)) Object.assign(map.get(k), rec);
+        else { target.push(rec); map.set(k, rec); }
+      }
+    }
+    save();
+    if (!isModule && entity === 'users' && !store.users.find(u => u.id === (currentUser||{}).id)) currentUser = store.users[0] || null;
+    if (!isModule && entity === 'companies' && !store.companies.find(c => c.id === (currentCompany||{}).id)) currentCompany = store.companies[0] || null;
+    closeModal();
+    pendingImport = null;
+    refreshTop(); renderView();
+    toast(`${records.length} baris diimport ke ${isModule ? entity : SCHEMAS[entity].label}`);
+  } catch (err) {
+    toast("Import gagal: " + err.message, true);
+  }
+}
+
+/* JSON full backup */
+$("#fileJSON").addEventListener("change", e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const data = JSON.parse(r.result);
+      if (!data.users || !data.apps) throw new Error("Format tidak valid");
+      store = data; save();
+      currentUser = store.users[0] || null;
+      currentCompany = store.companies[0] || null;
+      refreshTop(); renderView();
+      toast("Data JSON diimport");
+    } catch(err){ toast("Import JSON gagal: " + err.message, true); }
+  };
+  r.readAsText(f); e.target.value = '';
+});
+
+function exportJSON(){
+  downloadFile(JSON.stringify(store, null, 2), `pi-portal-backup-${Date.now()}.json`, 'application/json');
+  toast("Backup JSON diunduh");
+}
+
+/* ============================================================
+   6. FORM MODAL
+   ============================================================ */
+function openForm({title, fields, initial={}, onSubmit}){
+  const data = JSON.parse(JSON.stringify(initial));
+  const formId = "f"+uid();
+  const html = `<form id="${formId}" autocomplete="off">
+    ${fields.map(f=>{
+      const val = data[f.name] !== undefined ? data[f.name] : "";
+      let input = "";
+      if (f.type === "textarea") input = `<textarea name="${f.name}" ${f.required?'required':''}>${val}</textarea>`;
+      else if (f.type === "select") {
+        let opts = f.options || [];
+        if (f.optionsFn) opts = f.optionsFn().map(o => typeof o === "string" ? {value:o,label:o} : o);
+        const cur = Array.isArray(val) ? val.join(",") : val;
+        input = `<select name="${f.name}" ${f.required?'required':''}><option value="">— pilih —</option>${opts.map(o=>`<option value="${o.value}" ${o.value===cur?'selected':''}>${o.label}</option>`).join("")}</select>`;
+      } else if (f.type === "checkbox") input = `<label style="display:flex;align-items:center;gap:8px;font-weight:500;text-transform:none;letter-spacing:0;font-size:14px;color:var(--text)"><input type="checkbox" name="${f.name}" ${val?'checked':''} style="width:auto"/> Ya</label>`;
+      else if (f.type === "number") input = `<input type="number" name="${f.name}" value="${val}" ${f.required?'required':''}/>`;
+      else { const v = Array.isArray(val) ? val.join(",") : val; input = `<input type="${f.type||'text'}" name="${f.name}" value="${v}" ${f.required?'required':''}/>`; }
+      return `<div class="form-group"><label>${f.label}</label>${input}${f.hint?`<div class="hint">${f.hint}</div>`:''}</div>`;
+    }).join("")}
+  </form>`;
+  openModal(title, html, "Simpan", () => {
+    const form = $("#"+formId);
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+    const fd = new FormData(form);
+    const out = {};
+    fields.forEach(f=>{
+      let v = fd.get(f.name);
+      if (f.type === "checkbox") v = form.querySelector(`[name="${f.name}"]`).checked;
+      else if (f.parse === "nums") v = String(v||"").split(",").map(x=>parseFloat(x.trim())).filter(n=>!isNaN(n));
+      else if (f.parse === "csv") v = String(v||"").split(",").map(x=>x.trim()).filter(Boolean);
+      else if (f.type === "number") v = Number(v)||0;
+      out[f.name] = v;
+    });
+    onSubmit(out); closeModal();
+  });
+}
+function confirmDelete(label, onConfirm){
+  openModal("Hapus data?", `<p>Yakin ingin menghapus <b>${label}</b>? Tindakan ini tidak bisa dibatalkan.</p>`, "Hapus",
+    () => { onConfirm(); closeModal(); });
+}
+
+/* ============================================================
+   7. CRUD
+   ============================================================ */
+function addEntity(entity){
+  const s = SCHEMAS[entity];
+  openForm({ title: "Tambah " + s.label, fields: s.fields, initial: {},
+    onSubmit: (data) => {
+      if (["users","activities","auditLogs","notifications"].includes(entity)) data.id = uid();
+      store[entity].push(data);
+      save(); renderView(); refreshTop();
+      toast(`${s.label} ditambahkan`);
+    }});
+}
+function editEntity(entity, key){
+  const s = SCHEMAS[entity];
+  const item = store[entity].find(x => x[s.key] === key);
+  if (!item) return;
+  openForm({ title: "Edit " + s.label, fields: s.fields, initial: item,
+    onSubmit: (data) => {
+      Object.assign(item, data);
+      save(); renderView(); refreshTop();
+      toast(`${s.label} diperbarui`);
+    }});
+}
+function deleteEntity(entity, key){
+  const s = SCHEMAS[entity];
+  const item = store[entity].find(x => x[s.key] === key);
+  if (!item) return;
+  confirmDelete(`${s.label} "${item[s.key]}"`, () => {
+    store[entity] = store[entity].filter(x => x[s.key] !== key);
+    save(); renderView(); refreshTop();
+    toast(`${s.label} dihapus`);
+  });
+}
+function addModule(mod){
+  const s = MODULE_SCHEMAS[mod];
+  openForm({ title: "Tambah Data " + s.label, fields: s.fields, initial: {},
+    onSubmit: (data) => {
+      store.moduleData[mod].push(data);
+      save(); renderView();
+      toast(`Data ${mod} ditambahkan`);
+    }});
+}
+function editModule(mod, id){
+  const s = MODULE_SCHEMAS[mod];
+  const item = store.moduleData[mod].find(x => x.id === id);
+  if (!item) return;
+  openForm({ title: "Edit Data " + s.label, fields: s.fields, initial: item,
+    onSubmit: (data) => {
+      Object.assign(item, data);
+      save(); renderView();
+      toast(`Data ${mod} diperbarui`);
+    }});
+}
+function deleteModule(mod, id){
+  const item = store.moduleData[mod].find(x => x.id === id);
+  if (!item) return;
+  confirmDelete(`${mod} "${id}"`, () => {
+    store.moduleData[mod] = store.moduleData[mod].filter(x => x.id !== id);
+    save(); renderView();
+    toast(`Data ${mod} dihapus`);
+  });
+}
+
+/* ============================================================
+   8. RENDER: DASHBOARD
+   ============================================================ */
+function renderDashboard(){
+  const unread = store.notifications.filter(n=>n.unread).length;
+  const totalDof = store.moduleData.DOF.length;
+  const totalSistro = store.moduleData.SISTRO.length;
+  const totalPpts = store.moduleData.PPTS.length;
+  const totalNwbc = store.moduleData.NWBC.length;
+  const dofApp = store.apps.find(a=>a.key==="DOF") || {};
+  const sistroApp = store.apps.find(a=>a.key==="SISTRO") || {};
+  const pptsApp = store.apps.find(a=>a.key==="PPTS") || {};
+  const nwbcApp = store.apps.find(a=>a.key==="NWBC") || {};
+  const gudang = colored(countBy(store.moduleData.SISTRO, "gudang"));
+  const pptsStatus = colored(countBy(store.moduleData.PPTS, "status"));
+  const nwbcStatus = colored(countBy(store.moduleData.NWBC, "status"));
+
+  $("#view").innerHTML = `
+    <section class="hero">
+      <svg class="hero-shape" style="top:10px;left:20px;width:60px;height:60px" viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="none" stroke="#fff" stroke-opacity=".15" stroke-width="2"/></svg>
+      <svg class="hero-shape" style="bottom:8px;right:220px;width:90px;height:90px" viewBox="0 0 90 90"><rect x="15" y="15" width="60" height="60" rx="14" fill="none" stroke="#fff" stroke-opacity=".15" stroke-width="2" transform="rotate(20 45 45)"/></svg>
+      <div class="hero-content">
+        <h1>Selamat datang, ${currentUser ? currentUser.name.split(" ")[0] : "User"} 👋</h1>
+        <p>Login sebagai <b>${currentUser ? currentUser.role : "-"}</b> · <b>${currentCompany ? currentCompany.name : "-"}</b></p>
+        <div class="chips">
+          <span class="chip">🔔 <b>${unread}</b> notifikasi</span>
+          <span class="chip">📄 <b>${totalDof}</b> dokumen DOF</span>
+          <span class="chip">🚚 <b>${totalSistro}</b> truk SISTRO</span>
+          <span class="chip">👥 <b>${totalPpts}</b> penerima PPTS</span>
+        </div>
+      </div>
+      <button class="btn" onclick="switchView('apps')">Kelola Data →</button>
+    </section>
+
+    <section class="kpi-grid">
+      ${kpi("Dokumen DOF", fmt(totalDof), "entri data", "#0b7a5c", dofApp.trend, "📄")}
+      ${kpi("Truk SISTRO", fmt(totalSistro), "entri data", "#d97706", sistroApp.trend, "🚚")}
+      ${kpi("Penerima PPTS", fmt(totalPpts), "entri data", "#7c3aed", pptsApp.trend, "👥")}
+      ${kpi("Task NWBC", fmt(totalNwbc), "entri data", "#1467b3", nwbcApp.trend, "🧮")}
+    </section>
+
+    <div class="section-title"><h2>Aplikasi Terintegrasi</h2><small>${store.apps.length} modul</small></div>
+    <section class="apps">${store.apps.map(appCardHTML).join("")}</section>
+
+    <div class="section-title"><h2>Analytics</h2><small>Berdasarkan data aktual</small></div>
+    <section class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Trend DOF <small>7 hari terakhir</small></div>
+        <div class="chart-body">${lineChart(dofApp.trend||[], ["Sen","Sel","Rab","Kam","Jum","Sab","Min"], "#0b7a5c")}</div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Truk per Gudang <small>SISTRO</small></div>
+        <div class="chart-body">${barChart(gudang, "#d97706")}</div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Status PPTS</div>
+        <div class="chart-body">${donutChart(pptsStatus, 120)}</div>
+      </div>
+    </section>
+
+    <section class="grid-2" style="margin-bottom:14px">
+      <div class="panel">
+        <div class="chart-title">Task NWBC per Status</div>
+        ${hbar(nwbcStatus)}
+      </div>
+      <div class="panel">
+        <div class="chart-title">Status Integrasi</div>
+        <ul class="activity">
+          ${store.health.map(h=>`<li>
+            <i class="dot ${h.state==='degraded'?'warn':h.state==='offline'?'offline':''}"></i>
+            <div style="flex:1">
+              <div style="display:flex;justify-content:space-between;align-items:center"><b>${h.app}</b>${pill(h.state)}</div>
+              <small style="color:var(--muted)">latency ${h.latency||"-"} · uptime ${h.uptime||"-"}</small>
+            </div>
+          </li>`).join("") || '<li class="empty">Belum ada data</li>'}
+        </ul>
+      </div>
+    </section>
+
+    <div class="section-title"><h2>Aktivitas Terbaru</h2><small><a href="#" onclick="switchView('activity');return false;">Lihat & kelola →</a></small></div>
+    <div class="panel"><ul class="activity">
+      ${store.activities.slice(0,6).map(activityHTML).join("") || '<li class="empty">Belum ada aktivitas</li>'}
+    </ul></div>
+  `;
+}
+function kpi(label, value, sub, color, trend, icon){
+  return `<div class="kpi" style="--kpi-c:${color}">
+    <div class="kpi-label">${icon} ${label}</div>
+    <div class="kpi-value" style="color:${color}">${value}</div>
+    <div class="kpi-sub">${sub}</div>
+    ${sparkline(trend||[0,0,0], color)}
+  </div>`;
+}
+function appCardHTML(a){
+  return `<article class="app-card" style="--app-c:${a.color||'#19a974'}" onclick="openApp('${a.key}')">
+    <svg class="logo"><use href="${a.logo||'#logo-pi'}"/></svg>
+    <h3>${a.name}</h3>
+    <p>${a.desc||""}</p>
+    <div class="app-meta">
+      <span class="status ${a.status==='degraded'?'warn':a.status==='offline'?'offline':''}"><i class="dot ${a.status==='degraded'?'warn':a.status==='offline'?'offline':''}"></i>${a.status||"-"}</span>
+      <span style="color:var(--blue);font-weight:700">Buka →</span>
+    </div>
+  </article>`;
+}
+function activityHTML(a){
+  return `<li>
+    <span class="badge b-${(a.app||'').toLowerCase()}">${a.app||"?"}</span>
+    <div style="flex:1">${a.action||""}<br><small style="color:var(--muted)">${a.user||""} · ${a.ts||""}</small></div>
+  </li>`;
+}
+
+/* ============================================================
+   9. RENDER: APPS + MODULE
+   ============================================================ */
+function renderApps(){
+  $("#view").innerHTML = `
+    <div class="section-title" style="margin-top:0"><h2>Aplikasi</h2><small>${store.apps.length} modul</small></div>
+    <div class="toolbar"><button class="btn-primary" onclick="addEntity('apps')">+ Tambah Aplikasi</button></div>
+    <div class="panel" style="margin-bottom:14px;overflow:auto">
+      <table>
+        <thead><tr><th>Key</th><th>Nama</th><th>Status</th><th>Akses Terakhir</th><th>URL</th><th style="text-align:right">Aksi</th></tr></thead>
+        <tbody>
+          ${store.apps.map(a=>`
+            <tr>
+              <td><span class="badge b-${a.key.toLowerCase()}">${a.key}</span></td>
+              <td><b>${a.name}</b><br><small style="color:var(--muted)">${a.desc||""}</small></td>
+              <td>${pill(a.status)}</td>
+              <td><small>${a.lastAccess||"-"}</small></td>
+              <td><small><a href="${a.url||'#'}" target="_blank" rel="noopener">${a.url||"-"}</a></small></td>
+              <td><div class="actions">
+                <button class="btn-icon" data-action="edit" data-entity="apps" data-key="${a.key}">✏️</button>
+                <button class="btn-icon del" data-action="delete" data-entity="apps" data-key="${a.key}">🗑️</button>
+              </div></td>
+            </tr>`).join("") || `<tr><td colspan="6" class="empty">Belum ada aplikasi</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+    <div class="section-title"><h2>Data per Modul</h2><small>Semua bisa diedit</small></div>
+    <div class="tabs" id="moduleTabs">
+      ${Object.keys(MODULE_SCHEMAS).map((m,i)=>`<button class="${i===0?'active':''}" data-mod="${m}">${m}</button>`).join("")}
+    </div>
+    <div id="moduleTable"></div>
+  `;
+  $$("#moduleTabs button").forEach(b=>b.addEventListener("click",()=>{
+    $$("#moduleTabs button").forEach(x=>x.classList.toggle("active", x===b));
+    renderModuleTable(b.dataset.mod);
+  }));
+  renderModuleTable(Object.keys(MODULE_SCHEMAS)[0]);
+}
+function renderModuleTable(mod){
+  const schema = MODULE_SCHEMAS[mod];
+  const items = store.moduleData[mod] || [];
+  $("#moduleTable").innerHTML = `
+    <div class="toolbar">
+      <button class="btn-primary" onclick="addModule('${mod}')">+ Tambah ${mod}</button>
+      <span class="spacer"></span>
+      <small style="color:var(--muted)">${items.length} entri</small>
+    </div>
+    <div class="panel" style="overflow:auto">
+      <table>
+        <thead><tr>${schema.fields.map(f=>`<th>${f.label}</th>`).join("")}<th style="text-align:right">Aksi</th></tr></thead>
+        <tbody>
+          ${items.map(r=>`
+            <tr>
+              ${schema.fields.map(f=>`<td>${f.name==="status"?pill(r[f.name]):(r[f.name]||"-")}</td>`).join("")}
+              <td><div class="actions">
+                <button class="btn-icon" data-action="editMod" data-mod="${mod}" data-key="${r.id}">✏️</button>
+                <button class="btn-icon del" data-action="deleteMod" data-mod="${mod}" data-key="${r.id}">🗑️</button>
+              </div></td>
+            </tr>`).join("") || `<tr><td colspan="${schema.fields.length+1}" class="empty">Belum ada data</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* ============================================================
+   10. RENDER: ACTIVITY
+   ============================================================ */
+function renderActivity(){
+  $("#view").innerHTML = `
+    <div class="section-title" style="margin-top:0"><h2>Aktivitas</h2><small>${store.activities.length} entri</small></div>
+    <div class="toolbar"><button class="btn-primary" onclick="addEntity('activities')">+ Tambah Aktivitas</button></div>
+    <div class="panel" style="overflow:auto">
+      <table>
+        <thead><tr><th>Waktu</th><th>User</th><th>Modul</th><th>Aksi</th><th style="text-align:right">Aksi</th></tr></thead>
+        <tbody>
+          ${store.activities.map(a=>`
+            <tr>
+              <td><small>${a.ts||"-"}</small></td>
+              <td>${a.user||"-"}</td>
+              <td><span class="badge b-${(a.app||'').toLowerCase()}">${a.app||"-"}</span></td>
+              <td>${a.action||""}</td>
+              <td><div class="actions">
+                <button class="btn-icon" data-action="edit" data-entity="activities" data-key="${a.id}">✏️</button>
+                <button class="btn-icon del" data-action="delete" data-entity="activities" data-key="${a.id}">🗑️</button>
+              </div></td>
+            </tr>`).join("") || `<tr><td colspan="5" class="empty">Belum ada aktivitas</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* ============================================================
+   11. RENDER: AUDIT
+   ============================================================ */
+function renderAudit(){
+  $("#view").innerHTML = `
+    <div class="section-title" style="margin-top:0"><h2>Audit Log</h2><small>${store.auditLogs.length} entri</small></div>
+    <div class="toolbar">
+      <button class="btn-primary" onclick="addEntity('auditLogs')">+ Tambah Log</button>
+      <div class="spacer"></div>
+      <div class="filters">
+        <select id="fApp"><option value="">Semua modul</option>${store.apps.map(a=>`<option>${a.key}</option>`).join("")}</select>
+        <select id="fStatus"><option value="">Semua status</option><option value="ok">ok</option><option value="warn">warn</option><option value="err">err</option></select>
+        <input id="fUser" placeholder="Filter user..."/>
+      </div>
+    </div>
+    <div class="panel" style="overflow:auto">
+      <table>
+        <thead><tr><th>Waktu</th><th>User</th><th>Perusahaan</th><th>Modul</th><th>Aksi</th><th>Target</th><th>IP</th><th>Status</th><th style="text-align:right">Aksi</th></tr></thead>
+        <tbody id="auditBody"></tbody>
+      </table>
+    </div>
+  `;
+  const render = () => {
+    const fa = $("#fApp").value, fs = $("#fStatus").value, fu = $("#fUser").value.toLowerCase();
+    const rows = store.auditLogs.filter(r =>
+      (!fa||r.app===fa) && (!fs||r.status===fs) &&
+      (!fu||(r.user||"").toLowerCase().includes(fu))
+    );
+    $("#auditBody").innerHTML = rows.length ? rows.map(r=>`
+      <tr>
+        <td><small>${r.ts||"-"}</small></td>
+        <td>${r.user||"-"}</td>
+        <td>${r.company||"-"}</td>
+        <td><span class="badge b-${(r.app||'').toLowerCase()}">${r.app||"-"}</span></td>
+        <td><code>${r.action||"-"}</code></td>
+        <td>${r.target||"-"}</td>
+        <td><small>${r.ip||"-"}</small></td>
+        <td>${pill(r.status)}</td>
+        <td><div class="actions">
+          <button class="btn-icon" data-action="edit" data-entity="auditLogs" data-key="${r.id}">✏️</button>
+          <button class="btn-icon del" data-action="delete" data-entity="auditLogs" data-key="${r.id}">🗑️</button>
+        </div></td>
+      </tr>`).join("") : `<tr><td colspan="9" class="empty">Tidak ada data</td></tr>`;
+  };
+  ["#fApp","#fStatus","#fUser"].forEach(s=>$(s).addEventListener("input",render));
+  render();
+}
+
+/* ============================================================
+   12. RENDER: ADMIN
+   ============================================================ */
+function renderAdmin(){
+  $("#view").innerHTML = `
+    <div class="section-title" style="margin-top:0"><h2>Admin & RBAC</h2><small>Kelola user, role, perusahaan, notifikasi, health</small></div>
+    <div class="tabs" id="adminTabs">
+      <button class="active" data-tab="rbac">Role (RBAC)</button>
+      <button data-tab="users">Pengguna</button>
+      <button data-tab="companies">Perusahaan</button>
+      <button data-tab="notifications">Notifikasi</button>
+      <button data-tab="health">Health</button>
+    </div>
+    <div id="adminTable"></div>
+  `;
+  $$("#adminTabs button").forEach(b=>b.addEventListener("click",()=>{
+    $$("#adminTabs button").forEach(x=>x.classList.toggle("active", x===b));
+    renderAdminTable(b.dataset.tab);
+  }));
+  renderAdminTable("rbac");
+}
+function renderAdminTable(tab){
+  const schema = SCHEMAS[tab];
+  const items = store[tab] || [];
+  $("#adminTable").innerHTML = `
+    <div class="toolbar">
+      <button class="btn-primary" onclick="addEntity('${tab}')">+ Tambah ${schema.label}</button>
+      <span class="spacer"></span>
+      <small style="color:var(--muted)">${items.length} entri</small>
+    </div>
+    <div class="panel" style="overflow:auto">
+      <table>
+        <thead><tr>${schema.fields.map(f=>`<th>${f.label}</th>`).join("")}<th style="text-align:right">Aksi</th></tr></thead>
+        <tbody>
+          ${items.map(item=>`
+            <tr>
+              ${schema.fields.map(f=>{
+                let v = item[f.name];
+                if (Array.isArray(v)) v = v.map(x=>`<span class="badge">${x}</span>`).join(" ");
+                else if (f.name==="status"||f.name==="state") v = pill(v);
+                else v = v!==undefined && v!=="" ? v : "-";
+                return `<td>${v}</td>`;
+              }).join("")}
+              <td><div class="actions">
+                <button class="btn-icon" data-action="edit" data-entity="${tab}" data-key="${item[schema.key]}">✏️</button>
+                <button class="btn-icon del" data-action="delete" data-entity="${tab}" data-key="${item[schema.key]}">🗑️</button>
+              </div></td>
+            </tr>`).join("") || `<tr><td colspan="${schema.fields.length+1}" class="empty">Belum ada data</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* ============================================================
+   13. RENDER: DATA MANAGER
+   ============================================================ */
+function renderData(){
+  const entities = [
+    {key:'users', label:'Pengguna'},
+    {key:'companies', label:'Perusahaan'},
+    {key:'apps', label:'Aplikasi'},
+    {key:'activities', label:'Aktivitas'},
+    {key:'auditLogs', label:'Audit Log'},
+    {key:'notifications', label:'Notifikasi'},
+    {key:'rbac', label:'Role (RBAC)'},
+    {key:'health', label:'Health'}
+  ];
+  const modules = [
+    {key:'NWBC', label:'Data NWBC'},
+    {key:'DOF', label:'Data DOF'},
+    {key:'SISTRO', label:'Data SISTRO'},
+    {key:'PPTS', label:'Data PPTS'}
+  ];
+
+  const rowHTML = (key, label, isModule) => {
+    const count = isModule ? store.moduleData[key].length : store[key].length;
+    return `<tr>
+      <td><b>${label}</b></td>
+      <td>${count} baris</td>
+      <td><div class="data-actions" style="justify-content:flex-end">
+        <button class="btn-ghost btn-sm" data-action="exportCSV" data-entity="${key}" data-module="${isModule?1:0}">⬇ Export CSV</button>
+        <button class="btn-ghost btn-sm" data-action="templateCSV" data-entity="${key}" data-module="${isModule?1:0}">📋 Template</button>
+        <button class="btn-primary btn-sm" data-action="importCSV" data-entity="${key}" data-module="${isModule?1:0}">⬆ Import CSV</button>
+      </div></td>
+    </tr>`;
+  };
+
+  $("#view").innerHTML = `
+    <div class="section-title" style="margin-top:0"><h2>📦 Import / Export</h2><small>CSV per-entitas & JSON full backup</small></div>
+
+    <div class="data-info">
+      <b>Cara pakai CSV:</b> Ekspor data terlebih dahulu untuk melihat format kolom (header = nama field). Edit di Excel/Google Sheets, simpan sebagai CSV, lalu Import kembali. Beberapa field menggunakan separator <code>;</code> untuk nilai array (misal <code>NWBC;DOF;SISTRO</code> untuk field <code>apps</code>, atau <code>62;71;68;88;79;54;47</code> untuk field <code>trend</code>).
+    </div>
+
+    <div class="data-group panel" style="margin-bottom:14px">
+      <h3>Backup Penuh (JSON)</h3>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 10px">Menyimpan/memuat seluruh data termasuk semua entitas & module sekaligus.</p>
+      <div class="data-actions">
+        <button class="btn-primary" data-action="exportJSON">⬇ Export JSON</button>
+        <button class="btn-ghost" data-action="importJSON">⬆ Import JSON</button>
+        <button class="btn-danger" data-action="resetAll">♻ Reset ke Dummy</button>
+      </div>
+    </div>
+
+    <div class="data-group">
+      <div class="section-title" style="margin-top:0"><h2>Entitas Master</h2><small>CRUD + CSV</small></div>
+      <div class="panel" style="overflow:auto">
+        <table>
+          <thead><tr><th>Entitas</th><th>Jumlah</th><th style="text-align:right">Aksi CSV</th></tr></thead>
+          <tbody>${entities.map(e => rowHTML(e.key, e.label, false)).join("")}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="data-group">
+      <div class="section-title" style="margin-top:0"><h2>Data Modul</h2><small>Konten per-aplikasi</small></div>
+      <div class="panel" style="overflow:auto">
+        <table>
+          <thead><tr><th>Modul</th><th>Jumlah</th><th style="text-align:right">Aksi CSV</th></tr></thead>
+          <tbody>${modules.map(m => rowHTML(m.key, m.label, true)).join("")}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   14. OPEN APP MODAL
+   ============================================================ */
+function openApp(key){
+  const app = store.apps.find(a=>a.key===key);
+  if (!app) return;
+  const schema = MODULE_SCHEMAS[key];
+  const moduleData = store.moduleData[key] || [];
+  const preview = schema ? `
+    <p style="margin-top:14px"><b>Preview data (${moduleData.length} entri):</b></p>
+    <table><thead><tr>${schema.fields.map(f=>`<th>${f.label}</th>`).join("")}</tr></thead>
+    <tbody>${moduleData.slice(0,5).map(r=>`<tr>${schema.fields.map(f=>`<td>${f.name==="status"?pill(r[f.name]):(r[f.name]||"-")}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${schema.fields.length}" class="empty">Belum ada data</td></tr>`}</tbody></table>
+  ` : "";
+  openModal(`Buka ${app.name}`,
+    `<div style="display:flex;gap:12px;align-items:center;margin-bottom:14px;padding:12px;background:#f8fbfa;border-radius:12px">
+      <svg style="width:48px;height:48px"><use href="${app.logo||'#logo-pi'}"/></svg>
+      <div><b>${app.name}</b><br><small style="color:var(--muted)">${app.desc||""}</small></div>
+    </div>
+    <table>
+      <tr><th>Status</th><td>${pill(app.status)}</td></tr>
+      <tr><th>Akses terakhir</th><td>${app.lastAccess||"-"}</td></tr>
+      <tr><th>URL</th><td><a href="${app.url||'#'}" target="_blank" rel="noopener">${app.url||"-"}</a></td></tr>
+      <tr><th>Statistik</th><td>${app.stats||"-"}</td></tr>
+    </table>${preview}`,
+    "Buka sistem", () => { window.open(app.url, "_blank", "noopener"); });
+}
+
+/* ============================================================
+   15. NAV
+   ============================================================ */
+function switchView(name){
+  currentView = name;
+  $$(".nav a").forEach(a => a.classList.toggle("active", a.dataset.view===name));
+  renderView();
+}
+function renderView(){
+  if (currentView==="dashboard") renderDashboard();
+  else if (currentView==="apps") renderApps();
+  else if (currentView==="activity") renderActivity();
+  else if (currentView==="audit") renderAudit();
+  else if (currentView==="admin") renderAdmin();
+  else if (currentView==="data") renderData();
+  else renderDashboard();
+}
+$$(".nav a").forEach(a => a.addEventListener("click", e => { e.preventDefault(); switchView(a.dataset.view); }));
+
+document.addEventListener("click", e => {
+  const btn = e.target.closest("[data-action]");
+  if (!btn) return;
+  const {action, entity, key, mod, module} = btn.dataset;
+  if (action === "edit")        editEntity(entity, key);
+  else if (action === "delete") deleteEntity(entity, key);
+  else if (action === "editMod")   editModule(mod, key);
+  else if (action === "deleteMod") deleteModule(mod, key);
+  else if (action === "exportCSV")  exportCSV(entity, module === '1');
+  else if (action === "templateCSV") downloadTemplate(entity, module === '1');
+  else if (action === "importCSV")  triggerImportCSV(entity, module === '1');
+  else if (action === "exportJSON") exportJSON();
+  else if (action === "importJSON") $("#fileJSON").click();
+  else if (action === "resetAll")   resetAll();
+});
+
+/* ============================================================
+   16. TOPBAR
+   ============================================================ */
+function refreshTop(){
+  $("#notifDot").style.display = store.notifications.some(n=>n.unread) ? "block" : "none";
+  $("#navActivityCount").textContent = store.activities.length;
+  $("#companyLabel").textContent = currentCompany ? currentCompany.short : "Perusahaan";
+  if (currentUser) {
+    $("#btnProfile").textContent = currentUser.initials || "??";
+    $("#profName").textContent = currentUser.name;
+    $("#profRole").textContent = currentUser.role;
+    $("#profEmail").textContent = currentUser.email;
+  }
+  renderNotifList();
+  renderCompanyList();
+}
+function renderNotifList(){
+  $("#notifList").innerHTML = store.notifications.length
+    ? store.notifications.map(n=>`
+        <div class="item ${n.unread?'unread':''}" onclick="markRead('${n.id}')">
+          <span class="badge b-${(n.app||'').toLowerCase()}">${n.app||"?"}</span>
+          <div><b style="font-size:12px">${n.text}</b><small>${n.ts||""}</small></div>
+        </div>`).join("")
+    : `<div class="empty">Tidak ada notifikasi</div>`;
+}
+function markRead(id){
+  const n = store.notifications.find(x=>x.id===id);
+  if (n) { n.unread = false; save(); renderNotifList(); refreshTop(); }
+}
+function renderCompanyList(){
+  $("#companyList").innerHTML = store.companies.map(c=>`
+    <div class="item" onclick="switchCompany('${c.id}')">
+      <div><b>${c.short}</b><small>${c.name}</small></div>
+    </div>`).join("") || `<div class="empty">Belum ada perusahaan</div>`;
+}
+function switchCompany(id){
+  currentCompany = store.companies.find(c=>c.id===id);
+  refreshTop(); toast("Perusahaan: " + (currentCompany ? currentCompany.short : "-"));
+  $$(".dropdown").forEach(d=>d.classList.remove("show"));
+}
+function toggleDD(id){
+  ["ddNotif","ddCompany","ddProfile"].forEach(x=>{
+    const el = $("#"+x);
+    if (x===id) el.classList.toggle("show"); else el.classList.remove("show");
+  });
+}
+$("#btnNotif").onclick   = e => { e.stopPropagation(); toggleDD("ddNotif");   };
+$("#btnCompany").onclick = e => { e.stopPropagation(); toggleDD("ddCompany"); };
+$("#btnProfile").onclick = e => { e.stopPropagation(); toggleDD("ddProfile"); };
+document.addEventListener("click", ()=> $$(".dropdown").forEach(d=>d.classList.remove("show")));
+$$(".dropdown").forEach(d=>d.addEventListener("click", e=>e.stopPropagation()));
+
+/* ============================================================
+   17. GLOBAL SEARCH
+   ============================================================ */
+$("#globalSearch").addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  const q = e.target.value.trim(); if (!q) return;
+  const ql = q.toLowerCase();
+  const hits = [];
+  store.activities.forEach(a => { if ((a.action+" "+a.user+" "+a.app).toLowerCase().includes(ql))
+    hits.push(`<tr><td><span class="badge b-${(a.app||'').toLowerCase()}">${a.app}</span></td><td>${a.action}</td><td><small>${a.user}</small></td></tr>`); });
+  Object.entries(store.moduleData).forEach(([k,arr]) => arr.forEach(r => {
+    if (JSON.stringify(r).toLowerCase().includes(ql))
+      hits.push(`<tr><td><span class="badge b-${k.toLowerCase()}">${k}</span></td><td>${r.title || (r.plat+" · "+r.gudang) || (r.name+" · "+r.wilayah)}</td><td>${pill(r.status)}</td></tr>`);
+  }));
+  store.users.forEach(u => { if ((u.name+u.email+u.role).toLowerCase().includes(ql))
+    hits.push(`<tr><td><span class="badge">USER</span></td><td>${u.name} · ${u.role}</td><td><small>${u.email}</small></td></tr>`); });
+  openModal(`Hasil pencarian: "${q}"`,
+    hits.length ? `<table><thead><tr><th>Modul</th><th>Ringkasan</th><th>Info</th></tr></thead><tbody>${hits.join("")}</tbody></table>` : `<p>Tidak ada hasil untuk <b>${q}</b>.</p>`,
+    "Tutup");
+});
+
+/* ============================================================
+   18. INIT
+   ============================================================ */
+load();
+if (!store.users.length) seed();
+currentUser = store.users[0];
+currentCompany = store.companies[0];
+refreshTop();
+renderView();
+</script>
+</body>
+</html>
