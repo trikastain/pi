@@ -3,44 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Studio AI v8 — Pollinations · Edge TTS · Mediabunny</title>
-
+<title>Studio AI v9 — Realtime Queue</title>
 <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-
 <style>
-:root{
-  --bg:#0a0b10;--surface:#13141c;--surface2:#1a1c26;--surface3:#22242f;
-  --border:rgba(255,255,255,.08);--text:#e4e4e7;--muted:#8b8b95;
-  --primary:#6366f1;--accent:#a855f7;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;
-  --r:14px;--r-sm:9px;
-}
+:root{--bg:#0a0b10;--surface:#13141c;--surface2:#1a1c26;--surface3:#22242f;--border:rgba(255,255,255,.08);--text:#e4e4e7;--muted:#8b8b95;--primary:#6366f1;--accent:#a855f7;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;--r:14px;--r-sm:9px}
 *{margin:0;padding:0;box-sizing:border-box}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
-  background:var(--bg);color:var(--text);min-height:100vh;
-  background-image:
-    radial-gradient(ellipse 80% 50% at 50% -20%,rgba(99,102,241,.15),transparent),
-    radial-gradient(ellipse 60% 40% at 80% 100%,rgba(168,85,247,.1),transparent);
-  background-attachment:fixed;
-}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;background-image:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(99,102,241,.15),transparent),radial-gradient(ellipse 60% 40% at 80% 100%,rgba(168,85,247,.1),transparent);background-attachment:fixed}
 .app{max-width:1200px;margin:0 auto;padding:24px 16px 100px}
-
 header{text-align:center;margin-bottom:24px}
 .logo{display:inline-flex;align-items:center;gap:12px;font-size:26px;font-weight:700}
 .logo-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--accent));display:grid;place-items:center;font-size:22px;box-shadow:0 8px 24px rgba(99,102,241,.35)}
 .grad{background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .sub{color:var(--muted);font-size:14px;margin-top:8px}
-
 .tabs{display:flex;gap:6px;background:var(--surface);padding:6px;border-radius:14px;border:1px solid var(--border);margin-bottom:22px;overflow-x:auto}
 .tab{flex:1;min-width:80px;padding:11px 10px;border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;border-radius:10px;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;white-space:nowrap}
 .tab:hover{color:var(--text);background:var(--surface2)}
 .tab.active{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;box-shadow:0 4px 14px rgba(99,102,241,.3)}
-
-.panel{display:none;animation:fade .3s}
-.panel.active{display:block}
+.panel{display:none;animation:fade .3s}.panel.active{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px}
 .card-title{font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .badge{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
@@ -48,13 +29,11 @@ header{text-align:center;margin-bottom:24px}
 .badge.b{background:rgba(99,102,241,.15);color:#a5b4fc}
 .badge.y{background:rgba(245,158,11,.15);color:#fcd34d}
 .badge.r{background:rgba(239,68,68,.15);color:#fca5a5}
-
 label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500}
 textarea,input,select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 13px;border-radius:var(--r-sm);font-size:13px;font-family:inherit;resize:vertical;outline:none;transition:.2s}
 textarea:focus,input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
 textarea{min-height:78px;line-height:1.5}
 .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:14px 0}
-
 .btn{padding:11px 20px;border:none;border-radius:var(--r-sm);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:7px}
 .btn-p{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;box-shadow:0 4px 14px rgba(99,102,241,.3)}
 .btn-p:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.45)}
@@ -66,17 +45,14 @@ textarea{min-height:78px;line-height:1.5}
 .btn-sm{padding:6px 11px;font-size:11px;border-radius:7px}
 .btn-xs{padding:4px 8px;font-size:10px;border-radius:6px}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-
 .presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .preset{padding:6px 12px;font-size:11px;font-weight:500;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:16px;cursor:pointer;transition:.2s;font-family:inherit}
 .preset:hover{color:var(--text);border-color:var(--primary);background:rgba(99,102,241,.1)}
-
 .tbox{margin-top:10px;padding:11px 13px;background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.2);border-radius:var(--r-sm);display:none}
 .tbox.show{display:block;animation:fade .25s}
 .tlabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#a5b4fc;margin-bottom:5px}
 .tmeta{margin-top:5px;font-size:10px;color:var(--muted)}
 .tbox textarea{font-family:ui-monospace,monospace;font-size:11px;min-height:46px;background:var(--surface2)}
-
 .toggle-row{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)}
 .toggle{position:relative;width:42px;height:23px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
@@ -86,30 +62,24 @@ textarea{min-height:78px;line-height:1.5}
 .toggle input:checked+.tslider::before{transform:translateX(19px)}
 .tl{font-size:12px;color:var(--muted);cursor:pointer;user-select:none}
 .tl strong{color:var(--text)}
-
 .output{margin-top:16px;border-radius:11px;overflow:hidden;background:var(--surface2);border:1px solid var(--border);min-height:180px;display:grid;place-items:center;position:relative}
 .output img{width:100%;display:block}
 .ph{display:grid;place-items:center;padding:48px 16px;text-align:center;color:var(--muted);font-size:13px}
 .ph .ic{font-size:38px;margin-bottom:10px;opacity:.4}
-
 .loader{display:inline-block;width:17px;height:17px;border:2.5px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
 .prog{width:100%;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;margin-top:12px;display:none}
 .prog.show{display:block}
 .prog-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));width:0;transition:width .3s;border-radius:2px}
-
 .status{font-size:11px;color:var(--muted);margin-top:9px;min-height:14px;font-style:italic}
 .hint{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.55}
 .hint code{background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:10px;color:#c084fc;font-family:ui-monospace,monospace}
 .hint.warn{color:#fcd34d}
-
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface2);border:1px solid var(--border);padding:11px 18px;border-radius:9px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;transition:.3s;z-index:1000;max-width:90vw}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.e{border-color:rgba(239,68,68,.4);color:#fca5a5}
 .toast.s{border-color:rgba(16,185,129,.4);color:#6ee7b7}
 .toast.w{border-color:rgba(245,158,11,.4);color:#fcd34d}
-
 #logPanel{position:fixed;bottom:0;right:0;width:min(420px,100vw);max-height:45vh;background:rgba(10,11,16,.97);border-left:1px solid var(--border);border-top:1px solid var(--border);border-radius:14px 0 0 0;z-index:999;display:none;flex-direction:column}
 #logPanel.show{display:flex}
 #logHead{padding:9px 13px;font-size:12px;font-weight:600;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;cursor:pointer}
@@ -117,7 +87,6 @@ textarea{min-height:78px;line-height:1.5}
 .logline{margin-bottom:3px;color:#a1a1aa}
 .logline.ok{color:#6ee7b7}.logline.err{color:#fca5a5}.logline.warn{color:#fcd34d}
 #logToggle{position:fixed;bottom:16px;right:16px;z-index:998;width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));border:none;color:#fff;font-size:19px;cursor:pointer;box-shadow:0 6px 20px rgba(99,102,241,.4)}
-
 table{width:100%;border-collapse:collapse;font-size:12px}
 th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--border)}
 th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
@@ -125,22 +94,18 @@ th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;le
 .pill.ok{background:rgba(16,185,129,.15);color:#6ee7b7}
 .pill.err{background:rgba(239,68,68,.15);color:#fca5a5}
 .pill.wait{background:rgba(245,158,11,.15);color:#fcd34d}
-
 .plyr-wrap{width:100%;aspect-ratio:16/9;border-radius:11px;overflow:hidden;background:#000}
 .plyr{--plyr-color-main:#a855f7}
-
 .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:16px}
 .gallery-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative}
 .gallery-item img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
 .gallery-item .info{padding:8px;font-size:10px;color:var(--muted)}
 .gallery-item .actions{padding:0 8px 8px;display:flex;gap:4px}
 .gallery-empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
-
 .compare{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .compare-item{background:var(--surface2);border-radius:10px;overflow:hidden;position:relative}
 .compare-item img{width:100%;display:block}
 .compare-item .label{position:absolute;top:8px;left:8px;padding:3px 8px;background:rgba(0,0,0,.7);border-radius:6px;font-size:10px;font-weight:600}
-
 .tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:14px 0}
 .tool{padding:12px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:.2s;text-align:center;font-size:12px;font-family:inherit;color:var(--text)}
 .tool:hover{border-color:var(--primary);background:rgba(99,102,241,.1)}
@@ -149,24 +114,43 @@ th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;le
 .tool .name{font-weight:600;font-size:11px}
 .tool .desc{color:var(--muted);font-size:9.5px;margin-top:2px}
 
-@media(max-width:600px){
-  .app{padding:18px 12px 80px}
-  .logo{font-size:21px}
-  .card{padding:16px}
-  .tab{padding:9px 8px;font-size:11px}
-  .row{grid-template-columns:1fr}
-  .compare{grid-template-columns:1fr}
+/* ============ QUEUE PANEL (BARU) ============ */
+.queue-panel{
+  margin-top:14px;padding:14px;background:rgba(99,102,241,.05);
+  border:1px solid rgba(99,102,241,.2);border-radius:12px;display:none;
+  animation:fade .3s;
 }
+.queue-panel.show{display:block}
+.queue-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.queue-title{font-size:13px;font-weight:600;color:#a5b4fc}
+.queue-eta{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:500}
+.queue-stats{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap}
+.queue-stats span{display:flex;align-items:center;gap:4px}
+.queue-stats b{color:var(--text);font-variant-numeric:tabular-nums}
+.queue-progress{width:100%;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-bottom:12px}
+.queue-progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));width:0;transition:width .3s ease;border-radius:3px}
+.queue-list{max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.queue-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface2);border-radius:8px;font-size:11.5px;border-left:3px solid transparent;transition:all .2s}
+.queue-item.queue-queued{border-left-color:#4b5563;opacity:.7}
+.queue-item.queue-waiting{border-left-color:var(--warn);background:rgba(245,158,11,.05)}
+.queue-item.queue-running{border-left-color:var(--primary);background:rgba(99,102,241,.08)}
+.queue-item.queue-done{border-left-color:var(--success);opacity:.75}
+.queue-item.queue-failed{border-left-color:var(--danger);background:rgba(239,68,68,.08)}
+.q-icon{font-size:14px;width:22px;text-align:center;flex-shrink:0}
+.q-label{flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.q-status{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;font-family:ui-monospace,monospace;flex-shrink:0}
+.queue-item.queue-running .q-status{color:#a5b4fc;font-weight:600}
+.queue-item.queue-done .q-status{color:#6ee7b7}
+.queue-item.queue-failed .q-status{color:#fca5a5}
+
+@media(max-width:600px){.app{padding:18px 12px 80px}.logo{font-size:21px}.card{padding:16px}.tab{padding:9px 8px;font-size:11px}.row{grid-template-columns:1fr}.compare{grid-template-columns:1fr}.q-label{font-size:10.5px}}
 </style>
 </head>
 <body>
 <div class="app">
   <header>
-    <div class="logo">
-      <div class="logo-icon">✨</div>
-      <span>Studio <span class="grad">AI</span> <span style="font-size:12px;color:var(--muted);font-weight:500">v8</span></span>
-    </div>
-    <p class="sub">Pollinations · Edge TTS · Mediabunny · Plyr — 100% gratis</p>
+    <div class="logo"><div class="logo-icon">✨</div><span>Studio <span class="grad">AI</span> <span style="font-size:12px;color:var(--muted);font-weight:500">v9</span></span></div>
+    <p class="sub">Pollinations · Edge TTS · Realtime Queue · Mediabunny · Plyr</p>
   </header>
 
   <nav class="tabs">
@@ -183,59 +167,30 @@ th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;le
   <section class="panel active" id="panel-image">
     <div class="card">
       <div class="card-title">🖼️ Generator Gambar <span class="badge g">Pollinations · Flux</span></div>
-
       <label for="imgPrompt">Prompt bahasa Indonesia</label>
       <textarea id="imgPrompt" placeholder="Contoh: Kucing oranye lucu tidur di bawah sinar matahari sore di taman bunga"></textarea>
       <div class="presets" id="presetsImg"></div>
-
       <div class="tbox" id="transImg">
         <div class="tlabel">🇬🇧 Prompt final (bisa diedit)</div>
         <textarea id="transImgEdit" rows="2"></textarea>
         <div class="tmeta" id="transImgMeta"></div>
       </div>
-
       <div class="row">
-        <div>
-          <label>Ukuran</label>
-          <select id="imgSize">
-            <option value="512x512">512×512</option>
-            <option value="1024x1024" selected>1024×1024</option>
-            <option value="1280x720">1280×720 (landscape)</option>
-            <option value="720x1280">720×1280 (portrait)</option>
-          </select>
-        </div>
-        <div>
-          <label>Model</label>
-          <select id="imgModel">
-            <option value="flux" selected>Flux (kualitas terbaik)</option>
-            <option value="turbo">Turbo (cepat)</option>
-          </select>
-        </div>
-        <div>
-          <label>Gaya</label>
-          <select id="imgStyle">
-            <option value="auto" selected>Otomatis</option>
-            <option value="cinematic">Sinematik</option>
-            <option value="photorealistic">Fotorealistis</option>
-            <option value="anime">Anime</option>
-            <option value="watercolor">Cat air</option>
-            <option value="off">Tanpa enhancer</option>
-          </select>
-        </div>
+        <div><label>Ukuran</label><select id="imgSize"><option value="512x512">512×512</option><option value="1024x1024" selected>1024×1024</option><option value="1280x720">1280×720</option><option value="720x1280">720×1280</option></select></div>
+        <div><label>Model</label><select id="imgModel"><option value="flux" selected>Flux (terbaik)</option><option value="turbo">Turbo (cepat)</option></select></div>
+        <div><label>Gaya</label><select id="imgStyle"><option value="auto" selected>Otomatis</option><option value="cinematic">Sinematik</option><option value="photorealistic">Fotorealistis</option><option value="anime">Anime</option><option value="watercolor">Cat air</option><option value="off">Tanpa enhancer</option></select></div>
       </div>
-
       <div class="toggle-row">
         <label class="toggle"><input type="checkbox" id="imgAutoTrans" checked><span class="tslider"></span></label>
         <span class="tl" onclick="document.getElementById('imgAutoTrans').click()"><strong>Terjemahkan otomatis</strong> ke Inggris</span>
       </div>
-
       <div class="btn-row" style="margin-top:14px">
         <button class="btn btn-p" id="btnImg">✨ Generate</button>
         <button class="btn btn-g btn-sm" id="btnImgRetrans" style="display:none">🔄 Ulangi Terjemahan</button>
       </div>
       <div class="status" id="statusImg"></div>
       <div class="prog" id="progImg"><div class="prog-bar" id="barImg"></div></div>
-      <p class="hint warn">⏱️ Pollinations tier anonim: ~1 gambar/15 detik. Batch besar akan antre.</p>
+      <p class="hint warn">⏱️ Pollinations tier anonim: ~1 gambar/15 detik (countdown realtime ditampilkan)</p>
     </div>
     <div class="output" id="outImg"><div class="ph"><div class="ic">🖼️</div><div>Gambar akan muncul di sini</div></div></div>
   </section>
@@ -247,7 +202,6 @@ th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;le
       <label>Unggah gambar atau gunakan hasil terakhir</label>
       <input type="file" id="editorUpload" accept="image/*" style="margin-bottom:12px">
       <button class="btn btn-g btn-sm" id="btnUseLast">📥 Gunakan Gambar Terakhir</button>
-
       <div class="tools" id="toolsGrid">
         <button class="tool" data-tool="none"><span class="icon">🖼️</span><div class="name">Original</div><div class="desc">Tanpa filter</div></button>
         <button class="tool" data-tool="grayscale"><span class="icon">⚫</span><div class="name">Grayscale</div><div class="desc">Hitam putih</div></button>
@@ -262,8 +216,6 @@ th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;le
         <button class="tool" data-tool="vignette"><span class="icon">🎯</span><div class="name">Vignette</div><div class="desc">Tepi gelap</div></button>
         <button class="tool" data-tool="dramatic"><span class="icon">🎭</span><div class="name">Dramatic</div><div class="desc">Kontras sinema</div></button>
       </div>
-
-      <div class="status" id="statusEditor"></div>
     </div>
     <div class="output" id="outEditor"><div class="ph"><div class="ic">✏️</div><div>Unggah gambar & pilih filter</div></div></div>
   </section>
@@ -273,102 +225,42 @@ th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;le
     <div class="card">
       <div class="card-title">🔊 Text-to-Speech <span class="badge g" id="ttsEngineBadge">Memuat...</span></div>
       <label for="ttsText">Teks bahasa Indonesia</label>
-      <textarea id="ttsText" placeholder="Contoh: Selamat datang di Studio AI versi delapan."></textarea>
+      <textarea id="ttsText" placeholder="Contoh: Selamat datang di Studio AI versi sembilan."></textarea>
       <div class="presets" id="presetsTts"></div>
-
       <div class="row">
-        <div style="grid-column:span 2">
-          <label>Suara</label>
-          <select id="ttsVoice"><option>Memuat...</option></select>
-        </div>
-        <div>
-          <label>Kecepatan</label>
-          <select id="ttsRate">
-            <option value="0.7">Sangat lambat</option>
-            <option value="0.85">Lambat</option>
-            <option value="1" selected>Normal</option>
-            <option value="1.15">Cepat</option>
-            <option value="1.4">Sangat cepat</option>
-          </select>
-        </div>
-        <div>
-          <label>Nada</label>
-          <select id="ttsPitch">
-            <option value="0.8">Rendah</option>
-            <option value="1" selected>Normal</option>
-            <option value="1.2">Tinggi</option>
-          </select>
-        </div>
-        <div>
-          <label>Volume</label>
-          <select id="ttsVolume">
-            <option value="0.5">50%</option>
-            <option value="0.75">75%</option>
-            <option value="1" selected>100%</option>
-          </select>
-        </div>
+        <div style="grid-column:span 2"><label>Suara</label><select id="ttsVoice"><option>Memuat...</option></select></div>
+        <div><label>Kecepatan</label><select id="ttsRate"><option value="0.7">Sangat lambat</option><option value="0.85">Lambat</option><option value="1" selected>Normal</option><option value="1.15">Cepat</option><option value="1.4">Sangat cepat</option></select></div>
+        <div><label>Nada</label><select id="ttsPitch"><option value="0.8">Rendah</option><option value="1" selected>Normal</option><option value="1.2">Tinggi</option></select></div>
+        <div><label>Volume</label><select id="ttsVolume"><option value="0.5">50%</option><option value="0.75">75%</option><option value="1" selected>100%</option></select></div>
       </div>
-
       <div class="btn-row">
         <button class="btn btn-p" id="btnTts">▶️ Putar</button>
         <button class="btn btn-g" id="btnTtsStop" disabled>⏹️ Stop</button>
         <button class="btn btn-g btn-sm" id="btnTtsTest">🔊 Tes Suara</button>
       </div>
-      <p class="hint">💡 Engine: <b>Edge TTS</b> (natural, via VoiPi) → fallback ke <b>Web Speech API</b> bawaan browser.</p>
+      <p class="hint">💡 Engine: <b>Edge TTS</b> (via VoiPi) → fallback ke <b>Web Speech API</b>.</p>
     </div>
     <div class="output" id="outAudio"><div class="ph"><div class="ic">🔊</div><div>Tekan Putar untuk mendengarkan</div></div></div>
   </section>
 
-  <!-- ============ TAB VIDEO ============ -->
+  <!-- ============ TAB VIDEO (UTAMA v9) ============ -->
   <section class="panel" id="panel-video">
     <div class="card">
-      <div class="card-title">🎬 Generator Video <span class="badge g">Pollinations + Mediabunny</span><span class="badge b">Plyr</span></div>
+      <div class="card-title">🎬 Generator Video <span class="badge g">Realtime Queue</span><span class="badge b">Plyr</span></div>
       <label for="vidPrompt">Tema video (caption tetap Indonesia)</label>
       <textarea id="vidPrompt" placeholder="Contoh: Perjalanan melalui hutan bambu di pagi hari, kabut tipis, sinar matahari menembus dedaunan"></textarea>
       <div class="presets" id="presetsVid"></div>
-
       <div class="tbox" id="transVid">
         <div class="tlabel">🇬🇧 Prompt visual untuk AI</div>
         <textarea id="transVidEdit" rows="2"></textarea>
         <div class="tmeta" id="transVidMeta"></div>
       </div>
-
       <div class="row">
-        <div>
-          <label>Durasi total</label>
-          <select id="vidTotalDuration">
-            <option value="15">15 detik (uji cepat)</option>
-            <option value="30">30 detik</option>
-            <option value="60" selected>60 detik</option>
-            <option value="90">90 detik</option>
-          </select>
-        </div>
-        <div>
-          <label>Durasi per segmen</label>
-          <select id="vidSegmentDuration">
-            <option value="6">6 detik</option>
-            <option value="8" selected>8 detik</option>
-            <option value="10">10 detik</option>
-          </select>
-        </div>
-        <div>
-          <label>Gaya</label>
-          <select id="vidStyle">
-            <option value="cinematic" selected>Sinematik</option>
-            <option value="anime">Anime</option>
-            <option value="realistic">Realistis</option>
-            <option value="watercolor">Cat air</option>
-          </select>
-        </div>
-        <div>
-          <label>Variasi</label>
-          <select id="vidVariety">
-            <option value="on" selected>Beragam (angle+waktu)</option>
-            <option value="off">Monoton</option>
-          </select>
-        </div>
+        <div><label>Durasi total</label><select id="vidTotalDuration"><option value="15">15 detik (uji)</option><option value="30">30 detik</option><option value="60" selected>60 detik</option><option value="90">90 detik</option></select></div>
+        <div><label>Durasi per segmen</label><select id="vidSegmentDuration"><option value="6">6 detik</option><option value="8" selected>8 detik</option><option value="10">10 detik</option></select></div>
+        <div><label>Gaya</label><select id="vidStyle"><option value="cinematic" selected>Sinematik</option><option value="anime">Anime</option><option value="realistic">Realistis</option><option value="watercolor">Cat air</option></select></div>
+        <div><label>Variasi</label><select id="vidVariety"><option value="on" selected>Beragam (angle+waktu)</option><option value="off">Monoton</option></select></div>
       </div>
-
       <div class="toggle-row">
         <label class="toggle"><input type="checkbox" id="vidAutoTrans" checked><span class="tslider"></span></label>
         <span class="tl" onclick="document.getElementById('vidAutoTrans').click()"><strong>Terjemahkan otomatis</strong> untuk visual</span>
@@ -377,14 +269,29 @@ th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;le
         <label class="toggle"><input type="checkbox" id="vidNarration"><span class="tslider"></span></label>
         <span class="tl" onclick="document.getElementById('vidNarration').click()"><strong>Narasi</strong> setelah video selesai</span>
       </div>
-
       <div class="btn-row" style="margin-top:14px">
         <button class="btn btn-p" id="btnVid">🎬 Buat Video</button>
         <button class="btn btn-g" id="btnVidDl" style="display:none">⬇️ Unduh MP4</button>
       </div>
       <div class="status" id="statusVid"></div>
       <div class="prog" id="progVid"><div class="prog-bar" id="barVid"></div></div>
-      <p class="hint warn">⏱️ <b>Estimasi waktu:</b> video 60s = 8 segmen × 15s antrean Pollinations ≈ 2 menit generate + 1 menit render + 30s merge = <b>~4 menit total</b>. Jangan tutup tab.</p>
+
+      <!-- PANEL ANTREAN REALTIME -->
+      <div class="queue-panel" id="queuePanel">
+        <div class="queue-header">
+          <div class="queue-title">🎬 Antrean Video (Realtime)</div>
+          <div class="queue-eta" id="queueEta">-</div>
+        </div>
+        <div class="queue-stats">
+          <span>📡 Fetch <b id="qFetch">0/0</b></span>
+          <span>🎨 Render <b id="qRender">0/0</b></span>
+          <span>⏱️ Elapsed <b id="qElapsed">0.0s</b></span>
+        </div>
+        <div class="queue-progress"><div class="queue-progress-bar" id="queueBar"></div></div>
+        <div class="queue-list" id="queueList"></div>
+      </div>
+
+      <p class="hint warn">⚡ <b>Pipeline v9:</b> Fetch dan render berjalan paralel. Video 60s (8 segmen) ≈ 2–3 menit (dulu 4–5 menit).</p>
     </div>
     <div class="output" id="outVideo"><div class="ph"><div class="ic">🎬</div><div>Video final akan muncul di sini</div></div></div>
   </section>
@@ -397,7 +304,7 @@ th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;le
         <button class="btn btn-g btn-sm" id="btnClearGallery">🗑️ Hapus Semua</button>
         <button class="btn btn-g btn-sm" id="btnExportGallery">📤 Ekspor JSON</button>
       </div>
-      <p class="hint">30 gambar terakhir disimpan sebagai base64 di <code>localStorage</code>. Video hanya tersedia di sesi saat dibuat.</p>
+      <p class="hint">30 gambar terakhir disimpan sebagai base64 di <code>localStorage</code>.</p>
     </div>
     <div class="gallery" id="galleryGrid"></div>
     <div class="gallery-empty" id="galleryEmpty">Belum ada riwayat. Generate gambar untuk memulai.</div>
@@ -409,36 +316,17 @@ th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;le
       <div class="card-title">⚙️ Preferensi Default</div>
       <div class="toggle-row" style="margin-top:0;padding-top:0;border-top:none">
         <label class="toggle"><input type="checkbox" id="prefAutoTranslate" checked><span class="tslider"></span></label>
-        <span class="tl" onclick="document.getElementById('prefAutoTranslate').click()"><strong>Auto-translate</strong> prompt Indonesia → Inggris</span>
+        <span class="tl" onclick="document.getElementById('prefAutoTranslate').click()"><strong>Auto-translate</strong></span>
       </div>
       <div class="toggle-row">
         <label class="toggle"><input type="checkbox" id="prefSaveGallery" checked><span class="tslider"></span></label>
-        <span class="tl" onclick="document.getElementById('prefSaveGallery').click()"><strong>Simpan ke Galeri</strong> otomatis setelah generate</span>
+        <span class="tl" onclick="document.getElementById('prefSaveGallery').click()"><strong>Simpan ke Galeri</strong> otomatis</span>
       </div>
-      <div class="toggle-row">
-        <label class="toggle"><input type="checkbox" id="prefNologo" checked><span class="tslider"></span></label>
-        <span class="tl" onclick="document.getElementById('prefNologo').click()"><strong>Nologo</strong> (hapus watermark Pollinations jika ada)</span>
-      </div>
-      <button class="btn btn-g btn-sm" id="btnSavePrefs" style="margin-top:14px">💾 Simpan Preferensi</button>
+      <button class="btn btn-g btn-sm" id="btnSavePrefs" style="margin-top:14px">💾 Simpan</button>
     </div>
-
     <div class="card">
       <div class="card-title">🧹 Pembersihan</div>
-      <p class="hint" style="margin-top:0">Hapus cache lokal: pengaturan, galeri, dan cache terjemahan.</p>
-      <button class="btn btn-d btn-sm" id="btnResetAll" style="margin-top:10px">⚠️ Reset Semua Data</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">ℹ️ Tentang</div>
-      <p class="hint" style="margin-top:0">
-        <b>Studio AI v8</b> — dibuat dengan:<br>
-        • <b>Pollinations.ai</b> (gambar & visual video) — gratis, tanpa API key<br>
-        • <b>Edge TTS via VoiPi</b> (suara Indonesia natural)<br>
-        • <b>Mediabunny</b> (merge segmen → MP4)<br>
-        • <b>Plyr</b> (video player ringan)<br>
-        • <b>Web Speech API</b> (fallback TTS)<br>
-        • <b>Canvas Filters</b> (editor gambar lokal)
-      </p>
+      <button class="btn btn-d btn-sm" id="btnResetAll">⚠️ Reset Semua Data</button>
     </div>
   </section>
 
@@ -446,7 +334,6 @@ th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;le
   <section class="panel" id="panel-diag">
     <div class="card">
       <div class="card-title">🩺 Diagnostik Layanan</div>
-      <p class="hint" style="margin-top:0;margin-bottom:14px">Uji koneksi ke semua layanan dan browser capabilities.</p>
       <button class="btn btn-p" id="btnDiag">▶️ Jalankan Tes</button>
       <div style="margin-top:16px;overflow-x:auto">
         <table>
@@ -473,32 +360,26 @@ const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 
 const POLLINATIONS_BASE = 'https://image.pollinations.ai/prompt/';
-const STORAGE_KEY = 'studio-ai-v8-settings';
-const GALLERY_KEY = 'studio-ai-v8-gallery';
+const STORAGE_KEY = 'studio-ai-v9-settings';
+const GALLERY_KEY = 'studio-ai-v9-gallery';
 
 const CONFIG = {
   segmentFPS: 30,
-  pollinationsInterval: 16000, // 16 detik, aman dari rate-limit 15s
+  pollinationsInterval: 16000,
   maxRetries: 2,
-  retryDelayBase: 2000,
-  translateTimeout: 5000
+  retryDelayBase: 2000
 };
 
 const state = {
   voices: [],
-  ttsEngine: null, // 'voipi' | 'webspeech'
+  ttsEngine: null,
   voiPi: null,
   busy: false,
   plyr: null,
   currentVideoUrl: null,
   lastImageBlob: null,
   lastPollinations: 0,
-  translationCache: new Map(),
-  settings: {
-    autoTranslate: true,
-    saveGallery: true,
-    nologo: true
-  }
+  settings: { autoTranslate: true, saveGallery: true }
 };
 
 /* ============================================================
@@ -508,26 +389,14 @@ function loadSettings() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) state.settings = { ...state.settings, ...JSON.parse(raw) };
-  } catch (e) { console.warn(e); }
+  } catch(e) {}
 }
-
 function saveSettings() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.settings));
-    log('✅ Setelan disimpan', 'ok');
-  } catch (e) { log('⚠️ Gagal simpan: ' + e.message, 'warn'); }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.settings)); log('✅ Setelan disimpan', 'ok'); }
+  catch(e) { log('⚠️ ' + e.message, 'warn'); }
 }
-
-function loadGallery() {
-  try { return JSON.parse(localStorage.getItem(GALLERY_KEY) || '[]'); }
-  catch { return []; }
-}
-
-function saveGallery(items) {
-  try { localStorage.setItem(GALLERY_KEY, JSON.stringify(items.slice(0, 30))); }
-  catch (e) { log('⚠️ Galeri penuh: ' + e.message, 'warn'); }
-}
-
+function loadGallery() { try { return JSON.parse(localStorage.getItem(GALLERY_KEY) || '[]'); } catch { return []; } }
+function saveGallery(items) { try { localStorage.setItem(GALLERY_KEY, JSON.stringify(items.slice(0, 30))); } catch(e) {} }
 function addToGallery(item) {
   if (!state.settings.saveGallery) return;
   const items = loadGallery();
@@ -540,14 +409,9 @@ function addToGallery(item) {
    3. UTIL
    ============================================================ */
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-function withTimeout(p, ms, label = 'operasi') {
-  return Promise.race([
-    p,
-    new Promise((_, rej) => setTimeout(() => rej(new Error(`Timeout ${ms}ms: ${label}`)), ms))
-  ]);
+function withTimeout(p, ms, label) {
+  return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(`Timeout ${ms}ms: ${label}`)), ms))]);
 }
-
 function log(msg, type = '') {
   const body = $('#logBody');
   const line = document.createElement('div');
@@ -558,7 +422,6 @@ function log(msg, type = '') {
   body.scrollTop = body.scrollHeight;
   console.log(msg);
 }
-
 function showToast(msg, type = 's') {
   const t = $('#toast');
   t.textContent = msg;
@@ -566,9 +429,7 @@ function showToast(msg, type = 's') {
   clearTimeout(t._timer);
   t._timer = setTimeout(() => t.classList.remove('show'), 3600);
 }
-
 function setStatus(el, msg) { if (el) el.textContent = msg || ''; }
-
 function setLoading(btn, on, label) {
   if (on) {
     btn.dataset.orig = btn.dataset.orig || btn.innerHTML;
@@ -579,39 +440,21 @@ function setLoading(btn, on, label) {
     btn.disabled = false;
   }
 }
-
 function setProgress(barEl, progEl, pct) {
   if (progEl) progEl.classList.add('show');
   if (barEl) barEl.style.width = pct + '%';
 }
-
-function hideProgress(progEl, delay = 700) {
-  setTimeout(() => progEl && progEl.classList.remove('show'), delay);
-}
-
+function hideProgress(progEl, delay = 700) { setTimeout(() => progEl && progEl.classList.remove('show'), delay); }
 async function makeThumbnail(bitmap, maxSize = 200) {
   const scale = Math.min(maxSize / bitmap.width, maxSize / bitmap.height, 1);
-  const w = Math.round(bitmap.width * scale);
-  const h = Math.round(bitmap.height * scale);
   const c = document.createElement('canvas');
-  c.width = w; c.height = h;
-  c.getContext('2d').drawImage(bitmap, 0, 0, w, h);
+  c.width = Math.round(bitmap.width * scale);
+  c.height = Math.round(bitmap.height * scale);
+  c.getContext('2d').drawImage(bitmap, 0, 0, c.width, c.height);
   return c.toDataURL('image/jpeg', 0.7);
 }
-
 async function blobToDataURL(blob) {
-  return new Promise(r => {
-    const reader = new FileReader();
-    reader.onload = () => r(reader.result);
-    reader.readAsDataURL(blob);
-  });
-}
-
-async function bitmapToBlob(bitmap, format = 'image/jpeg', quality = 0.92) {
-  const c = document.createElement('canvas');
-  c.width = bitmap.width; c.height = bitmap.height;
-  c.getContext('2d').drawImage(bitmap, 0, 0);
-  return new Promise(r => c.toBlob(r, format, quality));
+  return new Promise(r => { const reader = new FileReader(); reader.onload = () => r(reader.result); reader.readAsDataURL(blob); });
 }
 
 /* ============================================================
@@ -654,29 +497,20 @@ const KAMUS = {
   tanpa:'without',sampai:'until',para:'the',kami:'we',kita:'we',
   mereka:'they',dia:'he/she',saya:'I',kamu:'you',anda:'you'
 };
-
 function localTranslate(text) {
   let out = ' ' + text.toLowerCase() + ' ';
   const phrases = Object.keys(KAMUS).filter(k => k.includes(' ')).sort((a,b)=>b.length-a.length);
-  for (const p of phrases) {
-    out = out.replace(new RegExp(`\\b${p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`,'gi'), KAMUS[p]);
-  }
+  for (const p of phrases) out = out.replace(new RegExp(`\\b${p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`,'gi'), KAMUS[p]);
   const words = Object.keys(KAMUS).filter(k => !k.includes(' ')).sort((a,b)=>b.length-a.length);
-  for (const w of words) {
-    out = out.replace(new RegExp(`\\b${w}\\b`,'gi'), KAMUS[w]);
-  }
+  for (const w of words) out = out.replace(new RegExp(`\\b${w}\\b`,'gi'), KAMUS[w]);
   return out.replace(/\s+/g,' ').trim();
 }
 
 /* ============================================================
-   5. POLLINATIONS SERVICE
+   5. POLLINATIONS FETCH (single attempt, retry internal)
    ============================================================ */
 async function loadImageBlob(url) {
-  const candidates = [
-    url,
-    `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    `https://images.weserv.nl/?url=${encodeURIComponent(url)}`
-  ];
+  const candidates = [url, `https://corsproxy.io/?${encodeURIComponent(url)}`, `https://images.weserv.nl/?url=${encodeURIComponent(url)}`];
   let lastErr;
   for (const u of candidates) {
     try {
@@ -687,43 +521,24 @@ async function loadImageBlob(url) {
       return blob;
     } catch (e) { lastErr = e; }
   }
-  throw lastErr || new Error('Gagal memuat gambar (CORS)');
+  throw lastErr || new Error('Gagal muat (CORS)');
 }
 
-async function pollinationsGenerate(prompt, opts = {}) {
-  const {
-    width = 1024, height = 1024, model = 'flux', seed = null, enhance = true,
-    onQueue = null
-  } = opts;
-
-  // Queue management
-  const wait = Math.max(0, state.lastPollinations + CONFIG.pollinationsInterval - Date.now());
-  if (wait > 0) {
-    log(`⏳ Queue Pollinations: tunggu ${Math.ceil(wait/1000)}s`, 'warn');
-    if (onQueue) onQueue(Math.ceil(wait/1000));
-    await sleep(wait);
-  }
-  state.lastPollinations = Date.now();
-
-  const finalSeed = seed !== null ? seed : Math.floor(Math.random() * 1e6);
-  const params = new URLSearchParams({
-    width, height, model, seed: finalSeed, nologo: 'true'
-  });
-  if (enhance) params.append('enhance', 'true');
-
+async function pollinationsFetch(prompt, opts = {}) {
+  const { width = 1024, height = 1024, model = 'flux' } = opts;
+  const seed = Math.floor(Math.random() * 1e6);
+  const params = new URLSearchParams({ width, height, model, seed, nologo: 'true', enhance: 'true' });
   const url = `${POLLINATIONS_BASE}${encodeURIComponent(prompt)}?${params}`;
 
   let lastErr;
   for (let attempt = 0; attempt <= CONFIG.maxRetries; attempt++) {
     try {
-      const blob = await loadImageBlob(url);
-      return { blob, url, seed: finalSeed };
+      return { blob: await loadImageBlob(url), url, seed };
     } catch (e) {
       lastErr = e;
       if (attempt < CONFIG.maxRetries) {
-        const delay = CONFIG.retryDelayBase * Math.pow(2, attempt);
-        log(`⚠️ Attempt ${attempt + 1} gagal: ${e.message} — retry ${delay}ms`, 'warn');
-        await sleep(delay);
+        log(`⚠️ Retry ${attempt + 1}/${CONFIG.maxRetries}: ${e.message}`, 'warn');
+        await sleep(CONFIG.retryDelayBase * Math.pow(2, attempt));
       }
     }
   }
@@ -737,7 +552,6 @@ const enhancerStyles = {
   watercolor: 'watercolor painting, soft brush strokes, artistic, delicate colors',
   off: ''
 };
-
 function enhancePrompt(prompt, style) {
   if (style === 'off') return prompt;
   let suffix = enhancerStyles[style] || '';
@@ -753,53 +567,247 @@ function enhancePrompt(prompt, style) {
 }
 
 /* ============================================================
-   6. TTS SERVICE (VoiPi / Edge + Web Speech)
+   6. REALTIME QUEUE (BARU v9)
+   ============================================================ */
+class PollinationsQueue {
+  constructor(intervalMs = 16000) {
+    this.intervalMs = intervalMs;
+    this.lastDispatch = 0;
+    this.jobs = [];
+    this.dispatching = false;
+    this.startTime = 0;
+  }
+
+  addJob(fn, meta = {}) {
+    if (this.startTime === 0) this.startTime = Date.now();
+    return new Promise((resolve, reject) => {
+      const job = {
+        id: this.jobs.length,
+        status: 'queued',
+        dispatchAt: 0,
+        startedAt: 0,
+        completedAt: 0,
+        duration: 0,
+        result: null,
+        error: null,
+        fn, meta, resolve, reject
+      };
+      this.jobs.push(job);
+      this._run();
+    });
+  }
+
+  async _run() {
+    if (this.dispatching) return;
+    this.dispatching = true;
+
+    while (this.jobs.some(j => j.status === 'queued')) {
+      const job = this.jobs.find(j => j.status === 'queued');
+      const now = Date.now();
+      const nextSlot = Math.max(this.lastDispatch + this.intervalMs, now);
+      const wait = nextSlot - now;
+
+      job.status = 'waiting';
+      job.dispatchAt = nextSlot;
+
+      if (wait > 0) await sleep(wait);
+
+      this.lastDispatch = Date.now();
+      state.lastPollinations = this.lastDispatch;
+      job.status = 'running';
+      job.startedAt = this.lastDispatch;
+
+      // Fire and forget
+      job.fn()
+        .then(result => {
+          job.status = 'done';
+          job.completedAt = Date.now();
+          job.duration = job.completedAt - job.startedAt;
+          job.result = result;
+          job.resolve(result);
+        })
+        .catch(err => {
+          job.status = 'failed';
+          job.completedAt = Date.now();
+          job.duration = job.completedAt - job.startedAt;
+          job.error = err;
+          job.reject(err);
+        });
+    }
+
+    this.dispatching = false;
+  }
+}
+
+/* Queue UI — update realtime via rAF */
+class QueueUI {
+  constructor() {
+    this.element = null;
+    this.rafId = null;
+    this.queue = null;
+    this.doneRender = 0;
+    this.totalRender = 0;
+  }
+
+  mount(selector, queue, { totalRender = 0 } = {}) {
+    this.queue = queue;
+    this.totalRender = totalRender;
+    this.doneRender = 0;
+
+    const el = document.querySelector(selector);
+    if (!el) return;
+    el.classList.add('show');
+    this.element = el;
+
+    this._loop();
+  }
+
+  setRenderProgress(done, total) {
+    this.doneRender = done;
+    this.totalRender = total;
+  }
+
+  unmount() {
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+    this.rafId = null;
+    if (this.element) this.element.classList.remove('show');
+  }
+
+  _loop() {
+    this._update();
+    this.rafId = requestAnimationFrame(() => this._loop());
+  }
+
+  _update() {
+    if (!this.queue) return;
+    const now = Date.now();
+    const jobs = this.queue.jobs;
+    const total = jobs.length;
+    const done = jobs.filter(j => j.status === 'done').length;
+    const failed = jobs.filter(j => j.status === 'failed').length;
+    const running = jobs.filter(j => j.status === 'running').length;
+    const waiting = jobs.filter(j => j.status === 'waiting' || j.status === 'queued').length;
+
+    // Header stats
+    const qFetch = document.getElementById('qFetch');
+    const qRender = document.getElementById('qRender');
+    const qElapsed = document.getElementById('qElapsed');
+    const queueEta = document.getElementById('queueEta');
+    const queueBar = document.getElementById('queueBar');
+    const queueList = document.getElementById('queueList');
+
+    if (qFetch) qFetch.textContent = `${done + failed}/${total}`;
+    if (qRender) qRender.textContent = `${this.doneRender}/${this.totalRender}`;
+
+    // Elapsed
+    if (qElapsed && this.queue.startTime) {
+      const elapsed = (now - this.queue.startTime) / 1000;
+      qElapsed.textContent = elapsed.toFixed(1) + 's';
+    }
+
+    // ETA
+    if (queueEta) {
+      const pending = waiting + running;
+      if (pending === 0) {
+        queueEta.textContent = failed > 0 ? `⚠️ ${failed} gagal` : '✅ Fetch selesai';
+      } else {
+        const waitingJobs = jobs.filter(j => j.status === 'waiting').sort((a,b) => b.dispatchAt - a.dispatchAt);
+        const lastDispatch = waitingJobs[0];
+        // Avg duration of completed
+        const completedDurations = jobs.filter(j => j.status === 'done' && j.duration > 0).map(j => j.duration);
+        const avgDur = completedDurations.length > 0 ? completedDurations.reduce((a,b) => a+b, 0) / completedDurations.length : 8000;
+        let etaMs = avgDur;
+        if (lastDispatch) etaMs = Math.max(0, lastDispatch.dispatchAt - now + avgDur);
+        queueEta.textContent = `⏱️ ~${Math.max(1, Math.ceil(etaMs/1000))}s tersisa`;
+      }
+    }
+
+    // Progress bar
+    if (queueBar) {
+      const pct = total > 0 ? ((done + failed) / total) * 100 : 0;
+      queueBar.style.width = pct + '%';
+    }
+
+    // List
+    if (queueList) {
+      const html = jobs.map((job, i) => {
+        const label = job.meta?.label || '';
+        let icon, text, cls;
+        if (job.status === 'queued') { icon = '⏸️'; text = 'Antre'; cls = 'queued'; }
+        else if (job.status === 'waiting') {
+          const remain = Math.max(0, job.dispatchAt - now) / 1000;
+          icon = '⏱️'; text = `Kirim dlm ${remain.toFixed(1)}s`; cls = 'waiting';
+        } else if (job.status === 'running') {
+          const elapsed = (now - job.startedAt) / 1000;
+          icon = '🌀'; text = `Proses ${elapsed.toFixed(1)}s`; cls = 'running';
+        } else if (job.status === 'done') {
+          icon = '✅'; text = `Selesai ${(job.duration/1000).toFixed(1)}s`; cls = 'done';
+        } else if (job.status === 'failed') {
+          icon = '❌'; text = 'Gagal'; cls = 'failed';
+        }
+        return `<div class="queue-item queue-${cls}">
+          <span class="q-icon">${icon}</span>
+          <span class="q-label">Segmen ${i+1}${label ? ' · ' + label : ''}</span>
+          <span class="q-status">${text}</span>
+        </div>`;
+      }).join('');
+      queueList.innerHTML = html;
+    }
+  }
+}
+
+/* ============================================================
+   7. SEMAPHORE (untuk render serial)
+   ============================================================ */
+class Semaphore {
+  constructor(count = 1) { this.count = count; this.waiters = []; }
+  async acquire() {
+    if (this.count > 0) { this.count--; return; }
+    await new Promise(r => this.waiters.push(r));
+  }
+  release() {
+    if (this.waiters.length > 0) this.waiters.shift()();
+    else this.count++;
+  }
+}
+
+/* ============================================================
+   8. TTS
    ============================================================ */
 async function initTTS() {
-  // Try VoiPi (Edge TTS)
   try {
     const { VoiPi } = await import('https://esm.sh/voipi@latest');
     if (VoiPi) {
       state.voiPi = new VoiPi();
-      const voices = await withTimeout(state.voiPi.listVoices(), 10000, 'VoiPi voices');
-      if (voices && voices.length > 0) {
+      const voices = await withTimeout(state.voiPi.listVoices(), 10000, 'VoiPi');
+      if (voices?.length > 0) {
         state.ttsEngine = 'voipi';
         state.voices = voices.map(v => ({ name: v.name || v.id, lang: v.lang || 'id-ID' }));
         populateVoices();
         $('#ttsEngineBadge').textContent = 'Edge TTS';
-        log(`✅ VoiPi/Edge TTS: ${state.voices.length} suara`, 'ok');
+        log(`✅ VoiPi: ${state.voices.length} suara`, 'ok');
         return;
       }
     }
-  } catch (e) {
-    log(`⚠️ VoiPi gagal: ${e.message} — fallback ke Web Speech`, 'warn');
-  }
+  } catch (e) { log(`⚠️ VoiPi gagal: ${e.message}`, 'warn'); }
 
-  // Fallback: Web Speech
   state.ttsEngine = 'webspeech';
   $('#ttsEngineBadge').textContent = 'Web Speech';
   if (window.speechSynthesis) {
     loadWebSpeechVoices();
     speechSynthesis.onvoiceschanged = loadWebSpeechVoices;
     setTimeout(loadWebSpeechVoices, 500);
-    setTimeout(loadWebSpeechVoices, 1500);
   }
-  log('ℹ️ Engine: Web Speech API', 'warn');
 }
-
 function loadWebSpeechVoices() {
   if (!window.speechSynthesis) return;
   state.voices = speechSynthesis.getVoices().map(v => ({ name: v.name, lang: v.lang }));
   populateVoices();
 }
-
 function populateVoices() {
   const sel = $('#ttsVoice');
   sel.innerHTML = '';
-  if (state.voices.length === 0) {
-    sel.innerHTML = '<option>Tidak ada suara</option>';
-    return;
-  }
+  if (state.voices.length === 0) { sel.innerHTML = '<option>Tidak ada suara</option>'; return; }
   const sorted = [...state.voices].sort((a, b) => {
     const score = v => v.lang === 'id-ID' ? 0 : v.lang.startsWith('id') ? 1 : v.lang.startsWith('en') ? 2 : 3;
     return score(a) - score(b);
@@ -813,25 +821,21 @@ function populateVoices() {
   const id = sorted.find(v => v.lang.startsWith('id'));
   if (id) sel.value = id.name;
 }
-
 async function speak(text, voiceName, rate, pitch, volume) {
   if (state.ttsEngine === 'voipi' && state.voiPi) {
     try {
       await state.voiPi.speak(text, { voice: voiceName, rate: parseFloat(rate) || 1 });
       return { method: 'VoiPi/Edge' };
-    } catch (e) {
-      log(`⚠️ VoiPi speak gagal: ${e.message} — fallback Web Speech`, 'warn');
-    }
+    } catch (e) { log(`⚠️ VoiPi speak: ${e.message}`, 'warn'); }
   }
-  // Web Speech fallback
   return new Promise((resolve, reject) => {
     if (!window.speechSynthesis) return reject(new Error('Web Speech tidak didukung'));
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     const v = state.voices.find(x => x.name === voiceName);
     if (v) {
-      const sysVoice = speechSynthesis.getVoices().find(sv => sv.name === v.name);
-      if (sysVoice) u.voice = sysVoice;
+      const sys = speechSynthesis.getVoices().find(sv => sv.name === v.name);
+      if (sys) u.voice = sys;
     }
     u.rate = parseFloat(rate) || 1;
     u.pitch = parseFloat(pitch) || 1;
@@ -843,7 +847,7 @@ async function speak(text, voiceName, rate, pitch, volume) {
 }
 
 /* ============================================================
-   7. VIDEO RENDERING & MERGE
+   9. VIDEO RENDERING
    ============================================================ */
 function drawCover(ctx, bmp, W, H, scale = 1, panX = 0) {
   const iw = bmp.width, ih = bmp.height;
@@ -853,7 +857,6 @@ function drawCover(ctx, bmp, W, H, scale = 1, panX = 0) {
   const dy = (H - dh) / 2;
   ctx.drawImage(bmp, dx, dy, dw, dh);
 }
-
 function wrapText(ctx, text, maxWidth, maxLines = 3) {
   const words = text.split(' ');
   const lines = [];
@@ -872,43 +875,36 @@ function wrapText(ctx, text, maxWidth, maxLines = 3) {
   if (line) lines.push(line);
   return lines;
 }
-
 function drawScene(ctx, W, H, bmp, p, num, total, caption) {
   const zoomIn = num % 2 === 1;
   const scale = zoomIn ? 1 + p * .2 : 1.2 - p * .2;
   const panX = (p - .5) * 40 * (zoomIn ? 1 : -1);
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
   drawCover(ctx, bmp, W, H, scale, panX);
-
   let fade = 0;
   if (p < .12) fade = 1 - p/.12;
   else if (p > .88) fade = (p - .88)/.12;
   if (fade > 0) { ctx.fillStyle = `rgba(0,0,0,${fade})`; ctx.fillRect(0,0,W,H); }
-
   const g = ctx.createLinearGradient(0, H-150, 0, H);
   g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.85)');
   ctx.fillStyle = g; ctx.fillRect(0, H-150, W, 150);
-
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 25px -apple-system,system-ui,sans-serif';
   ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
   const lines = wrapText(ctx, caption, W - 160, 2);
   const lh = 30, sy = H - 56 - (lines.length - 1) * lh;
   lines.forEach((l, i) => ctx.fillText(l, 56, sy + i*lh));
-
   ctx.textAlign = 'right';
   ctx.font = '600 14px -apple-system,system-ui,sans-serif';
   ctx.fillStyle = 'rgba(168,85,247,.9)';
   ctx.fillText(`${num} / ${total}`, W - 56, H - 56);
 }
-
 async function renderSegment(bitmap, caption, sceneNum, totalScenes, durationMs, W = 1280, H = 720) {
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
   const stream = canvas.captureStream(CONFIG.segmentFPS);
-  const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-    ? 'video/webm;codecs=vp9' : 'video/webm';
+  const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
   const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 5_000_000 });
   const chunks = [];
   recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
@@ -925,27 +921,16 @@ async function renderSegment(bitmap, caption, sceneNum, totalScenes, durationMs,
     frame();
   });
   recorder.stop();
-  return new Promise(res => {
-    recorder.onstop = () => res(new Blob(chunks, { type: mime }));
-  });
+  return new Promise(res => { recorder.onstop = () => res(new Blob(chunks, { type: mime })); });
 }
-
-/**
- * Merge segments → MP4 with Mediabunny.
- * PERBAIKAN: setiap VideoSample.close() di finally, input.dispose() setelah tiap segmen.
- */
 async function mergeSegments(segments, onProgress) {
   log('🔗 Memuat Mediabunny...');
-  const Mediabunny = await import('https://esm.sh/mediabunny@1.61.3');
-  const { Output, Mp4OutputFormat, BufferTarget, BlobSource, Input, ALL_FORMATS, CanvasSource, VideoSampleSink } = Mediabunny;
+  const M = await import('https://esm.sh/mediabunny@1.61.3');
+  const { Output, Mp4OutputFormat, BufferTarget, BlobSource, Input, ALL_FORMATS, CanvasSource, VideoSampleSink } = M;
 
   const W = 1280, H = 720;
   const fps = CONFIG.segmentFPS;
-
-  const output = new Output({
-    format: new Mp4OutputFormat(),
-    target: new BufferTarget()
-  });
+  const output = new Output({ format: new Mp4OutputFormat(), target: new BufferTarget() });
 
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
@@ -958,14 +943,12 @@ async function mergeSegments(segments, onProgress) {
   let processedFrames = 0;
 
   for (let i = 0; i < segments.length; i++) {
-    log(`🔗 Memproses segmen ${i + 1}/${segments.length}...`);
+    log(`🔗 Merge segmen ${i + 1}/${segments.length}...`);
     const input = new Input({ source: new BlobSource(segments[i]), formats: ALL_FORMATS });
-
     try {
-      const videoTrack = await input.getPrimaryVideoTrack();
-      if (!videoTrack) throw new Error('Track video tidak ditemukan');
-      const sink = new VideoSampleSink(videoTrack);
-
+      const track = await input.getPrimaryVideoTrack();
+      if (!track) throw new Error('Track video tidak ditemukan');
+      const sink = new VideoSampleSink(track);
       for await (const sample of sink.samples()) {
         try {
           const frame = sample.toVideoFrame();
@@ -974,9 +957,7 @@ async function mergeSegments(segments, onProgress) {
           await videoSource.add(globalFrame / fps, 1 / fps);
           globalFrame++;
           processedFrames++;
-          if (onProgress && processedFrames % 30 === 0) {
-            onProgress(i + 1, segments.length, processedFrames);
-          }
+          if (onProgress && processedFrames % 30 === 0) onProgress(i + 1, segments.length, processedFrames);
         } finally {
           sample.close(); // WAJIB: mencegah "VideoSample was garbage collected"
         }
@@ -993,20 +974,16 @@ async function mergeSegments(segments, onProgress) {
 }
 
 /* ============================================================
-   8. PLAYER (Plyr)
+   10. PLAYER
    ============================================================ */
 function showVideoPlayer(url, mime = 'video/mp4') {
-  if (state.plyr) {
-    try { state.plyr.destroy(); } catch (e) {}
-    state.plyr = null;
-  }
+  if (state.plyr) { try { state.plyr.destroy(); } catch(e) {} state.plyr = null; }
   if (state.currentVideoUrl && state.currentVideoUrl !== url) {
-    try { URL.revokeObjectURL(state.currentVideoUrl); } catch (e) {}
+    try { URL.revokeObjectURL(state.currentVideoUrl); } catch(e) {}
   }
   state.currentVideoUrl = url;
 
-  const out = $('#outVideo');
-  out.innerHTML = `
+  $('#outVideo').innerHTML = `
     <div class="plyr-wrap">
       <video id="mainVideo" playsinline controls>
         <source src="${url}" type="${mime}">
@@ -1017,26 +994,24 @@ function showVideoPlayer(url, mime = 'video/mp4') {
   setTimeout(() => {
     try {
       state.plyr = new Plyr('#mainVideo', {
-        controls: ['play-large', 'restart', 'rewind', 'play', 'fast-forward', 'progress',
-                   'current-time', 'duration', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
+        controls: ['play-large', 'restart', 'rewind', 'play', 'fast-forward', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
         autoplay: true
       });
-      log('✅ Plyr player siap', 'ok');
+      log('✅ Plyr siap', 'ok');
     } catch (e) {
-      log('⚠️ Plyr gagal: ' + e.message + ' — kontrol native tetap berfungsi', 'warn');
+      log('⚠️ Plyr gagal: ' + e.message, 'warn');
     }
   }, 100);
 }
 
 /* ============================================================
-   9. GALERI
+   11. GALERI
    ============================================================ */
 function renderGallery() {
   const items = loadGallery();
   const grid = $('#galleryGrid');
   const empty = $('#galleryEmpty');
   $('#galleryCount').textContent = items.length + ' item';
-
   if (items.length === 0) {
     grid.innerHTML = '';
     empty.style.display = 'block';
@@ -1044,7 +1019,6 @@ function renderGallery() {
   }
   empty.style.display = 'none';
   grid.innerHTML = '';
-
   items.forEach((item, idx) => {
     const div = document.createElement('div');
     div.className = 'gallery-item';
@@ -1062,7 +1036,6 @@ function renderGallery() {
     `;
     grid.appendChild(div);
   });
-
   grid.querySelectorAll('button[data-act]').forEach(btn => {
     btn.onclick = () => {
       const idx = parseInt(btn.dataset.idx);
@@ -1073,23 +1046,18 @@ function renderGallery() {
         items.splice(idx, 1);
         saveGallery(items);
         renderGallery();
-      } else {
-        // Download dari base64
-        if (item.dataUrl) {
-          const a = document.createElement('a');
-          a.href = item.dataUrl;
-          a.download = `studio-ai-${idx}.jpg`;
-          a.click();
-        } else {
-          showToast('Data tidak tersedia', 'w');
-        }
+      } else if (item.dataUrl) {
+        const a = document.createElement('a');
+        a.href = item.dataUrl;
+        a.download = `studio-ai-${idx}.jpg`;
+        a.click();
       }
     };
   });
 }
 
 /* ============================================================
-   10. TABS & PRESETS
+   12. TABS & PRESETS
    ============================================================ */
 $$('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
@@ -1105,8 +1073,7 @@ const presetsImg = [
   'Kota futuristik dengan gedung neon dan mobil terbang saat malam',
   'Pemandangan pantai tropis saat matahari terbenam',
   'Rumah kayu di tepi danau dengan gunung bersalju di latar',
-  'Astronaut berjalan di bulan dengan bumi di latar belakang',
-  'Pasar tradisional Indonesia yang ramai'
+  'Astronaut berjalan di bulan dengan bumi di latar belakang'
 ];
 const presetsVid = [
   'Perjalanan melalui hutan bambu di pagi hari',
@@ -1115,11 +1082,10 @@ const presetsVid = [
   'Bunga sakura berjatuhan di taman Jepang'
 ];
 const presetsTts = [
-  'Selamat datang di Studio AI versi delapan. Aplikasi ini gratis dan menggunakan Pollinations untuk gambar, serta Edge TTS untuk suara.',
+  'Selamat datang di Studio AI versi sembilan. Sistem antrean kini realtime dan lebih cepat.',
   'Terima kasih telah menggunakan layanan kami. Semoga hari Anda menyenangkan.',
   'Jakarta adalah ibu kota Indonesia yang penuh dengan budaya dan sejarah yang kaya.'
 ];
-
 function renderPresets(id, list, targetId, tboxId) {
   const c = $('#' + id);
   c.innerHTML = '';
@@ -1140,18 +1106,17 @@ renderPresets('presetsVid', presetsVid, 'vidPrompt', 'transVid');
 renderPresets('presetsTts', presetsTts, 'ttsText');
 
 /* ============================================================
-   11. TAB GAMBAR
+   13. TAB GAMBAR (dengan countdown realtime)
    ============================================================ */
 $('#btnImgRetrans').addEventListener('click', () => {
-  state.translationCache.clear();
   $('#transImg').classList.remove('show');
-  showToast('Cache terjemahan dihapus', 's');
+  showToast('Silakan edit ulang', 's');
 });
 
 $('#btnImg').addEventListener('click', async () => {
   const raw = $('#imgPrompt').value.trim();
   if (!raw) return showToast('Masukkan prompt dulu', 'e');
-  if (state.busy) return showToast('Tunggu proses sebelumnya selesai', 'w');
+  if (state.busy) return showToast('Tunggu proses sebelumnya', 'w');
 
   state.busy = true;
   const btn = $('#btnImg');
@@ -1172,7 +1137,6 @@ $('#btnImg').addEventListener('click', async () => {
     let promptForAI = raw;
     if (autoTrans) {
       setStatus(status, '🇮🇩→🇬🇧 Menerjemahkan...');
-      setProgress(bar, prog, 10);
       promptForAI = localTranslate(raw);
       if (promptForAI === raw.toLowerCase()) promptForAI = raw;
       $('#transImg').classList.add('show');
@@ -1186,22 +1150,30 @@ $('#btnImg').addEventListener('click', async () => {
     }
 
     const finalPrompt = enhancePrompt(promptForAI, style);
+
+    // REALTIME countdown untuk rate limit
+    const wait = Math.max(0, state.lastPollinations + CONFIG.pollinationsInterval - Date.now());
+    if (wait > 0) {
+      const startWait = Date.now();
+      while (Date.now() - startWait < wait) {
+        const remain = Math.max(0, wait - (Date.now() - startWait));
+        setStatus(status, `⏳ Antrean Pollinations: ${(remain/1000).toFixed(1)}s`);
+        setProgress(bar, prog, 10 + (1 - remain/wait) * 15);
+        await sleep(100);
+      }
+    }
+    state.lastPollinations = Date.now();
+
     setStatus(status, '🎨 Generate via Pollinations...');
-    setProgress(bar, prog, 25);
+    setProgress(bar, prog, 30);
 
-    const result = await pollinationsGenerate(finalPrompt, {
-      width: parseInt(w), height: parseInt(h),
-      model,
-      onQueue: (s) => setStatus(status, `⏳ Antrean Pollinations: ${s}s`)
-    });
-
+    const result = await pollinationsFetch(finalPrompt, { width: parseInt(w), height: parseInt(h), model });
     setProgress(bar, prog, 90);
 
     const bitmap = await createImageBitmap(result.blob);
     const thumb = await makeThumbnail(bitmap);
     state.lastImageBlob = result.blob;
 
-    // Tampilkan
     const c = document.createElement('canvas');
     c.width = bitmap.width; c.height = bitmap.height;
     c.getContext('2d').drawImage(bitmap, 0, 0);
@@ -1222,20 +1194,13 @@ $('#btnImg').addEventListener('click', async () => {
     };
     out.appendChild(dl);
 
-    // Simpan ke galeri
     const dataUrl = await blobToDataURL(result.blob);
-    addToGallery({
-      prompt: raw,
-      thumbnail: thumb,
-      dataUrl: dataUrl,
-      model: model,
-      timestamp: Date.now()
-    });
+    addToGallery({ prompt: raw, thumbnail: thumb, dataUrl, model, timestamp: Date.now() });
 
     setProgress(bar, prog, 100);
     setStatus(status, '✅ Selesai');
     log('✅ Gambar selesai', 'ok');
-    showToast('Gambar berhasil dibuat! 🎨', 's');
+    showToast('Gambar berhasil! 🎨', 's');
     hideProgress(prog);
   } catch (e) {
     console.error(e);
@@ -1250,7 +1215,7 @@ $('#btnImg').addEventListener('click', async () => {
 });
 
 /* ============================================================
-   12. TAB EDITOR (Canvas Filters)
+   14. TAB EDITOR
    ============================================================ */
 $('#editorUpload').addEventListener('change', async (e) => {
   const file = e.target.files[0];
@@ -1259,74 +1224,52 @@ $('#editorUpload').addEventListener('change', async (e) => {
   state.lastImageBlob = file;
   showEditorImage(file, 'none');
 });
-
 $('#btnUseLast').addEventListener('click', () => {
-  if (!state.lastImageBlob) return showToast('Belum ada gambar di sesi ini', 'w');
+  if (!state.lastImageBlob) return showToast('Belum ada gambar', 'w');
   showEditorImage(state.lastImageBlob, 'none');
 });
-
 async function showEditorImage(blob, filterName) {
   const bitmap = await createImageBitmap(blob);
   const out = $('#outEditor');
   const url = URL.createObjectURL(blob);
-
   out.innerHTML = `
     <div style="padding:8px;width:100%">
       <div class="compare">
-        <div class="compare-item">
-          <span class="label">Original</span>
-          <img src="${url}" alt="original">
-        </div>
-        <div class="compare-item">
-          <span class="label" id="filterLabel">${filterName === 'none' ? 'Pilih filter' : filterName}</span>
-          <img src="${url}" id="filteredImg" alt="filtered" style="${cssFilter(filterName)}">
-        </div>
+        <div class="compare-item"><span class="label">Original</span><img src="${url}"></div>
+        <div class="compare-item"><span class="label">${filterName === 'none' ? 'Pilih filter' : filterName}</span><img src="${url}" style="${cssFilter(filterName)}"></div>
       </div>
       <div class="btn-row" style="margin-top:12px;padding:8px">
         <button class="btn btn-p btn-sm" id="btnSaveFiltered">💾 Simpan Hasil</button>
       </div>
     </div>
   `;
-
-  $('#btnSaveFiltered').onclick = async () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = bitmap.width;
-    canvas.height = bitmap.height;
-    const ctx = canvas.getContext('2d');
-    ctx.filter = cssFilter(filterName);
-    ctx.drawImage(bitmap, 0, 0);
-    if (filterName === 'vignette') {
-      applyVignette(ctx, canvas.width, canvas.height);
-    }
-    canvas.toBlob((blob) => {
+  $('#btnSaveFiltered').onclick = () => {
+    const c = document.createElement('canvas');
+    c.width = bitmap.width; c.height = bitmap.height;
+    const cx = c.getContext('2d');
+    cx.filter = cssFilter(filterName);
+    cx.drawImage(bitmap, 0, 0);
+    if (filterName === 'vignette') applyVignette(cx, c.width, c.height);
+    c.toBlob(blob => {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = `studio-ai-${filterName}-${Date.now()}.jpg`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-      showToast('Gambar tersimpan', 's');
+      showToast('Tersimpan', 's');
     }, 'image/jpeg', 0.92);
   };
 }
-
 function cssFilter(name) {
   const map = {
-    none: '',
-    grayscale: 'grayscale(1)',
-    sepia: 'sepia(0.85)',
-    invert: 'invert(1)',
-    blur: 'blur(3px)',
-    brightness: 'brightness(1.3)',
-    contrast: 'contrast(1.4)',
-    saturate: 'saturate(1.8)',
-    hue: 'hue-rotate(120deg)',
-    vintage: 'sepia(0.5) contrast(1.2) brightness(0.95)',
-    vignette: '',
-    dramatic: 'contrast(1.4) brightness(0.9) saturate(1.2)'
+    none:'', grayscale:'grayscale(1)', sepia:'sepia(0.85)', invert:'invert(1)',
+    blur:'blur(3px)', brightness:'brightness(1.3)', contrast:'contrast(1.4)',
+    saturate:'saturate(1.8)', hue:'hue-rotate(120deg)',
+    vintage:'sepia(0.5) contrast(1.2) brightness(0.95)', vignette:'',
+    dramatic:'contrast(1.4) brightness(0.9) saturate(1.2)'
   };
   return map[name] || '';
 }
-
 function applyVignette(ctx, w, h) {
   const g = ctx.createRadialGradient(w/2, h/2, Math.min(w,h)*0.3, w/2, h/2, Math.max(w,h)*0.7);
   g.addColorStop(0, 'rgba(0,0,0,0)');
@@ -1334,76 +1277,56 @@ function applyVignette(ctx, w, h) {
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
 }
-
 $$('.tool').forEach(tool => {
   tool.addEventListener('click', async () => {
     if (!state.lastImageBlob) return showToast('Unggah gambar dulu', 'w');
     $$('.tool').forEach(t => t.classList.remove('active'));
     tool.classList.add('active');
-    const name = tool.dataset.tool;
-    showEditorImage(state.lastImageBlob, name);
-    log(`✏️ Filter: ${name}`, 'ok');
+    showEditorImage(state.lastImageBlob, tool.dataset.tool);
   });
 });
 
 /* ============================================================
-   13. TAB SUARA
+   15. TAB SUARA
    ============================================================ */
 $('#btnTtsTest').addEventListener('click', async () => {
-  try {
-    await speak('Halo, ini adalah tes suara bahasa Indonesia.', $('#ttsVoice').value, 1, 1, 1);
-    log('✅ Tes suara selesai', 'ok');
-  } catch (e) {
-    showToast('Tes gagal: ' + e.message, 'e');
-  }
+  try { await speak('Halo, ini tes suara bahasa Indonesia.', $('#ttsVoice').value, 1, 1, 1); log('✅ Tes suara OK', 'ok'); }
+  catch(e) { showToast('Gagal: ' + e.message, 'e'); }
 });
-
 $('#btnTts').addEventListener('click', async () => {
   const text = $('#ttsText').value.trim();
   if (!text) return showToast('Masukkan teks dulu', 'e');
-
   const out = $('#outAudio');
   const btn = $('#btnTts');
   const stop = $('#btnTtsStop');
-
   setLoading(btn, true);
-  out.innerHTML = '<div class="ph"><div class="loader"></div><div style="margin-top:10px">Memproses suara...</div></div>';
+  out.innerHTML = '<div class="ph"><div class="loader"></div><div style="margin-top:10px">Memproses...</div></div>';
   stop.disabled = false;
-
   try {
-    const res = await speak(
-      text,
-      $('#ttsVoice').value,
-      $('#ttsRate').value,
-      $('#ttsPitch').value,
-      $('#ttsVolume').value
-    );
+    const res = await speak(text, $('#ttsVoice').value, $('#ttsRate').value, $('#ttsPitch').value, $('#ttsVolume').value);
     out.innerHTML = `<div class="ph"><div class="ic">✅</div><div>Selesai (${res.method})</div></div>`;
     stop.disabled = true;
-    log('✅ TTS selesai via ' + res.method, 'ok');
-  } catch (e) {
+  } catch(e) {
     out.innerHTML = `<div class="ph"><div class="ic">⚠️</div><div>${e.message}</div></div>`;
-    showToast('TTS gagal: ' + e.message, 'e');
-    log('❌ ' + e.message, 'err');
+    showToast('Gagal: ' + e.message, 'e');
   } finally {
     setLoading(btn, false);
   }
 });
-
 $('#btnTtsStop').addEventListener('click', () => {
   if (window.speechSynthesis) speechSynthesis.cancel();
-  document.querySelectorAll('audio').forEach(a => { try { a.pause(); } catch(e){} });
+  document.querySelectorAll('audio').forEach(a => { try { a.pause(); } catch(e) {} });
   $('#btnTtsStop').disabled = true;
   $('#outAudio').innerHTML = '<div class="ph"><div class="ic">⏹️</div><div>Dihentikan</div></div>';
 });
 
 /* ============================================================
-   14. TAB VIDEO
+   16. TAB VIDEO — REALTIME QUEUE v9
    ============================================================ */
 $('#btnVid').addEventListener('click', async () => {
   const raw = $('#vidPrompt').value.trim();
   if (!raw) return showToast('Masukkan tema video dulu', 'e');
-  if (state.busy) return showToast('Tunggu proses sebelumnya selesai', 'w');
+  if (state.busy) return showToast('Tunggu proses sebelumnya', 'w');
 
   state.busy = true;
   const btn = $('#btnVid');
@@ -1421,14 +1344,14 @@ $('#btnVid').addEventListener('click', async () => {
 
   const segmentCount = Math.ceil(totalDuration / segmentDuration);
   const W = 1280, H = 720;
-  const estimatedMinutes = Math.ceil((segmentCount * CONFIG.pollinationsInterval / 1000 + segmentDuration * segmentCount + 45) / 60);
 
   setLoading(btn, true);
   dlBtn.style.display = 'none';
   setProgress(bar, prog, 2);
-  out.innerHTML = `<div class="ph"><div class="loader"></div><div style="margin-top:10px">Estimasi: ~${estimatedMinutes} menit untuk ${segmentCount} segmen...</div></div>`;
+  out.innerHTML = '<div class="ph"><div class="loader"></div><div style="margin-top:10px">Menyiapkan...</div></div>';
 
   try {
+    // 1) Translate
     let promptForAI = raw;
     if (autoTrans) {
       setStatus(status, '🇮🇩→🇬🇧 Menerjemahkan...');
@@ -1448,71 +1371,84 @@ $('#btnVid').addEventListener('click', async () => {
       realistic: 'photorealistic, ultra detailed, sharp focus, 8k, natural lighting',
       watercolor: 'watercolor painting, soft brush strokes, artistic'
     };
+    const sceneAngles = ['wide establishing shot', 'close-up detail shot', 'aerial view from above', 'ground level view', 'dramatic low angle', 'artistic overhead perspective'];
+    const timesOfDay = ['at golden hour', 'at sunset', 'at sunrise', 'under moonlight', 'in bright daylight', 'during twilight'];
 
-    const sceneAngles = [
-      'wide establishing shot', 'close-up detail shot', 'aerial view from above',
-      'ground level view', 'dramatic low angle', 'artistic overhead perspective'
-    ];
-    const timesOfDay = [
-      'at golden hour', 'at sunset', 'at sunrise', 'under moonlight',
-      'in bright daylight', 'during twilight'
-    ];
-
-    // 1) Generate images
-    const bitmaps = [];
+    // 2) Build segment prompts
+    const segmentPrompts = [];
+    const segmentLabels = [];
     for (let i = 0; i < segmentCount; i++) {
-      const pct = 5 + (i / segmentCount) * 45;
-      setProgress(bar, prog, pct);
-      setStatus(status, `🎨 Gambar ${i + 1}/${segmentCount} (tunggu antrean ~15s)...`);
-      out.innerHTML = `<div class="ph"><div class="loader"></div><div style="margin-top:10px">Segmen ${i + 1}/${segmentCount}<br><small style="color:var(--muted)">Antrean Pollinations ~15s per gambar</small></div></div>`;
-
-      let segmentPrompt = `${promptForAI.replace(/[.,;]+$/,'')}, ${stylePrompts[style]}`;
+      let p = `${promptForAI.replace(/[.,;]+$/,'')}, ${stylePrompts[style]}`;
+      let label = 'scene';
       if (useVariety) {
-        segmentPrompt += `, ${sceneAngles[i % sceneAngles.length]}, ${timesOfDay[i % timesOfDay.length]}`;
+        label = sceneAngles[i % sceneAngles.length];
+        p += `, ${sceneAngles[i % sceneAngles.length]}, ${timesOfDay[i % timesOfDay.length]}`;
       }
+      segmentPrompts.push(p);
+      segmentLabels.push(label);
+    }
 
-      try {
-        const result = await pollinationsGenerate(segmentPrompt, {
-          width: W, height: H, model: 'flux',
-          onQueue: (s) => setStatus(status, `⏳ Antrean ${i + 1}/${segmentCount}: ${s}s`)
+    // 3) Init queue + UI
+    const queue = new PollinationsQueue(CONFIG.pollinationsInterval);
+    const queueUI = new QueueUI();
+    queueUI.mount('#queuePanel', queue, { totalRender: segmentCount });
+
+    // 4) Pipeline: fetch → render (semaphore serial)
+    const renderSemaphore = new Semaphore(1);
+    const segmentBlobs = new Array(segmentCount);
+    let rendered = 0;
+    let failed = 0;
+
+    const jobPromises = segmentPrompts.map((p, i) => {
+      return queue.addJob(
+        () => pollinationsFetch(p, { width: W, height: H, model: 'flux' }),
+        { label: segmentLabels[i] }
+      )
+        .then(async (result) => {
+          // Fetch selesai → langsung render (serial via semaphore)
+          await renderSemaphore.acquire();
+          try {
+            const bitmap = await createImageBitmap(result.blob);
+            const segBlob = await renderSegment(bitmap, raw, i + 1, segmentCount, segmentDuration * 1000, W, H);
+            segmentBlobs[i] = segBlob;
+            rendered++;
+            queueUI.setRenderProgress(rendered, segmentCount);
+            setStatus(status, `🎬 Render ${rendered}/${segmentCount}...`);
+            setProgress(bar, prog, 50 + (rendered / segmentCount) * 25);
+          } catch (e) {
+            failed++;
+            log(`⚠️ Render ${i+1} gagal: ${e.message}`, 'err');
+          } finally {
+            renderSemaphore.release();
+          }
+        })
+        .catch((err) => {
+          failed++;
+          log(`⚠️ Fetch ${i+1} gagal: ${err.message}`, 'err');
         });
-        const bmp = await createImageBitmap(result.blob);
-        bitmaps.push(bmp);
-        log(`✅ Gambar ${i + 1}/${segmentCount} OK`, 'ok');
-      } catch (e) {
-        log(`⚠️ Gambar ${i + 1} gagal: ${e.message}`, 'warn');
-      }
-    }
+    });
 
-    if (bitmaps.length === 0) throw new Error('Semua gambar gagal dibuat');
+    // 5) Wait for all fetches + renders
+    await Promise.allSettled(jobPromises);
 
-    // 2) Render segments
-    setStatus(status, '🎬 Merender segmen video...');
-    const segmentBlobs = [];
-    for (let i = 0; i < bitmaps.length; i++) {
-      const pct = 50 + (i / bitmaps.length) * 25;
-      setProgress(bar, prog, pct);
-      setStatus(status, `🎬 Render segmen ${i + 1}/${bitmaps.length}...`);
-      out.innerHTML = `<div class="ph"><div class="loader"></div><div style="margin-top:10px">Render ${i + 1}/${bitmaps.length}...</div></div>`;
+    queueUI.unmount();
 
-      const blob = await renderSegment(bitmaps[i], raw, i + 1, bitmaps.length, segmentDuration * 1000, W, H);
-      segmentBlobs.push(blob);
-      log(`✅ Segmen ${i + 1} dirender`, 'ok');
-    }
+    const validBlobs = segmentBlobs.filter(Boolean);
+    if (validBlobs.length === 0) throw new Error('Semua segmen gagal');
 
-    // 3) Merge
-    setStatus(status, '🔗 Menggabungkan segmen (Mediabunny)...');
+    // 6) Merge
+    setStatus(status, `🔗 Merge ${validBlobs.length} segmen ke MP4...`);
     setProgress(bar, prog, 80);
     out.innerHTML = '<div class="ph"><div class="loader"></div><div style="margin-top:10px">Merge MP4...</div></div>';
 
-    const finalBlob = await mergeSegments(segmentBlobs, (cur, total, frames) => {
-      setStatus(status, `🔗 Merge ${cur}/${total} — ${frames} frame`);
+    const finalBlob = await mergeSegments(validBlobs, (cur, tot, frames) => {
+      setStatus(status, `🔗 Merge ${cur}/${tot} — ${frames} frame`);
+      setProgress(bar, prog, 80 + (cur / tot) * 15);
     });
 
-    // 4) Show in Plyr
+    // 7) Show in Plyr
     const url = URL.createObjectURL(finalBlob);
     showVideoPlayer(url, 'video/mp4');
-
     dlBtn.style.display = 'inline-flex';
     dlBtn.onclick = () => {
       const a = document.createElement('a');
@@ -1521,22 +1457,17 @@ $('#btnVid').addEventListener('click', async () => {
       a.click();
     };
 
-    // 5) Narasi
+    // 8) Narasi
     if (wantNarration) {
-      setStatus(status, '🔊 Memutar narasi...');
-      setProgress(bar, prog, 95);
-      try {
-        await speak(raw, $('#ttsVoice').value, 1, 1, 1);
-        log('✅ Narasi selesai', 'ok');
-      } catch (e) {
-        log(`⚠️ Narasi gagal: ${e.message}`, 'warn');
-      }
+      setStatus(status, '🔊 Narasi...');
+      try { await speak(raw, $('#ttsVoice').value, 1, 1, 1); log('✅ Narasi selesai', 'ok'); }
+      catch (e) { log(`⚠️ Narasi gagal: ${e.message}`, 'warn'); }
     }
 
     setProgress(bar, prog, 100);
-    setStatus(status, `✅ Video selesai · ${bitmaps.length} segmen`);
-    log(`✅ Video MP4 selesai (${bitmaps.length} segmen)`, 'ok');
-    showToast('Video berhasil dibuat! 🎉', 's');
+    setStatus(status, `✅ Video selesai · ${validBlobs.length}/${segmentCount} segmen`);
+    log(`✅ Video MP4 selesai (${validBlobs.length} segmen)`, 'ok');
+    showToast('Video berhasil! 🎉', 's');
     hideProgress(prog, 1000);
   } catch (e) {
     console.error(e);
@@ -1551,34 +1482,30 @@ $('#btnVid').addEventListener('click', async () => {
 });
 
 /* ============================================================
-   15. TAB SETELAN
+   17. TAB SETELAN
    ============================================================ */
 function initSettings() {
   $('#prefAutoTranslate').checked = state.settings.autoTranslate;
   $('#prefSaveGallery').checked = state.settings.saveGallery;
-  $('#prefNologo').checked = state.settings.nologo;
 }
-
 $('#btnSavePrefs').addEventListener('click', () => {
   state.settings.autoTranslate = $('#prefAutoTranslate').checked;
   state.settings.saveGallery = $('#prefSaveGallery').checked;
-  state.settings.nologo = $('#prefNologo').checked;
   saveSettings();
   showToast('Preferensi disimpan', 's');
 });
-
 $('#btnResetAll').addEventListener('click', () => {
   if (!confirm('Hapus semua setelan & galeri?')) return;
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(GALLERY_KEY);
-  state.settings = { autoTranslate: true, saveGallery: true, nologo: true };
+  state.settings = { autoTranslate: true, saveGallery: true };
   initSettings();
   renderGallery();
-  showToast('Semua data direset', 's');
+  showToast('Reset selesai', 's');
 });
 
 /* ============================================================
-   16. TAB GALERI
+   18. TAB GALERI
    ============================================================ */
 $('#btnClearGallery').addEventListener('click', () => {
   if (!confirm('Hapus semua galeri?')) return;
@@ -1586,69 +1513,61 @@ $('#btnClearGallery').addEventListener('click', () => {
   renderGallery();
   showToast('Galeri dikosongkan', 's');
 });
-
 $('#btnExportGallery').addEventListener('click', () => {
   const items = loadGallery();
   if (items.length === 0) return showToast('Galeri kosong', 'w');
   const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
+  a.href = URL.createObjectURL(blob);
   a.download = `gallery-${Date.now()}.json`;
   a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  showToast('Galeri diekspor', 's');
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 });
 
 /* ============================================================
-   17. DIAGNOSTIK
+   19. DIAGNOSTIK
    ============================================================ */
 async function runDiagnostics() {
   const tbody = $('#diagBody');
   tbody.innerHTML = '';
-
   const tests = [
     ['Pollinations', async () => {
       const t0 = performance.now();
       const url = `${POLLINATIONS_BASE}test?width=64&height=64&nologo=true&seed=1`;
-      const res = await withTimeout(fetch(url, { method: 'HEAD' }), 15000);
+      const res = await withTimeout(fetch(url, { method: 'HEAD' }), 15000, 'Poll');
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return `OK (${Math.round(performance.now()-t0)}ms)`;
     }],
-    ['Pollinations CORS proxy', async () => {
-      const url = `${POLLINATIONS_BASE}test?width=64&height=64&nologo=true`;
-      await withTimeout(loadImageBlob(url), 20000, 'CORS proxy');
-      return 'Bisa load blob';
+    ['Pollinations CORS', async () => {
+      await withTimeout(loadImageBlob(`${POLLINATIONS_BASE}test?width=64&height=64&nologo=true`), 20000, 'CORS');
+      return 'Blob OK';
     }],
-    ['VoiPi / Edge TTS', async () => {
-      if (state.ttsEngine !== 'voipi') throw new Error('Tidak aktif — fallback Web Speech');
-      return `${state.voices.length} suara tersedia`;
+    ['VoiPi/Edge TTS', async () => {
+      if (state.ttsEngine !== 'voipi') throw new Error('Fallback Web Speech');
+      return `${state.voices.length} suara`;
     }],
     ['Web Speech', async () => {
       if (!window.speechSynthesis) throw new Error('tidak didukung');
       const n = speechSynthesis.getVoices().length;
-      return n > 0 ? `${n} suara` : '0 suara (pasang paket bahasa)';
+      return n > 0 ? `${n} suara` : '0 suara';
     }],
     ['Plyr', async () => {
       if (typeof Plyr === 'undefined') throw new Error('belum termuat');
-      return 'Plyr siap';
+      return 'siap';
     }],
     ['Mediabunny', async () => {
-      try {
-        const m = await import('https://esm.sh/mediabunny@1.61.3');
-        return m.Output ? 'library OK' : 'API tidak lengkap';
-      } catch (e) { throw new Error(e.message); }
+      const m = await import('https://esm.sh/mediabunny@1.61.3');
+      return m.Output ? 'library OK' : 'tidak lengkap';
     }],
     ['WebCodecs', async () => {
       if (!window.VideoEncoder) throw new Error('tidak didukung');
-      return 'MP4 output possible';
+      return 'MP4 possible';
     }],
     ['MediaRecorder', async () => {
       if (!window.MediaRecorder) throw new Error('tidak didukung');
-      return MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'WebM VP9' : 'WebM basic';
+      return MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'VP9' : 'basic';
     }]
   ];
-
   for (const [name, fn] of tests) {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${name}</td><td><span class="pill wait">menguji…</span></td><td>—</td><td>—</td>`;
@@ -1669,7 +1588,7 @@ async function runDiagnostics() {
 $('#btnDiag').addEventListener('click', runDiagnostics);
 
 /* ============================================================
-   18. LOG PANEL
+   20. LOG PANEL
    ============================================================ */
 $('#logToggle').addEventListener('click', () => $('#logPanel').classList.toggle('show'));
 $('#logHead').addEventListener('click', e => {
@@ -1678,29 +1597,19 @@ $('#logHead').addEventListener('click', e => {
 });
 
 /* ============================================================
-   19. INIT
+   21. INIT
    ============================================================ */
 loadSettings();
 initSettings();
 renderGallery();
-
-log('✨ Studio AI v8 siap', 'ok');
-log('Gambar/Video: Pollinations (gratis, tanpa key)');
-log('Suara: Edge TTS via VoiPi → Web Speech fallback');
-log('Merge: Mediabunny MP4 · Player: Plyr');
-
-// Init TTS async
+log('✨ Studio AI v9 siap', 'ok');
+log('Gambar/Video: Pollinations (gratis)');
+log('Suara: VoiPi/Edge TTS → Web Speech');
+log('Queue: REALTIME — countdown update tiap frame');
 initTTS();
-
-if (typeof Plyr === 'undefined') {
-  log('⚠️ Plyr belum termuat — kontrol native akan dipakai', 'warn');
-}
-
+if (typeof Plyr === 'undefined') log('⚠️ Plyr belum termuat', 'warn');
 window.addEventListener('beforeunload', e => {
-  if (state.busy) {
-    e.preventDefault();
-    e.returnValue = 'Proses sedang berjalan. Yakin keluar?';
-  }
+  if (state.busy) { e.preventDefault(); e.returnValue = 'Proses sedang berjalan'; }
 });
 </script>
 </body>
