@@ -720,13 +720,19 @@ gemini-chat{display:block;width:100%;border-radius:12px;overflow:hidden}
   <div class="card">
     <div class="card-title">🔑 Database API <span class="badge y" id="apiDbBadge">memuat…</span></div>
     <p class="hint">Edit API key & endpoint. Tersimpan di <code>localStorage</code>. <b>Ekspor</b> .js/.json · <b>Impor</b> untuk memuat ulang. <span class="badge local-native" style="vertical-align:middle">Local Native</span> = berjalan di browser.</p>
-    <div class="tlabel" style="margin-top:10px">🌐 Proxy Server (opsional)</div>
+    <div class="tlabel" style="margin-top:10px">🌐 Proxy Server Global (fallback)</div>
+    <p class="hint">Provider bertanda <span class="badge r" style="vertical-align:middle">perlu proxy</span> wajib punya proxy untuk mengatasi CORS. Anda bisa mengatur <b>proxy khusus per-provider</b> di kartu masing-masing — lebih diutamakan daripada proxy global ini.</p>
+    <p class="hint" style="margin-top:6px"><b>Kontrak proxy:</b> terima <code>POST application/json</code> dengan body <code>{ category, provider, apiKey, baseUrl, payload }</code>, teruskan request ke provider yang sesuai, kembalikan response mentah.</p>
     <div class="row">
-      <div><label>Base URL Proxy</label><input type="text" id="proxyBaseUrl" placeholder="https://myserver.com/api/proxy"></div>
+      <div><label>Base URL Proxy Global</label><input type="text" id="proxyBaseUrl" placeholder="https://myserver.com/api/proxy"></div>
+      <div><label>Headers (JSON, opsional)</label><input type="text" id="proxyHeaders" placeholder='{"Authorization":"Bearer xxxxx"}'></div>
       <div style="display:flex;align-items:center;gap:10px;padding-top:18px">
         <label class="toggle"><input type="checkbox" id="proxyEnabled"><span class="tslider"></span></label>
-        <span class="tl"><strong>Aktifkan proxy</strong></span>
+        <span class="tl"><strong>Aktifkan proxy global</strong></span>
       </div>
+    </div>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn btn-g btn-sm" id="btnTestProxy">🧪 Tes Proxy Global</button>
     </div>
     <div id="apiSettingsBody" style="margin-top:16px"></div>
     <div class="btn-row" style="margin-top:14px">
@@ -1082,8 +1088,22 @@ const USE_CASES = {
    CONFIG HELPERS
    ============================================================ */
 function getAPIConfig() {
-  try { const s = localStorage.getItem(API_CONFIG_KEY); if (s) return JSON.parse(s); } catch(e) {}
-  return JSON.parse(JSON.stringify(API_DEFAULTS));
+  let cfg;
+  try { const s = localStorage.getItem(API_CONFIG_KEY); if (s) cfg = JSON.parse(s); } catch(e) {}
+  if (!cfg) cfg = JSON.parse(JSON.stringify(API_DEFAULTS));
+  // Normalisasi: pastikan provider yang butuh proxy punya field proxy per-provider
+  if (cfg.providers) {
+    for (const cat of Object.keys(cfg.providers)) {
+      for (const name of Object.keys(cfg.providers[cat])) {
+        const p = cfg.providers[cat][name];
+        if (!p.clientSafe && !p.localNative) {
+          if (p.proxyEnabled === undefined) p.proxyEnabled = false;
+          if (p.proxyUrl === undefined) p.proxyUrl = '';
+        }
+      }
+    }
+  }
+  return cfg;
 }
 function saveAPIConfig(cfg) { cfg.updatedAt = new Date().toISOString(); localStorage.setItem(API_CONFIG_KEY, JSON.stringify(cfg)); }
 function resetAPIConfig() { localStorage.removeItem(API_CONFIG_KEY); }
@@ -1107,12 +1127,42 @@ function getModelsFor(category, providerName) {
 }
 function callProxy(category, providerName, payload) {
   const cfg = getAPIConfig();
-  if (!cfg.proxy?.enabled || !cfg.proxy.baseUrl) return Promise.reject(new Error(`Provider "${providerName}" memerlukan proxy.`));
   const provider = cfg.providers?.[category]?.[providerName];
-  return fetch(cfg.proxy.baseUrl, {
+
+  // Prioritas: proxy khusus provider → proxy global
+  let proxyUrl = '';
+  let proxySource = '';
+  if (provider?.proxyEnabled) {
+    if (!provider.proxyUrl) {
+      return Promise.reject(new Error(
+        `Provider "${providerName}" proxyEnabled aktif tapi proxyUrl kosong. Isi URL atau matikan toggle di ⚙️ Setelan.`
+      ));
+    }
+    proxyUrl = provider.proxyUrl;
+    proxySource = 'per-provider';
+  } else if (cfg.proxy?.enabled && cfg.proxy.baseUrl) {
+    proxyUrl = cfg.proxy.baseUrl;
+    proxySource = 'global';
+  }
+
+  if (!proxyUrl) {
+    return Promise.reject(new Error(
+      `Provider "${providerName}" memerlukan proxy. Atur proxy khusus provider atau proxy global di ⚙️ Setelan → Database API.`
+    ));
+  }
+
+  log(`🌐 Proxy (${proxySource}) → ${category}/${providerName}`, 'warn');
+
+  return fetch(proxyUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(cfg.proxy.headers || {}) },
-    body: JSON.stringify({ category, provider: providerName, apiKey: provider?.apiKey || '', payload })
+    body: JSON.stringify({
+      category,
+      provider: providerName,
+      apiKey: provider?.apiKey || '',
+      baseUrl: provider?.baseUrl || '',
+      payload
+    })
   }).then(res => { if (!res.ok) throw new Error('Proxy HTTP ' + res.status); return res; });
 }
 function exportAPIConfig(asJSON) {
@@ -1911,7 +1961,6 @@ function syncAllModels() {
   syncModelsFor('visionModel', 'vision', 'visionProvider');
   syncModelsFor('ttsModel', 'tts', 'ttsProvider');
   syncModelsFor('sttModel', 'stt', 'sttProvider');
-  // Hook change listeners for model dropdowns to update on provider change
   ['imgProvider', 'chatProvider', 'codeProvider', 'summarizeProvider', 'searchProvider', 'moderateProvider', 'visionProvider', 'ttsProvider', 'sttProvider'].forEach(provId => {
     const el = $('#' + provId);
     if (el && !el._modelHook) {
@@ -1939,7 +1988,9 @@ const FIELD_DEFS = {
   version: { type: 'text', label: 'Version' },
   voiceId: { type: 'text', label: 'Voice ID' },
   email: { type: 'text', label: 'Email' },
-  src: { type: 'text', label: 'Src URL' }
+  src: { type: 'text', label: 'Src URL' },
+  proxyEnabled: { type: 'toggle', label: '🔐 Proxy khusus' },
+  proxyUrl: { type: 'text', label: 'Proxy URL (provider ini)' }
 };
 const CATEGORY_LABELS = {
   image: '🖼️ Gambar', video: '🎬 Video', tts: '🔊 Suara', translate: '🌐 Terjemahan',
@@ -1954,6 +2005,10 @@ function renderAPISettings() {
   body.innerHTML = '';
   $('#proxyEnabled').checked = !!cfg.proxy?.enabled;
   $('#proxyBaseUrl').value = cfg.proxy?.baseUrl || '';
+  if ($('#proxyHeaders')) {
+    const h = cfg.proxy?.headers || {};
+    $('#proxyHeaders').value = Object.keys(h).length ? JSON.stringify(h) : '';
+  }
 
   for (const cat of ['image', 'video', 'tts', 'translate', 'llm', 'vision', 'stt', 'music', 'detect', 'mllab', 'voicecmd', 'audioanalyze', 'embed']) {
     const section = document.createElement('div');
@@ -1985,14 +2040,31 @@ function buildProviderCard(category, name, pCfg) {
   const stateClass = pCfg.enabled ? 'enabled' : 'disabled';
   card.className = `api-provider ${safeClass} ${stateClass}`;
   card.dataset.category = category; card.dataset.provider = name;
+
+  const globalCfg = getAPIConfig();
+  const globalProxyActive = globalCfg.proxy?.enabled && globalCfg.proxy?.baseUrl;
+  const perProxyActive = pCfg.proxyEnabled && pCfg.proxyUrl;
+
+  let proxyBadgeHtml = '';
+  if (!pCfg.clientSafe && !pCfg.localNative) {
+    let label, cls;
+    if (pCfg.proxyEnabled && !pCfg.proxyUrl) { label = '⚠️ URL kosong'; cls = 'y'; }
+    else if (perProxyActive) { label = '🌐 proxy khusus'; cls = 'g'; }
+    else if (globalProxyActive) { label = '🌐 proxy global'; cls = 'b'; }
+    else { label = '⚠️ tanpa proxy'; cls = 'y'; }
+    proxyBadgeHtml = `<span class="badge ${cls}" data-role="proxy-status">${label}</span>`;
+  }
+
   const head = document.createElement('div');
   head.className = 'api-provider-head';
   head.innerHTML = `<div class="api-provider-name">${escapeHtml(pCfg.label || name)}</div>
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
       <span class="badge ${pCfg.localNative ? 'p' : pCfg.clientSafe ? 'b' : 'r'}">${pCfg.localNative ? 'local native' : pCfg.clientSafe ? 'clientSafe' : 'perlu proxy'}</span>
+      ${proxyBadgeHtml}
       <span class="badge ${pCfg.enabled ? 'g' : 'r'}" data-role="status">${pCfg.enabled ? 'Aktif' : 'Nonaktif'}</span>
     </div>`;
   card.appendChild(head);
+
   const fields = Object.keys(FIELD_DEFS).filter(f => f in pCfg);
   if (fields.length === 0) {
     const note = document.createElement('div');
@@ -2000,16 +2072,33 @@ function buildProviderCard(category, name, pCfg) {
     note.textContent = 'Tidak ada field editable.';
     card.appendChild(note); return card;
   }
+
   const grid = document.createElement('div');
   grid.className = 'api-fields';
   for (const field of fields) {
     const spec = FIELD_DEFS[field]; const wrap = document.createElement('div');
-    if (spec.type === 'toggle') { wrap.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding-top:16px"><label class="toggle"><input type="checkbox" data-field="${field}" ${pCfg[field] ? 'checked' : ''}><span class="tslider"></span></label><span style="font-size:11px;color:var(--muted)">${spec.label}</span></div>`; }
-    else if (spec.type === 'select') { const opts = spec.options.map(o => `<option value="${o}" ${pCfg[field] === o ? 'selected' : ''}>${o}</option>`).join(''); wrap.innerHTML = `<label>${spec.label}</label><select data-field="${field}">${opts}</select>`; }
-    else { wrap.innerHTML = `<label>${spec.label}</label><input type="${spec.type}" data-field="${field}" value="${escapeHtml(pCfg[field] || '')}" ${spec.type === 'password' ? 'autocomplete="new-password"' : ''}>`; }
+    if (spec.type === 'toggle') {
+      wrap.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding-top:16px"><label class="toggle"><input type="checkbox" data-field="${field}" ${pCfg[field] ? 'checked' : ''}><span class="tslider"></span></label><span style="font-size:11px;color:var(--muted)">${spec.label}</span></div>`;
+    } else if (spec.type === 'select') {
+      const opts = spec.options.map(o => `<option value="${o}" ${pCfg[field] === o ? 'selected' : ''}>${o}</option>`).join('');
+      wrap.innerHTML = `<label>${spec.label}</label><select data-field="${field}">${opts}</select>`;
+    } else {
+      wrap.innerHTML = `<label>${spec.label}</label><input type="${spec.type}" data-field="${field}" value="${escapeHtml(pCfg[field] || '')}" ${spec.type === 'password' ? 'autocomplete="new-password"' : ''} ${field === 'proxyUrl' ? 'placeholder="https://proxy-anda.com/forward"' : ''}>`;
+    }
     grid.appendChild(wrap);
   }
   card.appendChild(grid);
+
+  // Show/hide URL proxy berdasarkan toggle
+  const proxyToggle = card.querySelector('input[data-field="proxyEnabled"]');
+  const proxyUrlInput = card.querySelector('input[data-field="proxyUrl"]');
+  if (proxyToggle && proxyUrlInput) {
+    const urlWrap = proxyUrlInput.parentElement;
+    const updateProxyVis = () => { urlWrap.style.display = proxyToggle.checked ? '' : 'none'; };
+    updateProxyVis();
+    proxyToggle.addEventListener('change', updateProxyVis);
+  }
+
   const toggle = card.querySelector('input[data-field="enabled"]');
   if (toggle) {
     toggle.addEventListener('change', () => {
@@ -2025,6 +2114,15 @@ function collectAPISettings() {
   const cfg = getAPIConfig();
   cfg.proxy.enabled = !!$('#proxyEnabled')?.checked;
   cfg.proxy.baseUrl = $('#proxyBaseUrl')?.value.trim() || '';
+  try {
+    const hStr = $('#proxyHeaders')?.value.trim();
+    cfg.proxy.headers = hStr ? JSON.parse(hStr) : {};
+    if (hStr && typeof cfg.proxy.headers !== 'object') throw new Error('bukan object');
+  } catch (e) {
+    cfg.proxy.headers = {};
+    log('⚠️ Headers proxy bukan JSON valid, diabaikan', 'warn');
+    showToast('Headers proxy bukan JSON valid — diabaikan', 'w');
+  }
   document.querySelectorAll('.api-provider').forEach(card => {
     const cat = card.dataset.category, prov = card.dataset.provider;
     if (!cfg.providers[cat]?.[prov]) return;
@@ -3004,6 +3102,41 @@ $('#apiImportFile').addEventListener('change', async (e) => {
 });
 $('#btnApiReset').addEventListener('click', resetAPISettings);
 
+$('#btnTestProxy')?.addEventListener('click', async () => {
+  const url = $('#proxyBaseUrl')?.value.trim();
+  const status = $('#apiStatus');
+  if (!url) { showToast('Masukkan URL proxy dulu', 'w'); return; }
+  let headers = {};
+  try {
+    const h = $('#proxyHeaders')?.value.trim();
+    if (h) headers = JSON.parse(h);
+  } catch(e) { showToast('Headers JSON tidak valid', 'e'); return; }
+
+  setStatus(status, '🧪 Menguji proxy...');
+  log('🧪 Tes proxy global: ' + url, 'warn');
+  try {
+    const t0 = performance.now();
+    const res = await withTimeout(fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify({ test: true, category: 'test', provider: 'test', payload: { ping: 'pong' } })
+    }), 12000, 'Proxy');
+    const ms = Math.round(performance.now() - t0);
+    if (res.ok) {
+      setStatus(status, `✅ Proxy OK (${ms}ms, HTTP ${res.status})`);
+      log(`✅ Proxy test OK: ${ms}ms HTTP ${res.status}`, 'ok');
+      showToast('Proxy OK ✅', 's');
+    } else {
+      setStatus(status, `✅ Proxy terjangkau (CORS OK) — respons HTTP ${res.status} (${ms}ms). Payload uji mungkin ditolak, tapi proxy aktif.`);
+      showToast('Proxy CORS OK, HTTP ' + res.status, 'w');
+    }
+  } catch(e) {
+    setStatus(status, '❌ ' + e.message);
+    showToast('Proxy gagal: ' + e.message, 'e');
+    log('❌ Proxy test: ' + e.message, 'err');
+  }
+});
+
 /* ============================================================
    GALLERY
    ============================================================ */
@@ -3082,6 +3215,27 @@ async function runDiagnostics() {
     ['Provider LLM', async () => { const p = getActiveProvider('llm'); if (!p) throw new Error('tidak ada'); return p.label + ' · ' + (p.model || ''); }],
     ['Provider Gambar', async () => { const p = getActiveProvider('image'); if (!p) throw new Error('tidak ada'); return p.label + ' · ' + (p.model || ''); }],
     ['Provider Deteksi', async () => { const p = getActiveProvider('detect'); if (!p) throw new Error('tidak ada'); return p.label; }],
+    ['Proxy Global', async () => {
+      const cfg = getAPIConfig();
+      if (!cfg.proxy?.enabled || !cfg.proxy?.baseUrl) throw new Error('tidak dikonfigurasi');
+      const r = await withTimeout(fetch(cfg.proxy.baseUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(cfg.proxy.headers || {}) },
+        body: JSON.stringify({ test: true })
+      }), 10000, 'ProxyGlobal');
+      return 'HTTP ' + r.status + ' — CORS OK';
+    }],
+    ['Proxy per-Provider', async () => {
+      const cfg = getAPIConfig();
+      const list = [];
+      for (const cat of Object.keys(cfg.providers || {})) {
+        for (const [name, p] of Object.entries(cfg.providers[cat])) {
+          if (p.proxyEnabled && p.proxyUrl) list.push(`${cat}/${name}`);
+        }
+      }
+      if (list.length === 0) throw new Error('tidak ada proxy per-provider aktif');
+      return `${list.length} aktif: ${list.slice(0, 3).join(', ')}${list.length > 3 ? ', …' : ''}`;
+    }],
     ['Web Speech STT', async () => { const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) throw new Error('tidak didukung'); return 'siap'; }],
     ['iTunes Search', async () => { const r = await withTimeout(fetch('https://itunes.apple.com/search?term=jazz&limit=1'), 8000, 'iTunes'); if (!r.ok) throw new Error('HTTP ' + r.status); return 'OK'; }],
     ['LocalStorage', async () => { localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return 'OK'; }]
@@ -3124,6 +3278,7 @@ renderAPISettings();
 log('✨ Studio AI v9.7 siap — 20 fitur, 60+ model, use cases', 'ok');
 log('🎨 Local Native: WebLLM, Transformers.js, wllama, Chrome AI, MediaPipe, COCO-SSD, face-api, ml5, TF.js, brain.js, ONNX, TFLite, Speech Commands, Meyda', 'ok');
 log('🆓 Default: Pollinations, Puter, VoiPi, WebLLM, MediaPipe', 'ok');
+log('🌐 Proxy: global fallback + per-provider override siap', 'ok');
 initTTS();
 if (typeof Plyr === 'undefined') log('⚠️ Plyr belum termuat', 'warn');
 if (typeof puter === 'undefined') log('⚠️ Puter.js belum termuat', 'warn');
