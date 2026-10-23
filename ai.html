@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Studio AI v9.7 — Local + Cloud AI Suite</title>
+<title>Studio AI v9.8 — Local + Cloud AI Suite</title>
 <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 <script src="https://js.puter.com/v2/"></script>
@@ -249,9 +249,9 @@ gemini-chat{display:block;width:100%;border-radius:12px;overflow:hidden}
   </div>
   <div class="logo">
     <div class="logo-icon"><span>✨</span></div>
-    <span>Studio <span class="grad">AI</span> <span style="font-size:12px;color:var(--muted);font-weight:500">v9.7</span></span>
+    <span>Studio <span class="grad">AI</span> <span style="font-size:12px;color:var(--muted);font-weight:500">v9.8</span></span>
   </div>
-  <p class="sub">20 Fitur · 60+ Model · Use Cases · Local AI (WebGPU/WASM) + Cloud · Puter · Proxy Multi-Penyedia</p>
+  <p class="sub">20 Fitur · Model Terkini 2025 · Use Cases · Local AI (WebGPU/WASM) + Cloud · Puter · Proxy Multi-Penyedia</p>
 </header>
 
 <nav class="tabs">
@@ -826,11 +826,12 @@ gemini-chat{display:block;width:100%;border-radius:12px;overflow:hidden}
 
 <script type="module">
 /* ============================================================
-   API CONFIG DATABASE
+   API CONFIG DATABASE — v9.8
+   Model & endpoint diperbarui sesuai katalog resmi 2025
    ============================================================ */
-const API_CONFIG_KEY = 'studio-ai-v97-api-config';
+const API_CONFIG_KEY = 'studio-ai-v98-api-config';
 const API_DEFAULTS = {
-  version: 8,
+  version: 9,
   updatedAt: null,
   proxy: { enabled: false, baseUrl: '', headers: {}, provider: 'custom' },
   providers: {
@@ -838,8 +839,8 @@ const API_DEFAULTS = {
       pollinations: { enabled: true, clientSafe: true, label: 'Pollinations · FLUX', apiKey: '', apiKeyType: 'pk', baseUrl: 'https://image.pollinations.ai/prompt/', model: 'flux' },
       puter:        { enabled: true, clientSafe: true, label: 'Puter · GPT Image', apiKey: '', model: 'gpt-image-1' },
       craiyon:      { enabled: true, clientSafe: true, label: 'Craiyon · Free', apiKey: '', baseUrl: 'https://api.craiyon.com/v3' },
-      together:     { enabled: false, clientSafe: false, label: 'Together AI · FLUX.1', apiKey: '', baseUrl: 'https://api.together.xyz/v1', model: 'black-forest-labs/FLUX.1-schnell' },
-      stability:    { enabled: false, clientSafe: false, label: 'Stability AI · SD 3.5', apiKey: '', baseUrl: 'https://api.stability.ai/v2beta', model: 'sd3' },
+      together:     { enabled: false, clientSafe: false, label: 'Together AI · FLUX.2', apiKey: '', baseUrl: 'https://api.together.ai/v1', model: 'black-forest-labs/FLUX.2-dev' },
+      stability:    { enabled: false, clientSafe: false, label: 'Stability AI · SD 3.5', apiKey: '', baseUrl: 'https://api.stability.ai/v2beta', model: 'sd3.5-large' },
       google:       { enabled: false, clientSafe: false, label: 'Google · Imagen 4', apiKey: '', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', model: 'imagen-4.0-generate-001' }
     },
     video: {
@@ -862,9 +863,9 @@ const API_DEFAULTS = {
       deepl:    { enabled: false, clientSafe: false, label: 'DeepL', apiKey: '', baseUrl: 'https://api-free.deepl.com/v2' }
     },
     llm: {
-      pollinations_text: { enabled: true, clientSafe: true, label: 'Pollinations Text · gratis', apiKey: '', baseUrl: 'https://text.pollinations.ai/', model: 'openai' },
-      puter:             { enabled: true, clientSafe: true, label: 'Puter · 500+ model', apiKey: '', model: 'openai/gpt-5.5' },
-      groq:              { enabled: false, clientSafe: false, label: 'Groq · Llama/Mixtral', apiKey: '', baseUrl: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile' },
+      pollinations_text: { enabled: true, clientSafe: true, label: 'Pollinations Text · GPT-OSS 20B', apiKey: '', baseUrl: 'https://text.pollinations.ai/', model: 'openai' },
+      puter:             { enabled: true, clientSafe: true, label: 'Puter · GPT-5.6 Luna', apiKey: '', model: 'gpt-5.6-luna' },
+      groq:              { enabled: false, clientSafe: false, label: 'Groq · Llama 4', apiKey: '', baseUrl: 'https://api.groq.com/openai/v1', model: 'meta-llama/llama-4-maverick-17b-128e-instruct' },
       google_ai:         { enabled: false, clientSafe: false, label: 'Google AI Studio · Gemini', apiKey: '', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', model: 'gemini-2.5-flash' },
       openrouter:        { enabled: false, clientSafe: false, label: 'OpenRouter · Free', apiKey: '', baseUrl: 'https://openrouter.ai/api/v1', model: 'meta-llama/llama-3.3-70b-instruct:free' },
       webllm:            { enabled: true, clientSafe: true, localNative: true, label: 'WebLLM · WebGPU', apiKey: '', model: 'Llama-3.2-1B-Instruct-q4f16_1-MLC' },
@@ -875,7 +876,7 @@ const API_DEFAULTS = {
       openai_sdk:        { enabled: false, clientSafe: false, label: 'OpenAI SDK', apiKey: '', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini' }
     },
     vision: {
-      puter:    { enabled: true, clientSafe: true, label: 'Puter · Vision', apiKey: '', model: 'openai/gpt-5.5' },
+      puter:    { enabled: true, clientSafe: true, label: 'Puter · Vision', apiKey: '', model: 'gpt-5.6-luna' },
       google_vision: { enabled: false, clientSafe: false, label: 'Google Cloud Vision', apiKey: '', baseUrl: 'https://vision.googleapis.com/v1' },
       hf_vision:{ enabled: false, clientSafe: false, label: 'Hugging Face · ViT', apiKey: '', baseUrl: 'https://api-inference.huggingface.co/models', model: 'google/vit-base-patch16-224' }
     },
@@ -931,7 +932,7 @@ const API_DEFAULTS = {
 };
 
 /* ============================================================
-   MODEL CATALOG
+   MODEL CATALOG — 2025
    ============================================================ */
 const MODEL_CATALOG = {
   llm: {
@@ -958,7 +959,8 @@ const MODEL_CATALOG = {
       { id: 'nova-fast', label: 'Nova Fast' }
     ],
     puter: [
-      { id: 'openai/gpt-5.5', label: 'GPT-5.5 · flagship' },
+      { id: 'gpt-5.6-luna', label: 'GPT-5.6 Luna · flagship' },
+      { id: 'openai/gpt-5.5', label: 'GPT-5.5' },
       { id: 'openai/gpt-5.3-codex', label: 'GPT-5.3 Codex · coding' },
       { id: 'anthropic/claude-opus-5.5', label: 'Claude Opus 5.5' },
       { id: 'anthropic/claude-sonnet-4.6', label: 'Claude Sonnet 4.6' },
@@ -970,26 +972,33 @@ const MODEL_CATALOG = {
       { id: 'qwen/qwen3-max-thinking', label: 'Qwen3 Max Thinking' }
     ],
     groq: [
+      { id: 'meta-llama/llama-4-maverick-17b-128e-instruct', label: 'Llama 4 Maverick' },
+      { id: 'meta-llama/llama-4-scout-17b-16e-instruct', label: 'Llama 4 Scout' },
       { id: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B' },
       { id: 'llama-3.1-8b-instant', label: 'Llama 3.1 8B · instant' },
-      { id: 'llama-3.2-90b-vision-preview', label: 'Llama 3.2 90B Vision' },
-      { id: 'mixtral-8x7b-32768', label: 'Mixtral 8x7B' },
-      { id: 'gemma2-9b-it', label: 'Gemma 2 9B' },
-      { id: 'deepseek-r1-distill-llama-70b', label: 'DeepSeek R1 Distill 70B' },
-      { id: 'qwen-2.5-coder-32b', label: 'Qwen 2.5 Coder 32B' },
-      { id: 'llama-guard-3-8b', label: 'Llama Guard 3' }
+      { id: 'openai/gpt-oss-120b', label: 'GPT-OSS 120B' },
+      { id: 'openai/gpt-oss-20b', label: 'GPT-OSS 20B' },
+      { id: 'qwen/qwen3-32b', label: 'Qwen3 32B' },
+      { id: 'moonshotai/kimi-k2-instruct-0905', label: 'Kimi K2 Instruct' },
+      { id: 'meta-llama/llama-guard-4-12b', label: 'Llama Guard 4' },
+      { id: 'groq/compound', label: 'Compound · agentic' },
+      { id: 'groq/compound-mini', label: 'Compound Mini' }
     ],
     google_ai: [
       { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
       { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
       { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' },
-      { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' }
+      { id: 'gemini-2.5-flash-image', label: 'Gemini 2.5 Flash Image' },
+      { id: 'gemini-3-pro-preview', label: 'Gemini 3 Pro (preview)' },
+      { id: 'gemini-3-flash-preview', label: 'Gemini 3 Flash (preview)' }
     ],
     openrouter: [
       { id: 'meta-llama/llama-3.3-70b-instruct:free', label: 'Llama 3.3 70B (free)' },
       { id: 'mistralai/mistral-small-3.1-24b-instruct:free', label: 'Mistral Small 3.1 (free)' },
       { id: 'google/gemma-3-27b-it:free', label: 'Gemma 3 27B (free)' },
       { id: 'qwen/qwen3-coder:free', label: 'Qwen3 Coder (free)' },
+      { id: 'openai/gpt-oss-120b:free', label: 'GPT-OSS 120B (free)' },
+      { id: 'openai/gpt-oss-20b:free', label: 'GPT-OSS 20B (free)' },
       { id: 'nvidia/nemotron-3-super-120b-a12b:free', label: 'Nemotron 3 Super 120B (free)' }
     ],
     webllm: [
@@ -1030,7 +1039,17 @@ const MODEL_CATALOG = {
     ],
     puter: [
       { id: 'gpt-image-1', label: 'GPT Image 1' },
-      { id: 'dall-e-3', label: 'DALL·E 3' }
+      { id: 'dall-e-3', label: 'DALL·E 3' },
+      { id: 'gemini-2.5-flash-image-preview', label: 'Gemini 2.5 Flash Image' }
+    ],
+    together: [
+      { id: 'black-forest-labs/FLUX.2-dev', label: 'FLUX.2 Dev' },
+      { id: 'black-forest-labs/FLUX.1-schnell', label: 'FLUX.1 Schnell' }
+    ],
+    stability: [
+      { id: 'sd3.5-large', label: 'SD 3.5 Large' },
+      { id: 'sd3.5-large-turbo', label: 'SD 3.5 Large Turbo' },
+      { id: 'sd3.5-medium', label: 'SD 3.5 Medium' }
     ],
     google: [
       { id: 'imagen-4.0-generate-001', label: 'Imagen 4' }
@@ -1049,7 +1068,7 @@ const MODEL_CATALOG = {
   },
   vision: {
     puter: [
-      { id: 'openai/gpt-5.5', label: 'GPT-5.5 Vision' },
+      { id: 'gpt-5.6-luna', label: 'GPT-5.6 Luna Vision' },
       { id: 'google/gemini-3.8-flash', label: 'Gemini 3.8 Flash Vision' }
     ],
     google_vision: [{ id: 'cloud', label: 'Cloud Vision API' }],
@@ -1057,7 +1076,10 @@ const MODEL_CATALOG = {
   },
   stt: {
     webspeech: [{ id: 'browser', label: 'Browser native' }],
-    groq_whisper: [{ id: 'whisper-large-v3', label: 'Whisper Large v3' }],
+    groq_whisper: [
+      { id: 'whisper-large-v3', label: 'Whisper Large v3' },
+      { id: 'whisper-large-v3-turbo', label: 'Whisper Large v3 Turbo' }
+    ],
     assemblyai: [{ id: 'default', label: 'AssemblyAI' }]
   }
 };
@@ -1183,7 +1205,6 @@ function getModelsFor(category, providerName) {
    PROXY ENGINE
    ============================================================ */
 
-// Bangun target request (URL + method + headers + body) untuk provider tertentu
 function buildForwardTarget(category, providerName, provider, payload) {
   const base = (provider?.baseUrl || '').replace(/\/$/, '');
   const apiKey = provider?.apiKey || '';
@@ -1212,7 +1233,6 @@ function buildForwardTarget(category, providerName, provider, payload) {
         body: JSON.stringify({ model, messages, temperature: 0.7 })
       };
     }
-    // Default: OpenAI-compatible (groq, openai_sdk, together, dll.)
     return {
       url: `${base}/chat/completions`,
       method: 'POST',
@@ -1227,15 +1247,20 @@ function buildForwardTarget(category, providerName, provider, payload) {
         url: `${base}/images/generations`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-        body: JSON.stringify({ model, prompt: payload.prompt, width: payload.width, height: payload.height, steps: 4, n: 1 })
+        body: JSON.stringify({ model, prompt: payload.prompt, width: payload.width, height: payload.height, steps: 4, n: 1, response_format: 'b64_json' })
       };
     }
     if (providerName === 'stability') {
+      const form = new URLSearchParams();
+      form.append('prompt', payload.prompt);
+      form.append('model', model || 'sd3.5-large');
+      form.append('aspect_ratio', `${payload.width}:${payload.height}`);
+      form.append('output_format', 'png');
       return {
         url: `${base}/stable-image/generate/sd3`,
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${apiKey}`, 'Accept': 'image/*' },
-        body: payload.prompt
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Accept': 'image/*', 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: form.toString()
       };
     }
     if (providerName === 'google') {
@@ -1305,7 +1330,6 @@ function buildForwardTarget(category, providerName, provider, payload) {
     }
   }
 
-  // Fallback: POST payload apa adanya ke baseUrl
   return {
     url: base,
     method: 'POST',
@@ -1314,49 +1338,28 @@ function buildForwardTarget(category, providerName, provider, payload) {
   };
 }
 
-// Bangun request ke proxy berdasarkan penyedia yang dipilih
 function buildProxyRequest(proxyProvider, proxyUrl, target, proxyHeaders = {}) {
   if (proxyProvider === 'allorigins') {
-    // AllOrigins: GET only
-    return {
-      url: `https://api.allorigins.win/raw?url=${encodeURIComponent(target.url)}`,
-      options: { method: 'GET' }
-    };
+    return { url: `https://api.allorigins.win/raw?url=${encodeURIComponent(target.url)}`, options: { method: 'GET' } };
   }
   if (proxyProvider === 'corsproxy') {
-    // Corsproxy.io: forwards POST via ?<encoded-target>
     return {
       url: `https://corsproxy.io/?${encodeURIComponent(target.url)}`,
-      options: {
-        method: target.method,
-        headers: target.headers,
-        body: target.method === 'GET' || target.method === 'HEAD' ? undefined : target.body
-      }
+      options: { method: target.method, headers: target.headers, body: target.method === 'GET' || target.method === 'HEAD' ? undefined : target.body }
     };
   }
   if (proxyProvider === 'corsfix') {
-    // CORS Fix: POST to ?target=
     return {
       url: `https://corsfix.com/?target=${encodeURIComponent(target.url)}`,
-      options: {
-        method: target.method,
-        headers: target.headers,
-        body: target.method === 'GET' || target.method === 'HEAD' ? undefined : target.body
-      }
+      options: { method: target.method, headers: target.headers, body: target.method === 'GET' || target.method === 'HEAD' ? undefined : target.body }
     };
   }
-  // Custom / Cloudflare: kirim full request info ke proxy (Worker forwarder)
   return {
     url: proxyUrl,
     options: {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...proxyHeaders },
-      body: JSON.stringify({
-        url: target.url,
-        method: target.method,
-        headers: target.headers,
-        body: typeof target.body === 'string' ? target.body : undefined
-      })
+      body: JSON.stringify({ url: target.url, method: target.method, headers: target.headers, body: typeof target.body === 'string' ? target.body : undefined })
     }
   };
 }
@@ -1367,17 +1370,13 @@ function callProxy(category, providerName, payload) {
 
   let proxyUrl = '', proxySource = '';
   if (provider?.proxyEnabled && provider.proxyUrl) {
-    proxyUrl = provider.proxyUrl;
-    proxySource = 'per-provider';
+    proxyUrl = provider.proxyUrl; proxySource = 'per-provider';
   } else if (cfg.proxy?.enabled && cfg.proxy.baseUrl) {
-    proxyUrl = cfg.proxy.baseUrl;
-    proxySource = 'global';
+    proxyUrl = cfg.proxy.baseUrl; proxySource = 'global';
   }
 
   if (!proxyUrl) {
-    return Promise.reject(new Error(
-      `Provider "${providerName}" memerlukan proxy. Atur proxy khusus provider atau proxy global di ⚙️ Setelan → Database API.`
-    ));
+    return Promise.reject(new Error(`Provider "${providerName}" memerlukan proxy. Atur proxy khusus provider atau proxy global di ⚙️ Setelan → Database API.`));
   }
 
   const proxyProvider = cfg.proxy?.provider || 'custom';
@@ -1396,12 +1395,11 @@ function exportAPIConfig(asJSON) {
   const cfg = getAPIConfig(); cfg.updatedAt = new Date().toISOString();
   let content, filename, mime;
   if (asJSON) { content = JSON.stringify(cfg, null, 2); filename = 'studio-ai-config.json'; mime = 'application/json'; }
-  else { content = `/* Studio AI v9.7 — config */\nwindow.API_CONFIG = ${JSON.stringify(cfg, null, 2)};\n`; filename = 'studio-ai-config.js'; mime = 'text/javascript'; }
+  else { content = `/* Studio AI v9.8 — config */\nwindow.API_CONFIG = ${JSON.stringify(cfg, null, 2)};\n`; filename = 'studio-ai-config.js'; mime = 'text/javascript'; }
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([content], { type: mime })); a.download = filename; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  log('📤 Config diekspor: ' + filename, 'ok');
-  showToast('Config diekspor', 's');
+  log('📤 Config diekspor: ' + filename, 'ok'); showToast('Config diekspor', 's');
 }
 function importAPIConfig(file) {
   return new Promise((resolve, reject) => {
@@ -1435,8 +1433,8 @@ function importAPIConfig(file) {
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 const POLLINATIONS_BASE = 'https://image.pollinations.ai/prompt/';
-const STORAGE_KEY = 'studio-ai-v97-settings';
-const GALLERY_KEY = 'studio-ai-v97-gallery';
+const STORAGE_KEY = 'studio-ai-v98-settings';
+const GALLERY_KEY = 'studio-ai-v98-gallery';
 const CONFIG = { segmentFPS: 30, pollinationsInterval: 16000, queueMaxAttempts: 3, renderMaxAttempts: 3, renderRetryDelay: 1000 };
 const state = { voices: [], ttsEngine: null, voiPi: null, busy: false, plyr: null, currentVideoUrl: null, lastImageBlob: null, lastPollinations: 0, settings: { autoTranslate: true, saveGallery: true }, sttRec: null, sttFinal: '', webllmEngine: null, wllamaInstance: null, transformersPipe: null, useCasePrompt: { image: '', vision: '' } };
 
@@ -1629,7 +1627,7 @@ async function translateText(text) {
    ============================================================ */
 async function callPuterChat(prompt, opts = {}) {
   if (typeof puter === 'undefined') throw new Error('Puter.js belum dimuat');
-  const model = opts.model || 'openai/gpt-5.5';
+  const model = opts.model || 'gpt-5.6-luna';
   try {
     const response = await puter.ai.chat(prompt, { model, stream: false });
     if (typeof response === 'string') return response;
@@ -1643,7 +1641,7 @@ async function callPuterChat(prompt, opts = {}) {
 }
 async function callPuterVision(prompt, imageDataUrl, opts = {}) {
   if (typeof puter === 'undefined') throw new Error('Puter.js belum dimuat');
-  const model = opts.model || 'openai/gpt-5.5';
+  const model = opts.model || 'gpt-5.6-luna';
   try {
     const response = await puter.ai.chat(prompt, imageDataUrl, { model, stream: false });
     if (typeof response === 'string') return response;
@@ -2092,7 +2090,7 @@ $$('.tab').forEach(tab => {
 });
 const presetsImg = ['Kucing oranye lucu tidur di bawah sinar matahari sore', 'Kota futuristik dengan gedung neon dan mobil terbang', 'Pemandangan pantai tropis saat matahari terbenam', 'Rumah kayu di tepi danau dengan gunung bersalju', 'Astronaut berjalan di bulan'];
 const presetsVid = ['Perjalanan melalui hutan bambu di pagi hari', 'Matahari terbenam di atas gunung bersalju', 'Kota Tokyo di malam hari dengan lampu neon', 'Bunga sakura berjatuhan di taman Jepang'];
-const presetsTts = ['Selamat datang di Studio AI versi sembilan titik tujuh.', 'Terima kasih telah menggunakan layanan kami.', 'Jakarta adalah ibu kota Indonesia.'];
+const presetsTts = ['Selamat datang di Studio AI versi sembilan titik delapan.', 'Terima kasih telah menggunakan layanan kami.', 'Jakarta adalah ibu kota Indonesia.'];
 function renderPresets(id, list, targetId, tboxId) {
   const c = $('#' + id); if (!c) return; c.innerHTML = '';
   list.forEach(p => {
@@ -2191,10 +2189,7 @@ function syncAllModels() {
   syncModelsFor('sttModel', 'stt', 'sttProvider');
   ['imgProvider', 'chatProvider', 'codeProvider', 'summarizeProvider', 'searchProvider', 'moderateProvider', 'visionProvider', 'ttsProvider', 'sttProvider'].forEach(provId => {
     const el = $('#' + provId);
-    if (el && !el._modelHook) {
-      el.addEventListener('change', syncAllModels);
-      el._modelHook = true;
-    }
+    if (el && !el._modelHook) { el.addEventListener('change', syncAllModels); el._modelHook = true; }
   });
 }
 
@@ -3544,10 +3539,11 @@ refreshProviderDropdowns();
 syncAllModels();
 initUseCaseSelectors();
 renderAPISettings();
-log('✨ Studio AI v9.7 siap — 20 fitur, 60+ model, use cases', 'ok');
-log('🎨 Local Native: WebLLM, Transformers.js, wllama, Chrome AI, MediaPipe, COCO-SSD, face-api, ml5, TF.js, brain.js, ONNX, TFLite, Speech Commands, Meyda', 'ok');
-log('🆓 Default: Pollinations, Puter, VoiPi, WebLLM, MediaPipe', 'ok');
-log('🌐 Proxy Engine: custom · cloudflare · corsfix · corsproxy · allorigins', 'ok');
+log('✨ Studio AI v9.8 siap — model & endpoint diperbarui 2025', 'ok');
+log('🖼️ Image: Pollinations FLUX · Puter GPT Image · Together FLUX.2 · Stability SD3.5 · Google Imagen 4', 'ok');
+log('💬 LLM: Pollinations GPT-OSS · Puter GPT-5.6 Luna · Groq Llama 4 · Gemini 2.5/3 · OpenRouter free', 'ok');
+log('🎤 STT: Web Speech · Groq Whisper Large v3 / v3 Turbo', 'ok');
+log('🌐 Proxy: custom · cloudflare · corsfix · corsproxy · allorigins', 'ok');
 initTTS();
 if (typeof Plyr === 'undefined') log('⚠️ Plyr belum termuat', 'warn');
 if (typeof puter === 'undefined') log('⚠️ Puter.js belum termuat', 'warn');
