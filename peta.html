@@ -201,12 +201,12 @@
   .tag.v4{background:rgba(251,191,36,.13);color:#fcd34d;border-color:rgba(251,191,36,.28)}
   .muted{color:#7e8ea6}
   .star{color:#fbbf24;font-weight:700}
-  a.osm{
+  a.gmap{
     display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:10px;
     font-size:12px;font-weight:600;text-decoration:none;color:#67e8f9;
     background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25);transition:.25s;white-space:nowrap;
   }
-  a.osm:hover{background:rgba(34,211,238,.22);transform:translateY(-1px)}
+  a.gmap:hover{background:rgba(34,211,238,.22);transform:translateY(-1px)}
 
   /* ================= PAGER ================= */
   .pager{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;flex-wrap:wrap}
@@ -328,8 +328,9 @@
   <footer>
     Sumber data: <strong>dimana.id</strong>, <strong>Overture Maps</strong>, <strong>OpenStreetMap</strong>,
     <strong>Agregator direktori komersial</strong>, dan lainnya.<br>
-    Peta: <strong>Esri</strong> — Dark Gray Canvas &amp; World Imagery. Akurasi koordinat bervariasi
-    (presisi geokode hingga ±5 km). Verifikasi lapangan tetap diperlukan.
+    Peta: <strong>Esri</strong> — Dark Gray Canvas &amp; World Imagery.
+    Tombol <strong>Buka ↗</strong> menuju <strong>Google Maps</strong>.
+    Akurasi koordinat bervariasi (presisi geokode hingga ±5 km). Verifikasi lapangan tetap diperlukan.
   </footer>
 </div>
 
@@ -668,8 +669,8 @@ function renderTable() {
                 : jenis.includes('Benih') ? 'v3'
                 : jenis.includes('Saprodi') ? 'v2' : '';
       const lat = d['Latitude'], lng = d['Longitude'];
-      const osm = (lat && lng)
-        ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=17/${lat}/${lng}`
+      const gmap = (lat && lng)
+        ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
         : null;
 
       return `<tr>
@@ -685,7 +686,7 @@ function renderTable() {
         <td>${!isNaN(rating)
               ? `<span class="star">★ ${rating}</span><div class="muted" style="font-size:11.5px">${fmt(ulasan || 0)} ulasan</div>`
               : '<span class="muted">—</span>'}</td>
-        <td>${osm ? `<a class="osm" href="${osm}" target="_blank" rel="noopener">Buka ↗</a>`
+        <td>${gmap ? `<a class="gmap" href="${gmap}" target="_blank" rel="noopener">Buka ↗</a>`
                   : '<span class="muted">—</span>'}</td>
       </tr>`;
     }).join('');
