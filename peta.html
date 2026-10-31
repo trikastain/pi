@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Direktori Kios Pupuk & Tani — Indonesia Timur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root{
+    --bg:#070b14;
+    --card:rgba(255,255,255,.045);
+    --border:rgba(255,255,255,.10);
+    --text:#e9eef8;
+    --muted:#93a1b8;
+    --c1:#22d3ee;
+    --c2:#a78bfa;
+    --c3:#34d399;
+    --c4:#fbbf24;
+    --c5:#fb7185;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ================= BACKGROUND SHAPES ================= */
+  .bg-shapes{position:fixed;inset:0;overflow:hidden;z-index:-2;pointer-events:none}
+  .blob{
+    position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;
+    animation:float 20s ease-in-out infinite;
+  }
+  .blob.b1{width:560px;height:560px;top:-190px;left:-140px;
+    background:radial-gradient(circle at 30% 30%,#06b6d4,transparent 70%)}
+  .blob.b2{width:640px;height:640px;top:18%;right:-230px;
+    background:radial-gradient(circle at 70% 30%,#8b5cf6,transparent 70%);animation-delay:-7s}
+  .blob.b3{width:520px;height:520px;bottom:-200px;left:28%;
+    background:radial-gradient(circle at 50% 50%,#10b981,transparent 70%);animation-delay:-13s}
+  @keyframes float{
+    0%,100%{transform:translate(0,0) scale(1)}
+    33%{transform:translate(45px,-55px) scale(1.12)}
+    66%{transform:translate(-35px,45px) scale(.94)}
+  }
+  body::after{
+    content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background-image:
+      linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+    background-size:64px 64px;
+    -webkit-mask-image:radial-gradient(ellipse at 50% 0%,#000 15%,transparent 72%);
+    mask-image:radial-gradient(ellipse at 50% 0%,#000 15%,transparent 72%);
+  }
+
+  /* ================= LAYOUT ================= */
+  .wrap{max-width:1320px;margin:0 auto;padding:0 22px}
+  header{padding:70px 0 40px;position:relative}
+  .badge{
+    display:inline-flex;align-items:center;gap:9px;
+    padding:9px 18px;border-radius:999px;
+    border:1px solid var(--border);background:rgba(255,255,255,.05);
+    font-size:13px;font-weight:500;color:var(--muted);
+    backdrop-filter:blur(12px);
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--c3);
+    box-shadow:0 0 0 0 rgba(52,211,153,.7);animation:pulse 2.2s infinite}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(52,211,153,.6)}
+    70%{box-shadow:0 0 0 12px rgba(52,211,153,0)}
+    100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}
+  }
+  h1{
+    font-size:clamp(2.05rem,5.2vw,3.7rem);line-height:1.05;
+    font-weight:800;letter-spacing:-.035em;margin:22px 0 16px;
+  }
+  .grad{
+    background:linear-gradient(100deg,#22d3ee 0%,#a78bfa 45%,#34d399 95%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .lead{color:var(--muted);max-width:660px;font-size:1.02rem;line-height:1.7}
+
+  /* ================= STAT CARDS ================= */
+  .stats{
+    display:grid;gap:16px;margin:38px 0 34px;
+    grid-template-columns:repeat(auto-fit,minmax(186px,1fr));
+  }
+  .stat{
+    position:relative;overflow:hidden;border-radius:20px;padding:22px;
+    border:1px solid var(--border);
+    background:linear-gradient(160deg,rgba(255,255,255,.085),rgba(255,255,255,.018));
+    backdrop-filter:blur(16px);
+    transition:transform .35s cubic-bezier(.2,.8,.3,1),border-color .35s;
+  }
+  .stat:hover{transform:translateY(-6px);border-color:rgba(255,255,255,.24)}
+  .stat::before{
+    content:'';position:absolute;width:130px;height:130px;border-radius:50%;
+    right:-46px;top:-52px;filter:blur(34px);opacity:.55;
+  }
+  .stat:nth-child(1)::before{background:#22d3ee}
+  .stat:nth-child(2)::before{background:#a78bfa}
+  .stat:nth-child(3)::before{background:#34d399}
+  .stat:nth-child(4)::before{background:#fbbf24}
+  .stat:nth-child(5)::before{background:#fb7185}
+  .stat .label{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:var(--muted);font-weight:600}
+  .stat .value{font-size:2.05rem;font-weight:800;letter-spacing:-.03em;margin-top:8px;
+    background:linear-gradient(120deg,#fff,#b9c7dd);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat .sub{font-size:12.5px;color:var(--muted);margin-top:4px}
+
+  /* ================= PANELS ================= */
+  .panel{
+    position:relative;border-radius:24px;border:1px solid var(--border);
+    background:linear-gradient(165deg,rgba(255,255,255,.075),rgba(255,255,255,.016));
+    backdrop-filter:blur(18px);
+    padding:24px;overflow:hidden;
+  }
+  .panel::after{
+    content:'';position:absolute;inset:0;pointer-events:none;border-radius:24px;
+    background:radial-gradient(600px circle at 100% 0%,rgba(167,139,250,.10),transparent 55%);
+  }
+  .panel-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+  .panel-title{font-size:1rem;font-weight:700;letter-spacing:-.01em}
+  .panel-sub{font-size:12.5px;color:var(--muted)}
+
+  /* ================= CHARTS ================= */
+  .charts{display:grid;gap:18px;margin-bottom:22px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+  .chart-box{position:relative;height:310px}
+
+  /* ================= MAP ================= */
+  #map{height:470px;border-radius:20px;overflow:hidden;border:1px solid var(--border);z-index:0;background:#0b1220}
+  .leaflet-container{background:#0b1220;font-family:inherit}
+  .leaflet-popup-content-wrapper{
+    background:rgba(12,18,32,.96);color:#e9eef8;border:1px solid rgba(255,255,255,.14);
+    border-radius:14px;backdrop-filter:blur(10px);box-shadow:0 18px 45px rgba(0,0,0,.6)
+  }
+  .leaflet-popup-tip{background:rgba(12,18,32,.96);border:1px solid rgba(255,255,255,.14)}
+  .leaflet-popup-content{margin:12px 14px;font-size:12.5px;line-height:1.6}
+  .leaflet-popup-content b{color:#22d3ee}
+  .leaflet-control-layers{
+    background:rgba(12,18,32,.92)!important;
+    color:#e9eef8!important;
+    border:1px solid rgba(255,255,255,.14)!important;
+    border-radius:12px!important;
+    padding:8px 12px!important;
+    backdrop-filter:blur(10px);
+    box-shadow:0 12px 30px rgba(0,0,0,.45);
+    font-size:12.5px;
+  }
+  .leaflet-control-layers label{cursor:pointer;margin:2px 0}
+  .leaflet-control-layers-selector{accent-color:#22d3ee}
+
+  /* ================= FILTER ================= */
+  .filters{display:grid;gap:12px;grid-template-columns:1fr;margin-bottom:18px}
+  @media(min-width:780px){.filters{grid-template-columns:2fr 1fr 1fr 1fr}}
+  .field{position:relative}
+  .field input,.field select{
+    width:100%;padding:14px 16px;border-radius:14px;font-family:inherit;font-size:14px;
+    color:var(--text);background:rgba(255,255,255,.05);
+    border:1px solid var(--border);outline:none;transition:.28s;
+    appearance:none;
+  }
+  .field select{
+    background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2393a1b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 14px center;background-size:17px;
+    padding-right:42px;cursor:pointer;
+  }
+  .field select option{background:#101827;color:#e9eef8}
+  .field input:focus,.field select:focus{
+    border-color:rgba(34,211,238,.65);
+    background:rgba(34,211,238,.07);
+    box-shadow:0 0 0 4px rgba(34,211,238,.11);
+  }
+  .field input::placeholder{color:#6c7c94}
+
+  /* ================= TABLE ================= */
+  .table-wrap{overflow-x:auto;border-radius:18px;border:1px solid var(--border);margin-top:6px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:900px}
+  thead th{
+    position:sticky;top:0;z-index:1;
+    background:linear-gradient(180deg,rgba(23,32,50,.98),rgba(17,24,39,.98));
+    text-align:left;padding:15px 16px;font-size:11.5px;font-weight:700;
+    letter-spacing:.09em;text-transform:uppercase;color:#9fb0c8;
+    border-bottom:1px solid var(--border);white-space:nowrap;
+  }
+  tbody td{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.055);vertical-align:top;color:#cfd9e8}
+  tbody tr{transition:background .2s}
+  tbody tr:hover{background:rgba(34,211,238,.055)}
+  .nm{font-weight:600;color:#fff}
+  .tag{
+    display:inline-block;padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:600;
+    background:rgba(34,211,238,.13);color:#67e8f9;border:1px solid rgba(34,211,238,.25);white-space:nowrap;
+  }
+  .tag.v2{background:rgba(167,139,250,.13);color:#c4b5fd;border-color:rgba(167,139,250,.28)}
+  .tag.v3{background:rgba(52,211,153,.13);color:#6ee7b7;border-color:rgba(52,211,153,.28)}
+  .tag.v4{background:rgba(251,191,36,.13);color:#fcd34d;border-color:rgba(251,191,36,.28)}
+  .muted{color:#7e8ea6}
+  .star{color:#fbbf24;font-weight:700}
+  a.osm{
+    display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:10px;
+    font-size:12px;font-weight:600;text-decoration:none;color:#67e8f9;
+    background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25);transition:.25s;white-space:nowrap;
+  }
+  a.osm:hover{background:rgba(34,211,238,.22);transform:translateY(-1px)}
+
+  /* ================= PAGER ================= */
+  .pager{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;flex-wrap:wrap}
+  .pager button{
+    padding:11px 20px;border-radius:12px;font-family:inherit;font-size:13.5px;font-weight:600;
+    color:#dbe5f3;cursor:pointer;border:1px solid var(--border);
+    background:linear-gradient(150deg,rgba(255,255,255,.1),rgba(255,255,255,.03));
+    transition:.25s;
+  }
+  .pager button:hover:not(:disabled){border-color:rgba(34,211,238,.55);color:#67e8f9;transform:translateY(-2px)}
+  .pager button:disabled{opacity:.32;cursor:not-allowed}
+  .pager .info{font-size:13px;color:var(--muted)}
+
+  /* ================= MISC ================= */
+  .section-title{display:flex;align-items:center;gap:12px;margin:44px 0 18px}
+  .section-title h2{font-size:1.3rem;font-weight:800;letter-spacing:-.02em}
+  .bar{flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.18),transparent)}
+  footer{padding:56px 0 70px;text-align:center;color:#69788e;font-size:13px;line-height:1.8}
+  .error{
+    margin:40px 0;padding:26px;border-radius:18px;border:1px solid rgba(251,113,133,.35);
+    background:rgba(251,113,133,.08);color:#fda4af;line-height:1.8;font-size:14px;
+  }
+  .error code{background:rgba(0,0,0,.4);padding:2px 8px;border-radius:6px;color:#fecdd3}
+  @media(max-width:640px){
+    header{padding:44px 0 26px}
+    .chart-box{height:270px}
+    #map{height:360px}
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-shapes">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+</div>
+
+<div class="wrap">
+  <header>
+    <span class="badge"><span class="dot"></span> Data Terbuka • Indonesia Timur</span>
+    <h1>Direktori <span class="grad">Kios Pupuk &amp; Tani</span><br>Indonesia Timur</h1>
+    <p class="lead">
+      Peta, statistik, dan pencarian sarana produksi pertanian — toko benih &amp; bibit,
+      saprodi, kios pupuk, hingga distributor grosir di Sulawesi, Maluku, Nusa Tenggara, dan Papua.
+    </p>
+  </header>
+
+  <section class="stats" id="stats"></section>
+
+  <div class="section-title"><h2>Visualisasi Data</h2><div class="bar"></div></div>
+  <section class="charts">
+    <div class="panel">
+      <div class="panel-head">
+        <div><div class="panel-title">Sebaran per Provinsi</div>
+          <div class="panel-sub">Jumlah unit usaha terdaftar</div></div>
+      </div>
+      <div class="chart-box"><canvas id="chartProv"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div><div class="panel-title">Jenis Usaha</div>
+          <div class="panel-sub">Komposisi kategori layanan</div></div>
+      </div>
+      <div class="chart-box"><canvas id="chartJenis"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div><div class="panel-title">Tipe Pelaku</div>
+          <div class="panel-sub">Pengecer vs distributor</div></div>
+      </div>
+      <div class="chart-box"><canvas id="chartTipe"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div><div class="panel-title">Wilayah Kepulauan</div>
+          <div class="panel-sub">Agregasi per wilayah besar</div></div>
+      </div>
+      <div class="chart-box"><canvas id="chartWilayah"></canvas></div>
+    </div>
+  </section>
+
+  <div class="section-title"><h2>Peta Sebaran</h2><div class="bar"></div></div>
+  <section class="panel" style="padding:14px">
+    <div id="map"></div>
+  </section>
+
+  <div class="section-title"><h2>Daftar Usaha</h2><div class="bar"></div></div>
+  <section class="panel">
+    <div class="filters">
+      <div class="field"><input id="q" type="text" placeholder="🔍  Cari nama usaha, alamat, kecamatan…"></div>
+      <div class="field"><select id="fProv"><option value="">Semua Provinsi</option></select></div>
+      <div class="field"><select id="fJenis"><option value="">Semua Jenis</option></select></div>
+      <div class="field"><select id="fTipe"><option value="">Semua Tipe Pelaku</option></select></div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Nama Usaha</th><th>Jenis</th><th>Lokasi</th>
+            <th>Kontak</th><th>Rating</th><th>Peta</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <button id="prev">‹ Sebelumnya</button>
+      <span class="info" id="pageInfo">—</span>
+      <button id="next">Berikutnya ›</button>
+    </div>
+  </section>
+
+  <footer>
+    Sumber data: <strong>dimana.id</strong>, <strong>Overture Maps</strong>, <strong>OpenStreetMap</strong>,
+    <strong>Agregator direktori komersial</strong>, dan lainnya.<br>
+    Peta: <strong>Esri</strong> — Dark Gray Canvas &amp; World Imagery. Akurasi koordinat bervariasi
+    (presisi geokode hingga ±5 km). Verifikasi lapangan tetap diperlukan.
+  </footer>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+/* =========================================================
+   STATE
+   ========================================================= */
+const state = { all: [], filtered: [], page: 1, perPage: 25 };
+const charts = {};
+const fmt = n => new Intl.NumberFormat('id-ID').format(n);
+
+const PALETTE = ['#22d3ee','#a78bfa','#34d399','#fbbf24','#fb7185',
+                 '#60a5fa','#f472b6','#4ade80','#facc15','#38bdf8',
+                 '#c084fc','#2dd4bf','#fdba74','#a3e635','#f87171'];
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* =========================================================
+   CHART DEFAULTS
+   ========================================================= */
+Chart.defaults.color = '#93a1b8';
+Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+Chart.defaults.font.size = 12;
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.boxWidth = 8;
+Chart.defaults.plugins.legend.labels.padding = 14;
+Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(10,16,28,.95)';
+Chart.defaults.plugins.tooltip.borderColor = 'rgba(255,255,255,.15)';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.padding = 12;
+Chart.defaults.plugins.tooltip.cornerRadius = 10;
+Chart.defaults.plugins.tooltip.titleColor = '#e9eef8';
+Chart.defaults.plugins.tooltip.bodyColor = '#c8d4e6';
+
+const GRID = { color: 'rgba(255,255,255,.06)', drawTicks: false };
+const BORD = { display: false };
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+function countBy(arr, key) {
+  const map = new Map();
+  arr.forEach(d => {
+    let v = (d[key] ?? '').toString().trim();
+    if (!v) v = '(tidak tercatat)';
+    map.set(v, (map.get(v) || 0) + 1);
+  });
+  return [...map.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+function verticalGradient(ctx, top, bottom, height = 320) {
+  const g = ctx.createLinearGradient(0, 0, 0, height);
+  g.addColorStop(0, top);
+  g.addColorStop(1, bottom);
+  return g;
+}
+
+function killChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+/* =========================================================
+   STATS
+   ========================================================= */
+function renderStats(data) {
+  const prov = new Set(data.map(d => d['Provinsi']).filter(Boolean));
+  const kab = new Set(data.map(d => (d['Kabupaten/Kota'] || '').trim()).filter(Boolean));
+  const telp = data.filter(d => (d['Telepon'] || '').toString().trim()).length;
+  const ratings = data.map(d => parseFloat(d['Rating Direktori'])).filter(n => !isNaN(n));
+  const avg = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length) : 0;
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="label">Total Usaha</div>
+      <div class="value">${fmt(data.length)}</div>
+      <div class="sub">entri terdaftar</div></div>
+    <div class="stat"><div class="label">Provinsi</div>
+      <div class="value">${fmt(prov.size)}</div>
+      <div class="sub">wilayah administratif</div></div>
+    <div class="stat"><div class="label">Kabupaten / Kota</div>
+      <div class="value">${fmt(kab.size)}</div>
+      <div class="sub">lokasi tersebar</div></div>
+    <div class="stat"><div class="label">Punya Kontak</div>
+      <div class="value">${fmt(telp)}</div>
+      <div class="sub">${data.length ? Math.round(telp / data.length * 100) : 0}% dari total</div></div>
+    <div class="stat"><div class="label">Rating Rata-rata</div>
+      <div class="value">${avg ? avg.toFixed(2) : '—'}</div>
+      <div class="sub">${fmt(ratings.length)} usaha berrating</div></div>
+  `;
+}
+
+/* =========================================================
+   CHARTS
+   ========================================================= */
+function renderCharts(data) {
+  /* ---------- 1. Provinsi ---------- */
+  killChart('prov');
+  const provData = countBy(data, 'Provinsi').slice(0, 12);
+  const ctxProv = document.getElementById('chartProv').getContext('2d');
+  charts.prov = new Chart(ctxProv, {
+    type: 'bar',
+    data: {
+      labels: provData.map(d => d[0]),
+      datasets: [{
+        data: provData.map(d => d[1]),
+        backgroundColor: verticalGradient(ctxProv, 'rgba(34,211,238,.95)', 'rgba(167,139,250,.45)', 320),
+        hoverBackgroundColor: '#a78bfa',
+        borderRadius: 7,
+        borderSkipped: false,
+        barThickness: 15
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: GRID, border: BORD, ticks: { precision: 0 } },
+        y: { grid: { display: false }, border: BORD, ticks: { font: { size: 11.5 } } }
+      },
+      animation: { duration: 900, easing: 'easeOutQuart' }
+    }
+  });
+
+  /* ---------- 2. Jenis ---------- */
+  killChart('jenis');
+  const jenisData = countBy(data, 'Jenis');
+  charts.jenis = new Chart(document.getElementById('chartJenis'), {
+    type: 'doughnut',
+    data: {
+      labels: jenisData.map(d => d[0]),
+      datasets: [{
+        data: jenisData.map(d => d[1]),
+        backgroundColor: PALETTE,
+        borderColor: 'rgba(7,11,20,.85)',
+        borderWidth: 3,
+        hoverOffset: 12
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '60%',
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 } } }
+      },
+      animation: { animateRotate: true, duration: 1000 }
+    }
+  });
+
+  /* ---------- 3. Tipe ---------- */
+  killChart('tipe');
+  const tipeData = countBy(data, 'Tipe Pelaku');
+  const ctxTipe = document.getElementById('chartTipe').getContext('2d');
+  charts.tipe = new Chart(ctxTipe, {
+    type: 'bar',
+    data: {
+      labels: tipeData.map(d => d[0]),
+      datasets: [{
+        data: tipeData.map(d => d[1]),
+        backgroundColor: verticalGradient(ctxTipe, 'rgba(52,211,153,.95)', 'rgba(16,185,129,.25)', 320),
+        hoverBackgroundColor: '#34d399',
+        borderRadius: 10,
+        borderSkipped: false,
+        maxBarThickness: 70
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, border: BORD },
+        y: { grid: GRID, border: BORD, ticks: { precision: 0 } }
+      },
+      animation: { duration: 900 }
+    }
+  });
+
+  /* ---------- 4. Wilayah ---------- */
+  killChart('wilayah');
+  const wilData = countBy(data, 'Wilayah');
+  charts.wilayah = new Chart(document.getElementById('chartWilayah'), {
+    type: 'polarArea',
+    data: {
+      labels: wilData.map(d => d[0]),
+      datasets: [{
+        data: wilData.map(d => d[1]),
+        backgroundColor: ['rgba(34,211,238,.62)','rgba(167,139,250,.62)',
+                          'rgba(52,211,153,.62)','rgba(251,191,36,.62)',
+                          'rgba(251,113,133,.62)'],
+        borderColor: 'rgba(7,11,20,.8)',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 } } }
+      },
+      scales: {
+        r: {
+          grid: { color: 'rgba(255,255,255,.07)' },
+          angleLines: { color: 'rgba(255,255,255,.07)' },
+          ticks: { backdropColor: 'transparent', color: '#7e8ea6', font: { size: 10 } }
+        }
+      },
+      animation: { duration: 1000 }
+    }
+  });
+}
+
+/* =========================================================
+   MAP  (ESRI)
+   ========================================================= */
+const map = L.map('map', { scrollWheelZoom: false, preferCanvas: true })
+  .setView([-4.2, 124.5], 5);
+
+/* --- Layer 1: Esri Dark Gray Canvas (base + reference) --- */
+const esriDark = L.layerGroup([
+  L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ', maxZoom: 16 }
+  ),
+  L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+    { maxZoom: 16 }
+  )
+]);
+
+/* --- Layer 2: Esri World Imagery (satelit) + referensi --- */
+const esriSatellite = L.layerGroup([
+  L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+      maxZoom: 19
+    }
+  ),
+  L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+    { maxZoom: 19, opacity: 0.85 }
+  )
+]);
+
+/* default: Dark Gray Canvas */
+esriDark.addTo(map);
+
+/* --- Layer control --- */
+L.control.layers(
+  { 'Peta Gelap (Esri)': esriDark, 'Citra Satelit (Esri)': esriSatellite },
+  null,
+  { position: 'topright', collapsed: false }
+).addTo(map);
+
+/* --- Attribution Esri tambahan --- */
+map.attributionControl.setPrefix(
+  'Peta oleh <a href="https://www.esri.com/" target="_blank" rel="noopener" style="color:#67e8f9">Esri</a>'
+);
+
+map.once('click', () => map.scrollWheelZoom.enable());
+
+const canvasRenderer = L.canvas({ padding: 0.5 });
+let markerLayer = L.layerGroup().addTo(map);
+
+function renderMap(data) {
+  markerLayer.clearLayers();
+  const pts = [];
+  data.forEach(d => {
+    const lat = parseFloat(d['Latitude']);
+    const lng = parseFloat(d['Longitude']);
+    if (isNaN(lat) || isNaN(lng)) return;
+    pts.push([lat, lng]);
+
+    const color = (d['Jenis'] || '').includes('Pupuk') ? '#fbbf24'
+               : (d['Jenis'] || '').includes('Benih') ? '#34d399'
+               : (d['Jenis'] || '').includes('Saprodi') ? '#a78bfa'
+               : '#22d3ee';
+
+    const m = L.circleMarker([lat, lng], {
+      renderer: canvasRenderer,
+      radius: 5,
+      color: 'rgba(7,11,20,.75)',
+      weight: 1,
+      fillColor: color,
+      fillOpacity: .9
+    });
+
+    const telp = (d['Telepon'] || '').toString().trim();
+    const rating = parseFloat(d['Rating Direktori']);
+    m.bindPopup(`
+      <div style="min-width:200px">
+        <div style="font-weight:700;font-size:13.5px;color:#fff;margin-bottom:6px">
+          ${esc(d['Nama Usaha'] || 'Tanpa nama')}
+        </div>
+        <div><b>${esc(d['Jenis'] || '-')}</b></div>
+        <div style="color:#9fb0c8;margin:6px 0">
+          ${esc(d['Kecamatan'] || '')}${d['Kecamatan'] ? ', ' : ''}${esc(d['Kabupaten/Kota'] || '')}<br>
+          ${esc(d['Provinsi'] || '')}
+        </div>
+        ${telp ? `<div>📞 ${esc(telp)}</div>` : ''}
+        ${!isNaN(rating) ? `<div>⭐ ${rating} (${d['Jml Ulasan'] || 0} ulasan)</div>` : ''}
+      </div>
+    `);
+    markerLayer.addLayer(m);
+  });
+
+  if (pts.length) {
+    map.fitBounds(L.latLngBounds(pts).pad(0.12), { maxZoom: 10, animate: true });
+  }
+}
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+function renderTable() {
+  const { filtered, page, perPage } = state;
+  const start = (page - 1) * perPage;
+  const rows = filtered.slice(start, start + perPage);
+
+  const tbody = document.getElementById('tbody');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:44px;color:#7e8ea6">
+      Tidak ada data yang cocok dengan filter.</td></tr>`;
+  } else {
+    tbody.innerHTML = rows.map((d, i) => {
+      const telp = (d['Telepon'] || '').toString().trim();
+      const rating = parseFloat(d['Rating Direktori']);
+      const ulasan = d['Jml Ulasan'];
+      const jenis = d['Jenis'] || '-';
+      const cls = jenis.includes('Pupuk') ? 'v4'
+                : jenis.includes('Benih') ? 'v3'
+                : jenis.includes('Saprodi') ? 'v2' : '';
+      const lat = d['Latitude'], lng = d['Longitude'];
+      const osm = (lat && lng)
+        ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=17/${lat}/${lng}`
+        : null;
+
+      return `<tr>
+        <td class="muted">${start + i + 1}</td>
+        <td><div class="nm">${esc(d['Nama Usaha'] || '—')}</div>
+            <div class="muted" style="font-size:11.5px">${esc(d['Tipe Pelaku'] || '')}</div></td>
+        <td><span class="tag ${cls}">${esc(jenis)}</span></td>
+        <td>
+          <div>${esc(d['Kecamatan'] || '—')}</div>
+          <div class="muted" style="font-size:12px">${esc(d['Kabupaten/Kota'] || '')} · ${esc(d['Provinsi'] || '')}</div>
+        </td>
+        <td>${telp ? esc(telp) : '<span class="muted">—</span>'}</td>
+        <td>${!isNaN(rating)
+              ? `<span class="star">★ ${rating}</span><div class="muted" style="font-size:11.5px">${fmt(ulasan || 0)} ulasan</div>`
+              : '<span class="muted">—</span>'}</td>
+        <td>${osm ? `<a class="osm" href="${osm}" target="_blank" rel="noopener">Buka ↗</a>`
+                  : '<span class="muted">—</span>'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  const total = filtered.length;
+  const from = total ? start + 1 : 0;
+  const to = Math.min(start + perPage, total);
+  const pages = Math.max(1, Math.ceil(total / perPage));
+
+  document.getElementById('pageInfo').textContent =
+    `Menampilkan ${fmt(from)}–${fmt(to)} dari ${fmt(total)} usaha · Halaman ${page} / ${pages}`;
+
+  document.getElementById('prev').disabled = page <= 1;
+  document.getElementById('next').disabled = page >= pages;
+}
+
+/* =========================================================
+   FILTER
+   ========================================================= */
+let debounceTimer;
+function applyFilters(resetPage = true) {
+  const q = document.getElementById('q').value.toLowerCase().trim();
+  const p = document.getElementById('fProv').value;
+  const j = document.getElementById('fJenis').value;
+  const t = document.getElementById('fTipe').value;
+
+  state.filtered = state.all.filter(d => {
+    if (p && (d['Provinsi'] || '') !== p) return false;
+    if (j && (d['Jenis'] || '') !== j) return false;
+    if (t && (d['Tipe Pelaku'] || '') !== t) return false;
+    if (q) {
+      const hay = [d['Nama Usaha'], d['Alamat'], d['Kecamatan'],
+                   d['Kabupaten/Kota'], d['Provinsi'], d['Jenis'], d['Telepon']]
+                   .join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (resetPage) state.page = 1;
+
+  renderStats(state.filtered);
+  renderCharts(state.filtered);
+  renderTable();
+  renderMap(state.filtered);
+}
+
+function debouncedFilter() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => applyFilters(true), 280);
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+function fillSelect(id, values) {
+  const el = document.getElementById(id);
+  values.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = v;
+    el.appendChild(o);
+  });
+}
+
+async function init() {
+  try {
+    const res = await fetch('kios_pupuk_indonesia_timur.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    state.all = await res.json();
+  } catch (err) {
+    document.querySelector('.wrap').insertAdjacentHTML('beforeend', `
+      <div class="error">
+        <strong>Gagal memuat data.</strong><br>
+        Pastikan file <code>kios_pupuk_indonesia_timur.json</code> berada di folder yang sama
+        dan halaman dijalankan melalui server lokal:<br><br>
+        <code>python3 -m http.server 8000</code><br><br>
+        lalu buka <code>http://localhost:8000</code>.<br>
+        <span class="muted">(${esc(err.message)})</span>
+      </div>`);
+    return;
+  }
+
+  state.filtered = state.all.slice();
+
+  /* Isi dropdown filter */
+  const provs = [...new Set(state.all.map(d => d['Provinsi']).filter(Boolean))].sort();
+  const jeniss = [...new Set(state.all.map(d => d['Jenis']).filter(Boolean))].sort();
+  const tipes = [...new Set(state.all.map(d => d['Tipe Pelaku']).filter(Boolean))].sort();
+  fillSelect('fProv', provs);
+  fillSelect('fJenis', jeniss);
+  fillSelect('fTipe', tipes);
+
+  /* Event */
+  document.getElementById('q').addEventListener('input', debouncedFilter);
+  document.getElementById('fProv').addEventListener('change', () => applyFilters(true));
+  document.getElementById('fJenis').addEventListener('change', () => applyFilters(true));
+  document.getElementById('fTipe').addEventListener('change', () => applyFilters(true));
+
+  document.getElementById('prev').addEventListener('click', () => {
+    if (state.page > 1) { state.page--; renderTable(); window.scrollTo({top: document.querySelector('.table-wrap').offsetTop - 120, behavior:'smooth'}); }
+  });
+  document.getElementById('next').addEventListener('click', () => {
+    const pages = Math.ceil(state.filtered.length / state.perPage);
+    if (state.page < pages) { state.page++; renderTable(); window.scrollTo({top: document.querySelector('.table-wrap').offsetTop - 120, behavior:'smooth'}); }
+  });
+
+  /* Render awal */
+  renderStats(state.all);
+  renderCharts(state.all);
+  renderTable();
+  renderMap(state.all);
+}
+
+init();
+</script>
+</body>
+</html>
